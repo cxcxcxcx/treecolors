@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tree Map - MapLibre GL JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
+    <!-- PMTiles script left here for future use, but GeoJSON will be used below -->
+    <script src='https://unpkg.com/pmtiles@3.1.0/dist/pmtiles.js'></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .map-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1;
+            max-width: 300px;
+        }
+        .map-overlay h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+        .info-popup {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: 300px;
+            font-size: 14px;
+        }
+        .info-popup h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        .info-popup p {
+            margin: 4px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="map-overlay">
+        <h3>Tree Species Color Map</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #2d5016;"></div>
+            <span>Evergreen Trees</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: orange;"></div>
+            <span>Ginkgo Trees</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #cc0000;"></div>
+            <span>Trees with Fall Colors</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #8b4513;"></div>
+            <span>Deciduous Trees (Not known for fall colors)</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the map with OpenStreetMap-based style
+        // Using Protomaps free tier (no API key needed for basic use)
+        // Alternative: Use 'https://tiles.openstreetmap.org/styles/osm-bright/style.json' for OSM Foundation tiles
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'osm-tiles': {
+                        type: 'raster',
+                        tiles: [
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                        ],
+                        tileSize: 256,
+                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }
+                },
+                layers: [
+                    {
+                        id: 'osm-tiles-layer',
+                        type: 'raster',
+                        source: 'osm-tiles',
+                        minzoom: 0,
+                        maxzoom: 22
+                    }
+                ]
+            },
+            center: [-122.1430, 37.4419], // Default to Palo Alto area
+            zoom: 13
+        });
+
+        let popup = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: false
+        });
+
+        // Load PMTiles (vector tiles) and detect correct source-layer from metadata
+        map.on('load', function() {
+            const protocol = new pmtiles.Protocol();
+            maplibregl.addProtocol('pmtiles', protocol.tile);
+
+            const pm = new pmtiles.PMTiles('./trees.pmtiles');
+            protocol.add(pm);
+
+            pm.getMetadata().then((metadata) => {
+                const vectorLayers = (metadata && metadata.vector_layers) || [];
+                const layerId = vectorLayers.length > 0 ? vectorLayers[0].id : 'default';
+
+                // Fit to tileset bounds if available
+                if (metadata && Array.isArray(metadata.bounds) && metadata.bounds.length === 4) {
+                    const b = metadata.bounds; // [west, south, east, north]
+                    map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 50 });
+                }
+
+                if (!map.getSource('trees')) {
+                    map.addSource('trees', {
+                        type: 'vector',
+                        url: 'pmtiles://./trees.pmtiles'
+                    });
+                }
+
+                if (!map.getLayer('trees-points')) {
+                    map.addLayer({
+                        id: 'trees-points',
+                        type: 'circle',
+                        source: 'trees',
+                        'source-layer': layerId,
+                        paint: {
+                            'circle-radius': 3,
+                            'circle-color': ['get', 'color'],
+                            'circle-stroke-width': 1,
+                            'circle-stroke-color': '#fff',
+                            'circle-opacity': 0.8
+                        }
+                    });
+                }
+
+                map.on('click', 'trees-points', function(e) {
+                    const properties = e.features[0].properties;
+                    const coordinates = e.features[0].geometry.coordinates.slice();
+
+                    const commonNames = properties.common_names && properties.common_names.length > 0
+                        ? (Array.isArray(properties.common_names) ? properties.common_names.join(', ') : properties.common_names)
+                        : 'N/A';
+                    const chineseNames = properties.chinese_common_names && properties.chinese_common_names.length > 0
+                        ? (Array.isArray(properties.chinese_common_names) ? properties.chinese_common_names.join(', ') : properties.chinese_common_names)
+                        : 'N/A';
+
+                    const popupContent = `
+                        <div class="info-popup">
+                            <h4>${properties.species}</h4>
+                            <p><strong>Common Names:</strong> ${commonNames}</p>
+                            ${chineseNames !== 'N/A' ? `<p><strong>Chinese Names:</strong> ${chineseNames}</p>` : ''}
+                            <p><strong>Deciduous:</strong> ${properties.deciduous ? 'Yes' : 'No'}</p>
+                            <p><strong>Fall Colors:</strong> ${properties.fall_colors ? 'Yes' : 'No'}</p>
+                            <p><strong>Beautiful Flowers:</strong> ${properties.beautiful_flowers ? 'Yes' : 'No'}</p>
+                            <p><strong>Blooming Season:</strong> ${properties.blooming_season || 'N/A'}</p>
+                            <p><strong>Explanation:</strong> ${properties.explanation || 'N/A'}</p>
+                        </div>
+                    `;
+
+                    popup.setLngLat(coordinates).setHTML(popupContent).addTo(map);
+                });
+
+                map.on('mouseenter', 'trees-points', function() {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                map.on('mouseleave', 'trees-points', function() {
+                    map.getCanvas().style.cursor = '';
+                });
+            }).catch((err) => {
+                console.error('Failed to read PMTiles metadata:', err);
+                alert('PMTiles metadata could not be read. Verify trees.pmtiles is accessible and is a vector tileset.');
+            });
+        });
+
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl());
+        
+        // Add attribution (OpenStreetMap requires attribution)
+        map.addControl(new maplibregl.AttributionControl({
+            compact: true
+        }));
+    </script>
+</body>
+</html>
