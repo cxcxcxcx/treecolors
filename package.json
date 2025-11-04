@@ -1,1 +1,35 @@
-{"name":"trees","version":"1.0.0","main":"index.js","scripts":{"prepare":"tsc","build":"tsc","start":"ts-node src/index.ts"},"keywords":[],"author":"","license":"ISC","description":"","husky":{"hooks":{"pre-commit":"pretty-quick --staged"}},"devDependencies":{"@types/node":"^22.10.1","husky":"^9.1.7","prettier":"^3.4.2","pretty-quick":"^4.0.0","ts-node":"^10.9.2","typescript":"^5.7.2"}}
+{
+    "name": "trees",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "prepare": "tsc",
+        "build": "webpack",
+  "watch": "webpack --watch",
+        "start": "ts-node src/index.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "husky": {
+        "hooks": {
+            "pre-commit": "pretty-quick --staged"
+        }
+    },
+    "devDependencies": {
+        "@types/leaflet": "^1.9.15",
+        "@types/node": "^22.10.1",
+        "husky": "^9.1.7",
+        "prettier": "^3.4.2",
+        "pretty-quick": "^4.0.0",
+        "ts-loader": "^9.5.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.2",
+        "webpack": "^5.97.1",
+        "webpack-cli": "^5.1.4"
+    },
+    "dependencies": {
+        "leaflet": "^1.9.4"
+    }
+}

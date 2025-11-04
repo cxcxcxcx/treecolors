@@ -1,23 +1,14 @@
-import pandas as pd
-import requests
-import json
-import os.path
-import pyproj
-from pyproj import Transformer
 import hashlib
 import random
 import colorsys
+import os.path
+import json
 
 # Define file paths
 # Get the directory where this script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(script_dir)
 
-palo_alto_raw_data_file = os.path.join(project_root, 'TreeData_PaloAlto_all.json')
-palo_alto_summary_file = os.path.join(project_root, 'tree_summary_palo_alto.json')
-palo_alto_info_file = os.path.join(project_root, 'tree_info_palo_alto_1000_gpt4o.json')
-palo_alto_map_file = os.path.join(project_root, 'palo_alto.html')
-palo_alto_geojson_file = os.path.join(project_root, 'trees_palo_alto.geojson')
 
 # --- Function Definitions ---
 def group_by_specifies(df, species_column: str, lat_column: str, lng_column: str, top_n: int):
@@ -272,7 +263,77 @@ def build_map(top_trees, tree_info_map, center_lat_lng, zoom_level):
     return m
 
 
-def build_geojson(top_trees, tree_info_map, center_lat_lng, zoom_level):
+def load_shared_tree_info(additional_species=None):
+    """
+    Loads or creates the shared tree information map from the Palo Alto tree info file.
+    This function ensures tree_map_all_big is shared across all scripts.
+    
+    Args:
+        additional_species: Optional list of species to fetch if not in the file.
+    
+    Returns:
+        TreeSpeciesMap instance with loaded species data.
+    """
+    shared_info_file = os.path.join(project_root, 'tree_info_palo_alto_1000_gpt4o.json')
+    tree_map = TreeSpeciesMap()
+    
+    if os.path.exists(shared_info_file):
+        print(f"Loading shared tree info from {shared_info_file}")
+        with open(shared_info_file, 'r') as f:
+            tree_map.species_data = json.load(f)
+        print("Shared tree info loaded.")
+    else:
+        print(f"Shared tree info file not found at {shared_info_file}.")
+        tree_map.species_data = {}
+    
+    # If additional species are provided and not in the map, fetch them
+    if additional_species:
+        species_to_fetch = [s for s in additional_species 
+                          if s.lower() not in tree_map.species_data 
+                          and s.lower().replace(' ', '_') not in tree_map.species_data]
+        if species_to_fetch:
+            print(f"Fetching {len(species_to_fetch)} additional species...")
+            tree_map.add_species_by_list(species_to_fetch)
+            # Save updated tree info
+            with open(shared_info_file, 'w') as f:
+                json.dump(tree_map.species_data, f, indent=4)
+            print(f"Updated tree info saved to {shared_info_file}")
+    
+    return tree_map
+
+# Shared tree_map_all_big instance - loaded on first access
+_tree_map_all_big = None
+
+def get_shared_tree_map(additional_species=None):
+    """
+    Gets the shared tree_map_all_big instance, loading it if necessary.
+    
+    Args:
+        additional_species: Optional list of species to fetch if not in the file.
+    
+    Returns:
+        TreeSpeciesMap instance with loaded species data.
+    """
+    global _tree_map_all_big
+    if _tree_map_all_big is None:
+        _tree_map_all_big = load_shared_tree_info(additional_species)
+    elif additional_species:
+        # Check if any new species need to be fetched
+        species_to_fetch = [s for s in additional_species 
+                          if s.lower() not in _tree_map_all_big.species_data 
+                          and s.lower().replace(' ', '_') not in _tree_map_all_big.species_data]
+        if species_to_fetch:
+            print(f"Fetching {len(species_to_fetch)} additional species...")
+            _tree_map_all_big.add_species_by_list(species_to_fetch)
+            # Save updated tree info
+            shared_info_file = os.path.join(project_root, 'tree_info_palo_alto_1000_gpt4o.json')
+            with open(shared_info_file, 'w') as f:
+                json.dump(_tree_map_all_big.species_data, f, indent=4)
+            print(f"Updated tree info saved to {shared_info_file}")
+    return _tree_map_all_big
+
+
+def build_geojson(top_trees, tree_info_map):
     """
     Builds a GeoJSON FeatureCollection for trees with color information.
     
@@ -343,193 +404,3 @@ def build_geojson(top_trees, tree_info_map, center_lat_lng, zoom_level):
     }
     
     return geojson
-
-
-# --- Data Fetching and Transformation ---
-if os.path.exists(palo_alto_raw_data_file):
-    print(f"Loading raw data from {palo_alto_raw_data_file}")
-    with open(palo_alto_raw_data_file, 'r') as f:
-        all_full_data = json.load(f)
-    # Reconstruct the 'features' list from the batched data
-    all_data_features = []
-    for batch in all_full_data:
-        if 'features' in batch:
-            all_data_features.extend(batch['features'])
-
-    if all_data_features:
-        df = pd.DataFrame([{**feature['attributes'], **feature['geometry']} for feature in all_data_features])
-        print("Raw data loaded and converted to DataFrame.")
-    else:
-        print("No features found in raw data.")
-        df = pd.DataFrame() # Create an empty DataFrame if no data is found
-
-else:
-    print("Fetching raw data from API...")
-    def build_fetch_url(offset, count):
-        return f'https://services6.arcgis.com/evmyRZRrsopdeog7/arcgis/rest/services/TreeData/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outFields=STREET%2CLATITUDE%2CLONGITUDE%2CSPECIES%2CTREEID%2CJURISDICTION%2CLOCATIONID%2CHEIGHTCODE%2CCANOPYWIDTH&orderByFields=OBJECTID%20ASC&outSR=102643&resultOffset={offset}&resultRecordCount={count}'
-
-    all_data = []
-    all_full_data = []
-    total_elements = 39629
-    batch_size = 1000
-    for offset in range(0, total_elements, batch_size):
-        count = min(batch_size, total_elements - offset)
-        url = build_fetch_url(offset, count)
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                all_data.extend(data['features'])
-                all_full_data.append(data)
-                print(f"Fetched {len(data['features'])} elements from {offset}")
-            except (KeyError, json.JSONDecodeError) as e:
-                print(f"Error decoding JSON response at offset {offset}: {e}")
-                print(f"Response content: {response.text}") #print the response to help debug
-        else:
-            print(f"Error fetching data from {url}: Status code {response.status_code}")
-
-    if all_data:
-        df = pd.DataFrame([{**feature['attributes'], **feature['geometry']} for feature in all_data])
-        print("Raw data fetched and converted to DataFrame.")
-        # Save raw data
-        with open(palo_alto_raw_data_file, 'w') as f:
-            json.dump(all_full_data, f)
-            print(f"Raw data saved to {palo_alto_raw_data_file}")
-    else:
-        print("No data fetched.")
-        df = pd.DataFrame() # Create an empty DataFrame if no data is fetched
-
-if not df.empty:
-    # Apply transformation
-    transformer = Transformer.from_crs("EPSG:2227", "EPSG:4326")
-    df['LATITUDE'], df['LONGITUDE'] = transformer.transform(df['x'], df['y'])
-    print("Coordinates transformed.")
-
-    # --- Data Grouping ---
-    if os.path.exists(palo_alto_summary_file):
-        print(f"Loading grouped data from {palo_alto_summary_file}")
-        with open(palo_alto_summary_file, 'r') as f:
-            # Need to convert list of dict back to the desired tuple format
-            loaded_data = json.load(f)
-            groups = [(item['species'], [(loc['lat'], loc['lng']) for loc in item['locations']]) for item in loaded_data]
-        print("Grouped data loaded.")
-    else:
-        print("Grouping data by species...")
-        groups = group_by_specifies(df, 'SPECIES', 'LATITUDE', 'LONGITUDE', 1000)
-        export_groups_as_json(groups, palo_alto_summary_file)
-        print(f"Grouped data saved to {palo_alto_summary_file}")
-
-    # --- Fetch Tree Information ---
-    tree_map_all_big = TreeSpeciesMap()
-    if os.path.exists(palo_alto_info_file):
-        print(f"Loading tree info from {palo_alto_info_file}")
-        with open(palo_alto_info_file, 'r') as f:
-            tree_map_all_big.species_data = json.load(f)
-        print("Tree info loaded.")
-    else:
-        print("Fetching tree info from API...")
-        # Filter out species that are already in tree_map_all_big.species_data
-        species_to_fetch = [g[0] for g in groups if g[0].lower() not in tree_map_all_big.species_data]
-        tree_map_all_big.add_species_by_list(species_to_fetch)
-        tree_map_all_big.save_as_json_file(palo_alto_info_file)
-        print(f"Tree info saved to {palo_alto_info_file}")
-
-    # --- Build GeoJSON ---
-    print("Building GeoJSON...")
-    center_lat_lng, zoom_level = find_center_and_zoom(df, 'LATITUDE', 'LONGITUDE')
-    if center_lat_lng:
-      geojson_data = build_geojson(groups[:80], tree_map_all_big.species_data, center_lat_lng, zoom_level)
-      with open(palo_alto_geojson_file, 'w') as f:
-          json.dump(geojson_data, f, indent=2)
-      print(f"GeoJSON saved to {palo_alto_geojson_file}")
-      
-      # --- Build Map (disabled by default) ---
-      # Uncomment the following lines to also generate the folium map
-      # print("Building map...")
-      # m = build_map(groups[:80], tree_map_all_big.species_data, center_lat_lng, zoom_level)
-      # m.save(palo_alto_map_file)
-      # print(f"Map saved to {palo_alto_map_file}")
-    else:
-      print("Could not determine map center and zoom level from data.")
-
-else:
-    print("Cannot process empty DataFrame.")
-
-import pandas as pd
-import os.path
-import json
-import pyproj
-from pyproj import Transformer
-import hashlib
-import random
-import colorsys
-
-
-# Define file paths for San Jose data
-san_jose_raw_data_file = './Street_Tree_San_Jose.csv'
-san_jose_summary_file = './tree_summary_san_jose.json'
-san_jose_map_file = './web/san_jose.html'
-san_jose_geojson_file = os.path.join(project_root, 'trees_san_jose.geojson')
-
-# --- Function Definitions (assuming these are defined elsewhere or in a preceding cell) ---
-# def group_by_specifies(...): ...
-# def export_groups_as_json(...): ...
-# class TreeSpeciesMap: ...
-# def find_center_and_zoom(...): ...
-# def deterministic_color(...): ...
-# def hsl_to_hex(...): ...
-# def format_tree_info(...): ...
-# def build_map(...): ...
-
-
-# --- Data Loading and Transformation ---
-if os.path.exists(san_jose_raw_data_file):
-    print(f"Loading raw data from {san_jose_raw_data_file}")
-    sj_pd = pd.read_csv(san_jose_raw_data_file)
-    print("Raw data loaded.")
-
-    # Apply transformation (assuming transformer is defined elsewhere or in the cell)
-    # If transformer is not defined, you'll need to define it here or in a preceding cell
-    transformer = Transformer.from_crs("EPSG:2227", "EPSG:4326") # Adjust CRS if needed for San Jose data
-    sj_pd['LATITUDE'], sj_pd['LONGITUDE'] = transformer.transform(sj_pd['X'], sj_pd['Y'])
-    print("Coordinates transformed.")
-else:
-    print(f"Raw data file not found at {san_jose_raw_data_file}. Please ensure the file exists.")
-    sj_pd = pd.DataFrame() # Create an empty DataFrame if the file is not found
-
-
-if not sj_pd.empty:
-    # --- Data Grouping ---
-    if os.path.exists(san_jose_summary_file):
-        print(f"Loading grouped data from {san_jose_summary_file}")
-        with open(san_jose_summary_file, 'r') as f:
-            # Need to convert list of dict back to the desired tuple format
-            loaded_data = json.load(f)
-            groups = [(item['species'], [(loc['lat'], loc['lng']) for loc in item['locations']]) for item in loaded_data]
-        print("Grouped data loaded.")
-    else:
-        print("Grouping data by species...")
-        # Adjust column names if necessary for San Jose data (e.g., 'NAMESCIENTIFIC')
-        groups = group_by_specifies(sj_pd, 'NAMESCIENTIFIC', 'LATITUDE', 'LONGITUDE', 1000)
-        export_groups_as_json(groups, san_jose_summary_file)
-        print(f"Grouped data saved to {san_jose_summary_file}")
-
-    # --- Build GeoJSON (San Jose) ---
-    print("Building San Jose GeoJSON...")
-    # Adjust column names if necessary for San Jose data (e.g., 'LATITUDE', 'LONGITUDE')
-    center_lat_lng, zoom_level = find_center_and_zoom(sj_pd, 'LATITUDE', 'LONGITUDE')
-    if center_lat_lng:
-      geojson_data_sj = build_geojson(groups[:80], tree_map_all_big.species_data, center_lat_lng, zoom_level)
-      with open(san_jose_geojson_file, 'w') as f:
-          json.dump(geojson_data_sj, f, indent=2)
-      print(f"San Jose GeoJSON saved to {san_jose_geojson_file}")
-      # --- Build Map (disabled by default) ---
-      # m = build_map(groups[:80], tree_map_all_big.species_data, center_lat_lng, zoom_level)
-      # m.save(san_jose_map_file)
-      # print(f"Map saved to {san_jose_map_file}")
-    else:
-      print("Could not determine map center and zoom level from data.")
-
-else:
-    print("Cannot process empty DataFrame.")

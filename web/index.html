@@ -2,12 +2,43 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Tree Map - MapLibre GL JS</title>
+    <title>Bay Area Fall Tree Map | Explore Colorful Streets & Species</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive tree map for Palo Alto, San Jose, Cupertino, and nearby Bay Area cities. Discover deciduous trees with fall colors, evergreens, and ginkgo species with photos and species details.">
+    <meta name="keywords" content="Bay Area trees, fall colors map, Palo Alto trees, San Jose trees, Cupertino trees, urban forestry, deciduous trees, ginkgo, evergreen">
+    <meta name="author" content="Bay Area Tree Map Project">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Bay Area Fall Tree Map | Explore Colorful Streets & Species">
+    <meta property="og:description" content="Explore vibrant fall foliage across Bay Area neighborhoods. Click any tree to see species details, photos, and seasonal highlights.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Bay Area Fall Tree Map">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Bay Area Fall Tree Map">
+    <meta name="twitter:description" content="Browse Bay Area neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <!-- PMTiles script left here for future use, but GeoJSON will be used below -->
     <script src='https://unpkg.com/pmtiles@3.1.0/dist/pmtiles.js'></script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Bay Area Fall Tree Map",
+        "description": "Interactive map highlighting tree species across Bay Area neighborhoods, including deciduous trees with fall colors, ginkgo, and evergreens.",
+        "keywords": [
+            "Bay Area trees",
+            "fall foliage map",
+            "urban forestry",
+            "ginkgo trees",
+            "deciduous trees",
+            "Palo Alto trees",
+            "San Jose trees",
+            "Cupertino trees"
+        ]
+    }
+    </script>
     <style>
         body {
             margin: 0;
@@ -37,18 +68,91 @@
             align-items: center;
             margin-bottom: 5px;
         }
+        .legend-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .legend-info-button {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: #2d4f64;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .legend-info-button:hover,
+        .legend-info-button:focus {
+            background: #396a85;
+            outline: none;
+        }
         .legend-color {
             width: 20px;
             height: 20px;
             margin-right: 10px;
             border: 1px solid #ccc;
+            display: flex;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        .legend-info-popup {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            z-index: 3;
+        }
+        .legend-info-popup.hidden {
+            display: none;
+        }
+        .legend-info-popup h4 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: #2d4f64;
+        }
+        .legend-info-popup p {
+            margin: 6px 0;
+            color: #444;
+        }
+        .legend-info-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            border: none;
+            background: transparent;
+            color: #2d4f64;
+            font-size: 18px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+        .legend-info-close:hover,
+        .legend-info-close:focus {
+            color: #000;
+            outline: none;
         }
         .info-popup {
             background: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 6px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            max-width: 300px;
+            max-width: 380px;
+            max-height: 440px;
+            overflow-y: auto;
             font-size: 14px;
         }
         .info-popup h4 {
@@ -59,27 +163,185 @@
             margin: 4px 0;
             color: #666;
         }
+        .info-basics {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #444;
+        }
+        .info-basics div + div {
+            margin-top: 4px;
+        }
+        .info-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .info-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            background-color: #eef2f7;
+            color: #2d4f64;
+        }
+        .info-chip.yes {
+            background-color: #d8f5e5;
+            color: #1f5d3a;
+        }
+        .info-chip.no {
+            opacity: 0.6;
+        }
+        .info-chip .icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+        .wiki-section {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e2e2;
+        }
+        .wiki-section h5 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #444;
+        }
+        .wiki-loading,
+        .wiki-error {
+            color: #888;
+            font-style: italic;
+        }
+        .wiki-summary {
+            margin: 6px 0;
+            color: #444;
+            line-height: 1.4;
+        }
+        .wiki-link {
+            display: inline-block;
+            margin-top: 6px;
+            font-weight: bold;
+            color: #1a5dab;
+            text-decoration: none;
+        }
+        .wiki-link:hover {
+            text-decoration: underline;
+        }
+        .wiki-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .wiki-photo {
+            flex: 0 1 110px;
+        }
+        .wiki-cover {
+            margin-top: 12px;
+        }
+        .wiki-cover img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            display: block;
+        }
+        .wiki-cover + .wiki-summary {
+            margin-top: 10px;
+        }
+        .wiki-photo img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+        .wiki-attribution {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #888;
+            line-height: 1.3;
+        }
+        .maplibregl-popup-close-button {
+            width: 32px;
+            height: 32px;
+            line-height: 30px;
+            font-size: 22px;
+            border-radius: 4px;
+            padding: 0;
+        }
+        @media (max-width: 600px) {
+            .map-overlay {
+                max-width: 220px;
+                padding: 10px;
+                font-size: 12px;
+            }
+            .map-overlay h3 {
+                font-size: 16px;
+            }
+            .legend-item {
+                font-size: 12px;
+            }
+            .info-popup {
+                max-width: 300px;
+                font-size: 13px;
+                max-height: 360px;
+            }
+            .info-chip {
+                font-size: 11px;
+                padding: 3px 7px;
+            }
+            .wiki-photo {
+                flex: 0 1 90px;
+            }
+            .legend-info-popup {
+                font-size: 12px;
+                padding: 12px;
+            }
+            .legend-info-button {
+                width: 26px;
+                height: 26px;
+                font-size: 14px;
+            }
+            .maplibregl-popup-close-button {
+                width: 30px;
+                height: 30px;
+                line-height: 28px;
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <div class="map-overlay">
-        <h3>Tree Species Color Map</h3>
+        <div class="legend-header">
+            <h3>Tree Species Color Map</h3>
+            <button type="button" class="legend-info-button" id="legend-info-button" aria-label="About this map" aria-expanded="false">i</button>
+        </div>
+        <div class="legend-info-popup hidden" id="legend-info-popup" role="dialog" aria-modal="false" aria-labelledby="legend-info-title">
+            <button type="button" class="legend-info-close" id="legend-info-close" aria-label="Close introduction">&times;</button>
+            <h4 id="legend-info-title">Explore Fall Color Trees</h4>
+            <p>This map highlights deciduous trees, evergreens, and ginkgo across Bay Area cities so you can scout neighborhoods for vibrant fall foliage.</p>
+            <p>The colors mirror the legend: rich greens for year-round foliage, golden hues for ginkgo, and warm reds and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
+            <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you recognize each tree in the real world.</p>
+        </div>
         <div class="legend-item">
-            <div class="legend-color" style="background-color: #2d5016;"></div>
+            <div class="legend-color" style="background: linear-gradient(90deg, #2d5016 0%, #2d5016 50%, #4caf50 50%, #4caf50 100%);"></div>
             <span>Evergreen Trees</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background-color: orange;"></div>
+            <div class="legend-color" style="background: linear-gradient(90deg, #ffa500 0%, #ffa500 50%, #ffcc66 50%, #ffcc66 100%);"></div>
             <span>Ginkgo Trees</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background-color: #cc0000;"></div>
+            <div class="legend-color" style="background: linear-gradient(90deg, #cc0000 0%, #cc0000 50%, #800080 50%, #800080 100%);"></div>
             <span>Trees with Fall Colors</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background-color: #8b4513;"></div>
-            <span>Deciduous Trees (Not known for fall colors)</span>
+            <div class="legend-color" style="background: linear-gradient(90deg, #8b4513 0%, #8b4513 50%, #2b2b2b 50%, #2b2b2b 100%);"></div>
+            <span>Deciduous Trees (less known for fall colors)</span>
         </div>
     </div>
 
@@ -119,6 +381,470 @@
             closeButton: true,
             closeOnClick: false
         });
+        function updatePopupMaxWidth() {
+            const maxWidth = window.innerWidth <= 600 ? 320 : 420;
+            popup.setMaxWidth(`${maxWidth}px`);
+        }
+        updatePopupMaxWidth();
+        window.addEventListener('resize', updatePopupMaxWidth);
+
+        const legendInfoButton = document.getElementById('legend-info-button');
+        const legendInfoPopup = document.getElementById('legend-info-popup');
+        const legendInfoClose = document.getElementById('legend-info-close');
+
+        function openLegendInfo() {
+            legendInfoPopup.classList.remove('hidden');
+            legendInfoButton.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeLegendInfo() {
+            legendInfoPopup.classList.add('hidden');
+            legendInfoButton.setAttribute('aria-expanded', 'false');
+            legendInfoButton.focus({ preventScroll: true });
+        }
+
+        function toggleLegendInfo() {
+            if (legendInfoPopup.classList.contains('hidden')) {
+                openLegendInfo();
+            } else {
+                closeLegendInfo();
+            }
+        }
+
+        legendInfoButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleLegendInfo();
+        });
+
+        legendInfoClose.addEventListener('click', (event) => {
+            event.stopPropagation();
+            closeLegendInfo();
+        });
+
+        document.addEventListener('click', (event) => {
+            if (legendInfoPopup.classList.contains('hidden')) {
+                return;
+            }
+            if (!legendInfoPopup.contains(event.target) && event.target !== legendInfoButton) {
+                legendInfoPopup.classList.add('hidden');
+                legendInfoButton.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !legendInfoPopup.classList.contains('hidden')) {
+                closeLegendInfo();
+            }
+        });
+
+        // Cache Wikipedia lookups per species to avoid repeated requests.
+        const speciesInfoCache = {};
+        const speciesRequestCache = {};
+        let currentSpeciesKey = null;
+
+        function escapeHtml(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatNameList(value) {
+            if (!value) {
+                return '';
+            }
+            let candidates = [];
+            if (Array.isArray(value)) {
+                candidates = value;
+            } else if (typeof value === 'string') {
+                const trimmed = value.trim();
+                if (!trimmed || trimmed.toLowerCase() === 'n/a') {
+                    return '';
+                }
+                if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('\"[') && trimmed.endsWith(']\"'))) {
+                    try {
+                        const parsed = JSON.parse(trimmed.replace(/^\"|\"$/g, ''));
+                        if (Array.isArray(parsed)) {
+                            candidates = parsed;
+                        } else {
+                            candidates = [parsed];
+                        }
+                    } catch (err) {
+                        candidates = trimmed.split(/[,;]+/);
+                    }
+                } else {
+                    candidates = trimmed.split(/[,;]+/);
+                }
+            } else {
+                candidates = [value];
+            }
+
+            const cleaned = candidates
+                .map((item) => {
+                    if (item === null || item === undefined) {
+                        return '';
+                    }
+                    const str = String(item).trim().replace(/^\"|\"$/g, '');
+                    if (!str || str.toLowerCase() === 'n/a') {
+                        return '';
+                    }
+                    return str;
+                })
+                .filter((item) => item.length > 0);
+
+            if (!cleaned.length) {
+                return '';
+            }
+
+            return Array.from(new Set(cleaned)).join(' · ');
+        }
+
+        function friendlyBoolean(value) {
+            if (typeof value === 'string') {
+                const normalized = value.trim().toLowerCase();
+                return (normalized === 'yes' || normalized === 'y' || normalized === 'true') ? 'Yes' : 'No';
+            }
+            return value ? 'Yes' : 'No';
+        }
+
+        function stripHtml(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            return String(value).replace(/<[^>]*>/g, '');
+        }
+
+        function normalizeSrcUrl(url) {
+            if (!url) {
+                return null;
+            }
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                return url;
+            }
+            if (url.startsWith('//')) {
+                return `https:${url}`;
+            }
+            return url;
+        }
+
+        function selectFromSrcset(srcset, preferredWidth = 360) {
+            if (!Array.isArray(srcset) || srcset.length === 0) {
+                return null;
+            }
+            const candidates = srcset
+                .map((entry) => {
+                    const normalizedUrl = normalizeSrcUrl(entry.src);
+                    if (!normalizedUrl) {
+                        return null;
+                    }
+                    const match = entry.src.match(/\/(\d+)px-/);
+                    const width = match ? parseInt(match[1], 10) : null;
+                    return {
+                        url: normalizedUrl,
+                        width: width || 0
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.width - b.width);
+            if (!candidates.length) {
+                return null;
+            }
+            const suitable = candidates.find((item) => item.width >= preferredWidth);
+            return suitable ? suitable.url : candidates[candidates.length - 1].url;
+        }
+
+        function selectFromSources(image, preferredWidth = 480) {
+            if (!image) {
+                return null;
+            }
+            const sources = Array.isArray(image.sources) ? image.sources.slice() : [];
+            if (!sources.length) {
+                const fallbackUrl = image.url || (image.fallback && image.fallback.url);
+                return normalizeSrcUrl(fallbackUrl);
+            }
+            const normalized = sources
+                .map((source) => ({
+                    url: normalizeSrcUrl(source.url),
+                    width: source.width || 0
+                }))
+                .filter((source) => !!source.url)
+                .sort((a, b) => a.width - b.width);
+            if (!normalized.length) {
+                const fallbackUrl = image.url || (image.fallback && image.fallback.url);
+                return normalizeSrcUrl(fallbackUrl);
+            }
+            const preferred = normalized.find((item) => item.width >= preferredWidth);
+            return preferred ? preferred.url : normalized[normalized.length - 1].url;
+        }
+
+        function buildPhotoEntry(item, speciesName) {
+            let src = null;
+            if (item.image) {
+                src = selectFromSources(item.image);
+            }
+            if (!src && item.srcset) {
+                src = selectFromSrcset(item.srcset);
+            }
+            if (!src && item.thumb) {
+                src = normalizeSrcUrl(item.thumb);
+            }
+            if (!src && item.file && item.file.urls) {
+                src = normalizeSrcUrl(item.file.urls['720'] || item.file.urls['640']);
+            }
+            if (!src) {
+                console.info('[Wikipedia] Media item skipped, no image url resolved:', speciesName, item.title);
+                return null;
+            }
+
+            const altText = item.caption && item.caption.text
+                ? item.caption.text
+                : item.title
+                    ? item.title.replace(/^File:/, '').replace(/_/g, ' ')
+                    : `Image of ${speciesName}`;
+
+            const creditHtml = item.credit && item.credit.html
+                ? item.credit.html
+                : item.credit && item.credit.text
+                    ? escapeHtml(item.credit.text)
+                    : `Image via Wikipedia (${escapeHtml(item.title || 'Unknown file')})`;
+
+            return {
+                src,
+                alt: altText,
+                attribution: creditHtml,
+                leadImage: !!item.leadImage
+            };
+        }
+
+        async function fetchWikipediaData(speciesName) {
+            const normalizedName = speciesName.toLowerCase();
+            const title = normalizedName.replace(/\s+/g, '_');
+            const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+            const mediaUrl = `https://en.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(title)}`;
+            const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(normalizedName)}&format=json&origin=*`;
+
+            try {
+                const [summaryResponse, mediaResponse] = await Promise.all([
+                    fetch(summaryUrl),
+                    fetch(mediaUrl)
+                ]);
+
+                if (!summaryResponse.ok) {
+                    console.info('[Wikipedia] Summary missing for species:', speciesName, 'status:', summaryResponse.status);
+                    const searchResponse = await fetch(searchUrl);
+                    if (!searchResponse.ok) {
+                        console.info('[Wikipedia] Search failed for species:', speciesName, 'status:', searchResponse.status);
+                        return {
+                            success: false,
+                            message: `No Wikipedia entry found for ${speciesName}.`
+                        };
+                    }
+                    const searchData = await searchResponse.json();
+                    const pages = searchData && searchData.query && Array.isArray(searchData.query.search)
+                        ? searchData.query.search
+                        : [];
+                    if (!pages.length) {
+                        console.info('[Wikipedia] Search returned no results for species:', speciesName);
+                        return {
+                            success: false,
+                            message: `No Wikipedia entry found for ${speciesName}.`
+                        };
+                    }
+                    const bestMatch = pages[0];
+                    const bestTitle = bestMatch && bestMatch.title ? bestMatch.title : normalizedName;
+                    console.info('[Wikipedia] Retrying with search result:', bestTitle);
+                    return fetchWikipediaData(bestTitle);
+                }
+
+                const summaryData = await summaryResponse.json();
+                let mediaData = null;
+                if (mediaResponse.ok) {
+                    mediaData = await mediaResponse.json();
+                } else {
+                    console.info('[Wikipedia] Media list missing for species:', speciesName, 'status:', mediaResponse.status);
+                }
+
+                const photos = [];
+                if (mediaData && Array.isArray(mediaData.items)) {
+                    for (const item of mediaData.items) {
+                        if (item.type !== 'image' && item.type !== 'drawing') {
+                            continue;
+                        }
+                        const photoEntry = buildPhotoEntry(item, speciesName);
+                        if (photoEntry) {
+                            photos.push(photoEntry);
+                        }
+                        if (photos.length >= 8) {
+                            break;
+                        }
+                    }
+                    if (photos.length === 0) {
+                        console.info('[Wikipedia] No usable images found for species:', speciesName);
+                    }
+                } else {
+                    console.info('[Wikipedia] Media list empty or invalid for species:', speciesName);
+                }
+
+                const rawDisplayTitle = summaryData.displaytitle || summaryData.title || speciesName;
+                const plainDisplayTitle = stripHtml(rawDisplayTitle) || speciesName;
+
+                return {
+                    success: true,
+                    data: {
+                        displayTitle: rawDisplayTitle,
+                        displayTitlePlain: plainDisplayTitle,
+                        extract: summaryData.extract || '',
+                        pageUrl: summaryData.content_urls && summaryData.content_urls.desktop
+                            ? summaryData.content_urls.desktop.page
+                            : summaryData.canonical_url || '',
+                        photos
+                    }
+                };
+            } catch (error) {
+                console.error('[Wikipedia] Fetch failed for species:', speciesName, error);
+                return {
+                    success: false,
+                    message: 'Wikipedia data unavailable.'
+                };
+            }
+        }
+
+        function buildWikipediaSection(speciesName, wikiEntry, isLoading) {
+            const escapedSpecies = escapeHtml(speciesName);
+            if (isLoading) {
+                return `
+                    <div class="wiki-section">
+                        <h5>Wikipedia</h5>
+                        <p class="wiki-loading">Loading Wikipedia details…</p>
+                    </div>
+                `;
+            }
+
+            if (!wikiEntry || !wikiEntry.success) {
+                const message = wikiEntry && wikiEntry.message
+                    ? escapeHtml(wikiEntry.message)
+                    : `No Wikipedia data available for ${escapedSpecies}.`;
+                return `
+                    <div class="wiki-section">
+                        <h5>Wikipedia</h5>
+                        <p class="wiki-error">${message}</p>
+                    </div>
+                `;
+            }
+
+            const { displayTitle, displayTitlePlain, extract, pageUrl, photos } = wikiEntry.data;
+            let coverPhotoHtml = '';
+            const photoGallery = Array.isArray(photos) ? photos.slice() : [];
+            if (photoGallery.length > 0) {
+                const leadPhotoIndex = photoGallery.findIndex((photo) => photo.leadImage);
+                if (leadPhotoIndex >= 0) {
+                    const [leadPhoto] = photoGallery.splice(leadPhotoIndex, 1);
+                    coverPhotoHtml = `
+                        <div class="wiki-cover">
+                            <img src="${escapeHtml(leadPhoto.src)}" alt="${escapeHtml(leadPhoto.alt)}" loading="lazy">
+                            <div class="wiki-attribution">${leadPhoto.attribution}</div>
+                        </div>
+                    `;
+                }
+            }
+            const summaryHtml = extract ? `<p class="wiki-summary">${escapeHtml(extract)}</p>` : '';
+            const linkHtml = pageUrl
+                ? `<a class="wiki-link" href="${escapeHtml(pageUrl)}" target="_blank" rel="noopener">View ${escapeHtml(displayTitlePlain || stripHtml(displayTitle) || speciesName)} on Wikipedia</a>`
+                : '';
+            let photosHtml = '';
+            if (photoGallery && photoGallery.length > 0) {
+                const photoItems = photoGallery.map((photo) => `
+                    <div class="wiki-photo">
+                        <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.alt)}" loading="lazy">
+                        <div class="wiki-attribution">${photo.attribution}</div>
+                    </div>
+                `).join('');
+                photosHtml = `
+                    <div class="wiki-photos">
+                        ${photoItems}
+                    </div>
+                `;
+            } else {
+                photosHtml = `<p class="wiki-error">No images available from Wikipedia.</p>`;
+            }
+
+            return `
+                <div class="wiki-section">
+                    <h5>Wikipedia</h5>
+                    ${coverPhotoHtml}
+                    ${summaryHtml}
+                    ${linkHtml}
+                    ${photosHtml}
+                </div>
+            `;
+        }
+
+        function buildPopupContent(properties, speciesName, wikiEntry, isLoading) {
+            const commonNamesText = formatNameList(properties.common_names);
+            const chineseNamesText = formatNameList(properties.chinese_common_names);
+            const deciduousValue = friendlyBoolean(properties.deciduous);
+            const fallColorsValue = friendlyBoolean(properties.fall_colors);
+            const flowersValue = friendlyBoolean(properties.beautiful_flowers);
+            const basicsParts = [];
+
+            const combinedNames = [commonNamesText, chineseNamesText].filter(Boolean).join(' · ');
+            if (combinedNames) {
+                basicsParts.push(`<div><strong>Common:</strong> ${escapeHtml(combinedNames)}</div>`);
+            }
+            const bloomingSeason = (properties.blooming_season || '').trim();
+            if (bloomingSeason && bloomingSeason.toLowerCase() !== 'n/a') {
+                basicsParts.push(`<div><strong>Blooming:</strong> ${escapeHtml(bloomingSeason)}</div>`);
+            }
+            const basics = basicsParts.join('');
+
+            const deciduousClass = deciduousValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
+            const fallColorClass = fallColorsValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
+            const flowersClass = flowersValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
+
+            return `
+                <div class="info-popup">
+                    <h4>${escapeHtml(speciesName)}</h4>
+                    <div class="info-basics">
+                        ${basics}
+                    </div>
+                    <div class="info-chips">
+                        <div class="${deciduousClass}" title="Deciduous">
+                            <span class="icon">&#127795;</span>
+                            <span>Deciduous ${deciduousValue}</span>
+                        </div>
+                        <div class="${fallColorClass}" title="Shows fall colors">
+                            <span class="icon">&#127809;</span>
+                            <span>Fall Colors ${fallColorsValue}</span>
+                        </div>
+                        <div class="${flowersClass}" title="Beautiful flowers">
+                            <span class="icon">&#127804;</span>
+                            <span>Flowers ${flowersValue}</span>
+                        </div>
+                    </div>
+                    ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
+                </div>
+            `;
+        }
+
+        function scrollPopupToTop() {
+            const popupElement = popup && popup.getElement ? popup.getElement() : null;
+            if (!popupElement) {
+                return;
+            }
+            const infoContainer = popupElement.querySelector('.info-popup');
+            if (infoContainer) {
+                infoContainer.scrollTop = 0;
+            }
+            const popupContent = popupElement.querySelector('.maplibregl-popup-content');
+            if (popupContent) {
+                popupContent.scrollTop = 0;
+            }
+        }
 
         // Load PMTiles (vector tiles) and detect correct source-layer from metadata
         map.on('load', function() {
@@ -152,10 +878,10 @@
                         source: 'trees',
                         'source-layer': layerId,
                         paint: {
-                            'circle-radius': 3,
+                            'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 3, 17, 8],
                             'circle-color': ['get', 'color'],
-                            'circle-stroke-width': 1,
-                            'circle-stroke-color': '#fff',
+                            'circle-stroke-width': 0,
+                            // 'circle-stroke-color': '#777',
                             'circle-opacity': 0.8
                         }
                     });
@@ -165,27 +891,42 @@
                     const properties = e.features[0].properties;
                     const coordinates = e.features[0].geometry.coordinates.slice();
 
-                    const commonNames = properties.common_names && properties.common_names.length > 0
-                        ? (Array.isArray(properties.common_names) ? properties.common_names.join(', ') : properties.common_names)
-                        : 'N/A';
-                    const chineseNames = properties.chinese_common_names && properties.chinese_common_names.length > 0
-                        ? (Array.isArray(properties.chinese_common_names) ? properties.chinese_common_names.join(', ') : properties.chinese_common_names)
-                        : 'N/A';
+                    const speciesName = properties.species || 'Unknown species';
+                    const speciesKey = speciesName.trim().toLowerCase();
+                    currentSpeciesKey = speciesKey;
 
-                    const popupContent = `
-                        <div class="info-popup">
-                            <h4>${properties.species}</h4>
-                            <p><strong>Common Names:</strong> ${commonNames}</p>
-                            ${chineseNames !== 'N/A' ? `<p><strong>Chinese Names:</strong> ${chineseNames}</p>` : ''}
-                            <p><strong>Deciduous:</strong> ${properties.deciduous ? 'Yes' : 'No'}</p>
-                            <p><strong>Fall Colors:</strong> ${properties.fall_colors ? 'Yes' : 'No'}</p>
-                            <p><strong>Beautiful Flowers:</strong> ${properties.beautiful_flowers ? 'Yes' : 'No'}</p>
-                            <p><strong>Blooming Season:</strong> ${properties.blooming_season || 'N/A'}</p>
-                            <p><strong>Explanation:</strong> ${properties.explanation || 'N/A'}</p>
-                        </div>
-                    `;
+                    const cachedEntry = speciesInfoCache[speciesKey];
+                    const isLoading = !cachedEntry;
 
-                    popup.setLngLat(coordinates).setHTML(popupContent).addTo(map);
+                    popup
+                        .setLngLat(coordinates)
+                        .setHTML(buildPopupContent(properties, speciesName, cachedEntry, isLoading))
+                        .addTo(map);
+                    scrollPopupToTop();
+
+                    if (cachedEntry) {
+                        return;
+                    }
+
+                    if (!speciesRequestCache[speciesKey]) {
+                        speciesRequestCache[speciesKey] = fetchWikipediaData(speciesName).then((result) => {
+                            speciesInfoCache[speciesKey] = result;
+                            delete speciesRequestCache[speciesKey];
+                            if (currentSpeciesKey === speciesKey) {
+                                popup.setHTML(buildPopupContent(properties, speciesName, result, false));
+                                scrollPopupToTop();
+                            }
+                            return result;
+                        });
+                    } else {
+                        speciesRequestCache[speciesKey].then((result) => {
+                            speciesInfoCache[speciesKey] = speciesInfoCache[speciesKey] || result;
+                            if (currentSpeciesKey === speciesKey) {
+                                popup.setHTML(buildPopupContent(properties, speciesName, speciesInfoCache[speciesKey], false));
+                                scrollPopupToTop();
+                            }
+                        });
+                    }
                 });
 
                 map.on('mouseenter', 'trees-points', function() {
