@@ -14,7 +14,6 @@ from tree_data import (
 # Define file paths for San Francisco data
 sf_raw_data_file = os.path.join(project_root, 'Street_Tree_List_20251103.csv')
 sf_summary_file = os.path.join(project_root, 'tree_summary_sf.json')
-sf_map_file = os.path.join(project_root, 'web/sf.html')
 sf_geojson_file = os.path.join(project_root, 'trees_sf.geojson')
 
 # --- Data Loading and Preparation ---

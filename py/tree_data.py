@@ -53,7 +53,7 @@ class TreeSpeciesMap:
         self.species_data = {}
 
     def add_species_by_list(self, species_list):
-        new_species = [s.lower() for s in species_list if s.lower() not in self.species_data and s.lower().replace(' ', '_') not in self.species_data]
+        new_species = [s.lower() for s in species_list if s and s.lower() not in self.species_data and s.lower().replace(' ', '_') not in self.species_data]
         for i in range(0, len(new_species), self.MAX_FETCH_BATCH):
             batch = new_species[i:i + self.MAX_FETCH_BATCH]
             batch_data = self._fetch_tree_info_batch(batch)
@@ -289,7 +289,7 @@ def load_shared_tree_info(additional_species=None):
     # If additional species are provided and not in the map, fetch them
     if additional_species:
         species_to_fetch = [s for s in additional_species 
-                          if s.lower() not in tree_map.species_data 
+                          if s and s.lower() not in tree_map.species_data 
                           and s.lower().replace(' ', '_') not in tree_map.species_data]
         if species_to_fetch:
             print(f"Fetching {len(species_to_fetch)} additional species...")
@@ -320,7 +320,7 @@ def get_shared_tree_map(additional_species=None):
     elif additional_species:
         # Check if any new species need to be fetched
         species_to_fetch = [s for s in additional_species 
-                          if s.lower() not in _tree_map_all_big.species_data 
+                          if s and s.lower() not in _tree_map_all_big.species_data 
                           and s.lower().replace(' ', '_') not in _tree_map_all_big.species_data]
         if species_to_fetch:
             print(f"Fetching {len(species_to_fetch)} additional species...")
@@ -360,6 +360,9 @@ def build_geojson(top_trees, tree_info_map):
             tree_info = tree_info_map.get(species.lower().replace(' ', '_'))
         if tree_info is None:
             print(f"No information found for {species}")
+            continue
+        if 'deciduous' not in tree_info:
+            print(f"No deciduous information found for {species}")
             continue
         is_deciduous = tree_info['deciduous']
         

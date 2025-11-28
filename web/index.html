@@ -1,22 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <title>Bay Area Fall Tree Map | Explore Colorful Streets & Species</title>
+    <title>Fall Color Map | Explore Colorful Streets & Species</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2d4f64">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive tree map for Palo Alto, San Jose, Cupertino, and nearby Bay Area cities. Discover deciduous trees with fall colors, evergreens, and ginkgo species with photos and species details.">
-    <meta name="keywords" content="Bay Area trees, fall colors map, Palo Alto trees, San Jose trees, Cupertino trees, urban forestry, deciduous trees, ginkgo, evergreen">
+    <meta name="description"
+        content="Interactive tree map for Palo Alto, San Jose, Cupertino, and nearby Bay Area cities. Discover deciduous trees with fall colors, evergreens, and ginkgo species with photos and species details.">
+    <meta name="keywords"
+        content="Bay Area trees, fall colors map, Palo Alto trees, San Jose trees, Cupertino trees, urban forestry, deciduous trees, ginkgo, evergreen">
     <meta name="author" content="Bay Area Tree Map Project">
     <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Bay Area Fall Tree Map | Explore Colorful Streets & Species">
-    <meta property="og:description" content="Explore vibrant fall foliage across Bay Area neighborhoods. Click any tree to see species details, photos, and seasonal highlights.">
+    <meta property="og:title" content="Fall Color Map | Explore Colorful Streets & Species">
+    <meta property="og:description"
+        content="Explore vibrant fall foliage across Bay Area neighborhoods. Click any tree to see species details, photos, and seasonal highlights.">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="en_US">
-    <meta property="og:site_name" content="Bay Area Fall Tree Map">
+    <meta property="og:site_name" content="Fall Color Map">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Bay Area Fall Tree Map">
-    <meta name="twitter:description" content="Browse Bay Area neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
+    <meta name="twitter:title" content="Fall Color Map">
+    <meta name="twitter:description"
+        content="Browse Bay Area neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <!-- PMTiles script left here for future use, but GeoJSON will be used below -->
@@ -25,7 +32,7 @@
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "name": "Bay Area Fall Tree Map",
+        "name": "Fall Color Map",
         "description": "Interactive map highlighting tree species across Bay Area neighborhoods, including deciduous trees with fall colors, ginkgo, and evergreens.",
         "keywords": [
             "Bay Area trees",
@@ -39,15 +46,26 @@
         ]
     }
     </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BYPBEWSN5C"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-BYPBEWSN5C');
+    </script>
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
         }
+
         #map {
             width: 100%;
             height: 100vh;
         }
+
         .map-overlay {
             position: absolute;
             top: 10px;
@@ -55,26 +73,38 @@
             background: white;
             padding: 15px;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             z-index: 1;
             max-width: 300px;
         }
+
         .map-overlay h3 {
             margin-top: 0;
             margin-bottom: 10px;
         }
+
         .legend-item {
             display: flex;
             align-items: center;
             margin-bottom: 5px;
         }
+
         .legend-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 8px;
         }
-        .legend-info-button {
+
+        .legend-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .legend-info-button,
+        .legend-copyright-button,
+        .legend-locate-button {
             width: 28px;
             height: 28px;
             border-radius: 50%;
@@ -88,11 +118,22 @@
             justify-content: center;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
+
+        .legend-copyright-button {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
         .legend-info-button:hover,
-        .legend-info-button:focus {
+        .legend-info-button:focus,
+        .legend-copyright-button:hover,
+        .legend-copyright-button:focus,
+        .legend-locate-button:hover,
+        .legend-locate-button:focus {
             background: #396a85;
             outline: none;
         }
+
         .legend-color {
             width: 20px;
             height: 20px;
@@ -102,7 +143,25 @@
             overflow: hidden;
             border-radius: 4px;
         }
-        .legend-info-popup {
+
+        .legend-link {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e2e2;
+            font-size: 13px;
+        }
+
+        .legend-link a {
+            color: #1a5dab;
+            text-decoration: none;
+        }
+
+        .legend-link a:hover {
+            text-decoration: underline;
+        }
+
+        .legend-info-popup,
+        .legend-copyright-popup {
             position: absolute;
             top: calc(100% + 12px);
             left: 0;
@@ -116,19 +175,45 @@
             border: 1px solid rgba(0, 0, 0, 0.08);
             z-index: 3;
         }
-        .legend-info-popup.hidden {
+
+        .legend-info-popup.hidden,
+        .legend-copyright-popup.hidden {
             display: none;
         }
-        .legend-info-popup h4 {
+
+        .legend-info-popup h4,
+        .legend-copyright-popup h4 {
             margin: 0 0 8px 0;
             font-size: 15px;
             color: #2d4f64;
         }
-        .legend-info-popup p {
+
+        .legend-info-popup p,
+        .legend-copyright-popup p {
             margin: 6px 0;
             color: #444;
         }
-        .legend-info-close {
+
+        .legend-copyright-popup ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .legend-copyright-popup li {
+            margin: 6px 0;
+        }
+
+        .legend-copyright-popup a {
+            color: #1a5dab;
+            text-decoration: none;
+        }
+
+        .legend-copyright-popup a:hover {
+            text-decoration: underline;
+        }
+
+        .legend-info-close,
+        .legend-copyright-close {
             position: absolute;
             top: 8px;
             right: 8px;
@@ -140,43 +225,53 @@
             line-height: 1;
             padding: 4px;
         }
+
         .legend-info-close:hover,
-        .legend-info-close:focus {
+        .legend-info-close:focus,
+        .legend-copyright-close:hover,
+        .legend-copyright-close:focus {
             color: #000;
             outline: none;
         }
+
         .info-popup {
             background: white;
             padding: 12px;
             border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             max-width: 380px;
             max-height: 440px;
             overflow-y: auto;
             font-size: 14px;
         }
+
         .info-popup h4 {
             margin: 0 0 8px 0;
             color: #333;
         }
+
         .info-popup p {
             margin: 4px 0;
             color: #666;
         }
+
         .info-basics {
             font-size: 13px;
             line-height: 1.4;
             color: #444;
         }
-        .info-basics div + div {
+
+        .info-basics div+div {
             margin-top: 4px;
         }
+
         .info-chips {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             margin-top: 8px;
         }
+
         .info-chip {
             display: flex;
             align-items: center;
@@ -187,22 +282,27 @@
             background-color: #eef2f7;
             color: #2d4f64;
         }
+
         .info-chip.yes {
             background-color: #d8f5e5;
             color: #1f5d3a;
         }
+
         .info-chip.no {
             opacity: 0.6;
         }
+
         .info-chip .icon {
             font-size: 14px;
             line-height: 1;
         }
+
         .wiki-section {
             margin-top: 12px;
             padding-top: 10px;
             border-top: 1px solid #e2e2e2;
         }
+
         .wiki-section h5 {
             margin: 0 0 8px 0;
             font-size: 13px;
@@ -210,16 +310,19 @@
             letter-spacing: 0.04em;
             color: #444;
         }
+
         .wiki-loading,
         .wiki-error {
             color: #888;
             font-style: italic;
         }
+
         .wiki-summary {
             margin: 6px 0;
             color: #444;
             line-height: 1.4;
         }
+
         .wiki-link {
             display: inline-block;
             margin-top: 6px;
@@ -227,42 +330,51 @@
             color: #1a5dab;
             text-decoration: none;
         }
+
         .wiki-link:hover {
             text-decoration: underline;
         }
+
         .wiki-photos {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 8px;
         }
+
         .wiki-photo {
             flex: 0 1 110px;
         }
+
         .wiki-cover {
             margin-top: 12px;
         }
+
         .wiki-cover img {
             width: 100%;
             height: auto;
             border-radius: 6px;
             display: block;
         }
-        .wiki-cover + .wiki-summary {
+
+        .wiki-cover+.wiki-summary {
             margin-top: 10px;
         }
+
         .wiki-photo img {
             width: 100%;
             height: auto;
             border-radius: 4px;
             display: block;
         }
+
         .wiki-attribution {
             margin-top: 4px;
             font-size: 11px;
             color: #888;
             line-height: 1.3;
         }
+
         .maplibregl-popup-close-button {
             width: 32px;
             height: 32px;
@@ -271,39 +383,59 @@
             border-radius: 4px;
             padding: 0;
         }
+
         @media (max-width: 600px) {
             .map-overlay {
                 max-width: 220px;
                 padding: 10px;
                 font-size: 12px;
             }
+
             .map-overlay h3 {
                 font-size: 16px;
             }
+
             .legend-item {
                 font-size: 12px;
             }
+
             .info-popup {
                 max-width: 300px;
                 font-size: 13px;
                 max-height: 360px;
             }
+
             .info-chip {
                 font-size: 11px;
                 padding: 3px 7px;
             }
+
             .wiki-photo {
                 flex: 0 1 90px;
             }
+
             .legend-info-popup {
                 font-size: 12px;
                 padding: 12px;
             }
-            .legend-info-button {
+
+            .legend-info-button,
+            .legend-copyright-button,
+            .legend-locate-button {
                 width: 26px;
                 height: 26px;
                 font-size: 14px;
             }
+
+            .legend-copyright-button {
+                font-size: 11px;
+            }
+
+            .legend-copyright-popup {
+                font-size: 12px;
+                padding: 12px;
+            }
+
             .maplibregl-popup-close-button {
                 width: 30px;
                 height: 30px;
@@ -313,35 +445,77 @@
         }
     </style>
 </head>
+
 <body>
     <div id="map"></div>
     <div class="map-overlay">
         <div class="legend-header">
             <h3>Tree Species Color Map</h3>
-            <button type="button" class="legend-info-button" id="legend-info-button" aria-label="About this map" aria-expanded="false">i</button>
+            <div class="legend-buttons">
+                <button type="button" class="legend-locate-button" id="legend-locate-button" aria-label="Locate me">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                    </svg>
+                </button>
+                <button type="button" class="legend-info-button" id="legend-info-button" aria-label="About this map"
+                    aria-expanded="false">i</button>
+                <button type="button" class="legend-copyright-button" id="legend-copyright-button"
+                    aria-label="Copyright and data sources" aria-expanded="false">©</button>
+            </div>
         </div>
-        <div class="legend-info-popup hidden" id="legend-info-popup" role="dialog" aria-modal="false" aria-labelledby="legend-info-title">
-            <button type="button" class="legend-info-close" id="legend-info-close" aria-label="Close introduction">&times;</button>
+        <div class="legend-info-popup hidden" id="legend-info-popup" role="dialog" aria-modal="false"
+            aria-labelledby="legend-info-title">
+            <button type="button" class="legend-info-close" id="legend-info-close"
+                aria-label="Close introduction">&times;</button>
             <h4 id="legend-info-title">Explore Fall Color Trees</h4>
-            <p>This map highlights deciduous trees, evergreens, and ginkgo across Bay Area cities so you can scout neighborhoods for vibrant fall foliage.</p>
-            <p>The colors mirror the legend: rich greens for year-round foliage, golden hues for ginkgo, and warm reds and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
-            <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you recognize each tree in the real world.</p>
+            <p>This map highlights deciduous trees, evergreens, and ginkgo across Bay Area cities so you can scout
+                neighborhoods for vibrant fall foliage.</p>
+            <p>The colors mirror the legend: rich greens for year-round foliage, golden hues for ginkgo, and warm reds
+                and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
+            <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you
+                recognize each tree in the real world.</p>
+        </div>
+        <div class="legend-copyright-popup hidden" id="legend-copyright-popup" role="dialog" aria-modal="false"
+            aria-labelledby="legend-copyright-title">
+            <button type="button" class="legend-copyright-close" id="legend-copyright-close"
+                aria-label="Close copyright">&times;</button>
+            <h4 id="legend-copyright-title">Copyright & Data Sources</h4>
+            <p>All tree data is from public tree datasets. Species information is annotated using AI.</p>
+            <p><strong>Source Data:</strong></p>
+            <ul>
+                <li><a href="https://geodata.lib.berkeley.edu/catalog/berkeley-s7gq2s" target="_blank"
+                        rel="noopener">Berkeley</a> - City Trees, Berkeley, California, 2013</li>
+                <li><a href="https://data.oaklandca.gov/Environmental/Oakland-Street-Trees/4jcx-enxf/" target="_blank"
+                        rel="noopener">Oakland</a> - Oakland Street Trees</li>
+                <li><a href="https://data.sanjoseca.gov/dataset/street-tree" target="_blank" rel="noopener">San Jose</a>
+                    - Street Tree Dataset</li>
+                <li><a href="https://services6.arcgis.com/evmyRZRrsopdeog7/arcgis/rest/services/TreeData/FeatureServer/0"
+                        target="_blank" rel="noopener">Palo Alto</a> - Tree Data Feature Service</li>
+            </ul>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background: linear-gradient(90deg, #2d5016 0%, #2d5016 50%, #4caf50 50%, #4caf50 100%);"></div>
+            <div class="legend-color"
+                style="background: linear-gradient(90deg, #2d5016 0%, #2d5016 50%, #4caf50 50%, #4caf50 100%);"></div>
             <span>Evergreen Trees</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background: linear-gradient(90deg, #ffa500 0%, #ffa500 50%, #ffcc66 50%, #ffcc66 100%);"></div>
+            <div class="legend-color"
+                style="background: linear-gradient(90deg, #ffa500 0%, #ffa500 50%, #ffcc66 50%, #ffcc66 100%);"></div>
             <span>Ginkgo Trees</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background: linear-gradient(90deg, #cc0000 0%, #cc0000 50%, #800080 50%, #800080 100%);"></div>
+            <div class="legend-color"
+                style="background: linear-gradient(90deg, #cc0000 0%, #cc0000 50%, #800080 50%, #800080 100%);"></div>
             <span>Trees with Fall Colors</span>
         </div>
         <div class="legend-item">
-            <div class="legend-color" style="background: linear-gradient(90deg, #8b4513 0%, #8b4513 50%, #2b2b2b 50%, #2b2b2b 100%);"></div>
-            <span>Deciduous Trees (less known for fall colors)</span>
+            <div class="legend-color"
+                style="background: linear-gradient(90deg, #8b4513 0%, #8b4513 50%, #2b2b2b 50%, #2b2b2b 100%);"></div>
+            <span>Other Deciduous Trees (less known for fall colors)</span>
+        </div>
+        <div class="legend-link">
+            <a href="https://botaniq.cc" target="_blank" rel="noopener">botaniq.cc</a>
         </div>
     </div>
 
@@ -391,6 +565,59 @@
         const legendInfoButton = document.getElementById('legend-info-button');
         const legendInfoPopup = document.getElementById('legend-info-popup');
         const legendInfoClose = document.getElementById('legend-info-close');
+        const legendCopyrightButton = document.getElementById('legend-copyright-button');
+        const legendCopyrightPopup = document.getElementById('legend-copyright-popup');
+        const legendCopyrightClose = document.getElementById('legend-copyright-close');
+        const legendLocateButton = document.getElementById('legend-locate-button');
+
+        // Add user location marker
+        const userLocationEl = document.createElement('div');
+        userLocationEl.className = 'user-location-marker';
+        userLocationEl.style.width = '16px';
+        userLocationEl.style.height = '16px';
+        userLocationEl.style.backgroundColor = '#4285F4';
+        userLocationEl.style.border = '2px solid white';
+        userLocationEl.style.borderRadius = '50%';
+        userLocationEl.style.boxShadow = '0 0 5px rgba(0,0,0,0.3)';
+        const userLocationMarker = new maplibregl.Marker({ element: userLocationEl });
+
+        legendLocateButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser');
+                return;
+            }
+
+            legendLocateButton.classList.add('loading'); // Optional: Add loading state style if desired
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+
+                // Update marker position
+                userLocationMarker.setLngLat([longitude, latitude]).addTo(map);
+
+                // Calculate zoom level
+                const currentZoom = map.getZoom();
+                const targetZoom = Math.max(12, currentZoom);
+
+                // Fly to location
+                map.flyTo({
+                    center: [longitude, latitude],
+                    zoom: targetZoom,
+                    essential: true
+                });
+
+                legendLocateButton.classList.remove('loading');
+            }, (error) => {
+                console.error('Error getting location:', error);
+                let msg = 'Unable to retrieve your location';
+                if (error.code === 1) msg = 'Location permission denied';
+                else if (error.code === 2) msg = 'Location unavailable';
+                else if (error.code === 3) msg = 'Location request timed out';
+                alert(msg);
+                legendLocateButton.classList.remove('loading');
+            });
+        });
 
         function openLegendInfo() {
             legendInfoPopup.classList.remove('hidden');
@@ -406,8 +633,31 @@
         function toggleLegendInfo() {
             if (legendInfoPopup.classList.contains('hidden')) {
                 openLegendInfo();
+                // Close copyright popup if open
+                closeLegendCopyright();
             } else {
                 closeLegendInfo();
+            }
+        }
+
+        function openLegendCopyright() {
+            legendCopyrightPopup.classList.remove('hidden');
+            legendCopyrightButton.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeLegendCopyright() {
+            legendCopyrightPopup.classList.add('hidden');
+            legendCopyrightButton.setAttribute('aria-expanded', 'false');
+            legendCopyrightButton.focus({ preventScroll: true });
+        }
+
+        function toggleLegendCopyright() {
+            if (legendCopyrightPopup.classList.contains('hidden')) {
+                openLegendCopyright();
+                // Close info popup if open
+                closeLegendInfo();
+            } else {
+                closeLegendCopyright();
             }
         }
 
@@ -421,13 +671,28 @@
             closeLegendInfo();
         });
 
+        legendCopyrightButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleLegendCopyright();
+        });
+
+        legendCopyrightClose.addEventListener('click', (event) => {
+            event.stopPropagation();
+            closeLegendCopyright();
+        });
+
         document.addEventListener('click', (event) => {
-            if (legendInfoPopup.classList.contains('hidden')) {
-                return;
+            if (!legendInfoPopup.classList.contains('hidden')) {
+                if (!legendInfoPopup.contains(event.target) && event.target !== legendInfoButton) {
+                    legendInfoPopup.classList.add('hidden');
+                    legendInfoButton.setAttribute('aria-expanded', 'false');
+                }
             }
-            if (!legendInfoPopup.contains(event.target) && event.target !== legendInfoButton) {
-                legendInfoPopup.classList.add('hidden');
-                legendInfoButton.setAttribute('aria-expanded', 'false');
+            if (!legendCopyrightPopup.classList.contains('hidden')) {
+                if (!legendCopyrightPopup.contains(event.target) && event.target !== legendCopyrightButton) {
+                    legendCopyrightPopup.classList.add('hidden');
+                    legendCopyrightButton.setAttribute('aria-expanded', 'false');
+                }
             }
         });
 
@@ -847,7 +1112,7 @@
         }
 
         // Load PMTiles (vector tiles) and detect correct source-layer from metadata
-        map.on('load', function() {
+        map.on('load', function () {
             const protocol = new pmtiles.Protocol();
             maplibregl.addProtocol('pmtiles', protocol.tile);
 
@@ -887,7 +1152,7 @@
                     });
                 }
 
-                map.on('click', 'trees-points', function(e) {
+                map.on('click', 'trees-points', function (e) {
                     const properties = e.features[0].properties;
                     const coordinates = e.features[0].geometry.coordinates.slice();
 
@@ -929,10 +1194,10 @@
                     }
                 });
 
-                map.on('mouseenter', 'trees-points', function() {
+                map.on('mouseenter', 'trees-points', function () {
                     map.getCanvas().style.cursor = 'pointer';
                 });
-                map.on('mouseleave', 'trees-points', function() {
+                map.on('mouseleave', 'trees-points', function () {
                     map.getCanvas().style.cursor = '';
                 });
             }).catch((err) => {
@@ -943,11 +1208,24 @@
 
         // Add navigation controls
         map.addControl(new maplibregl.NavigationControl());
-        
+
         // Add attribution (OpenStreetMap requires attribution)
         map.addControl(new maplibregl.AttributionControl({
             compact: true
         }));
     </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, (err) => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
 </body>
+
 </html>

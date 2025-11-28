@@ -9,7 +9,6 @@ from tree_data import group_by_specifies, export_groups_as_json, build_geojson, 
 
 san_jose_raw_data_file = './Street_Tree_San_Jose.csv'
 san_jose_summary_file = './tree_summary_san_jose.json'
-san_jose_map_file = './web/san_jose.html'
 san_jose_geojson_file = os.path.join(project_root, 'trees_san_jose.geojson')
 
 # --- Function Definitions (assuming these are defined elsewhere or in a preceding cell) ---
@@ -68,10 +67,6 @@ if not sj_pd.empty:
       with open(san_jose_geojson_file, 'w') as f:
           json.dump(geojson_data_sj, f, indent=2)
       print(f"San Jose GeoJSON saved to {san_jose_geojson_file}")
-      # --- Build Map (disabled by default) ---
-      # m = build_map(groups[:80], tree_map_all_big.species_data, center_lat_lng, zoom_level)
-      # m.save(san_jose_map_file)
-      # print(f"Map saved to {san_jose_map_file}")
     else:
       print("Could not determine map center and zoom level from data.")
 
