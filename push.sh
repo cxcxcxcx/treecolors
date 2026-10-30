@@ -15,6 +15,8 @@ fi
 
 NEW_VERSION="tree-map-v$(date +%Y%m%d-%H%M%S)"
 sed -i "s/const CACHE_NAME = .*/const CACHE_NAME = '$NEW_VERSION';/" web/sw.js
+# Also change the SW registration URL so a stale CDN copy is never reused.
+sed -i "s/const SW_QUERY = '[^']*';/const SW_QUERY = '$NEW_VERSION';/" web/index.html
 echo "Updated sw.js cache to $NEW_VERSION"
 
 rsync -avz --delete web/ "$DEPLOY_HOST:$DEPLOY_PATH"
