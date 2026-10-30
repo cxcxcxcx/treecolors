@@ -751,7 +751,7 @@
             <span>Other Deciduous Trees (less known for fall colors)</span>
         </div>
         <div class="legend-link">
-            <a href="https://treecolors.botanisense.app/" target="_blank" rel="noopener">treecolors.botanisense.app</a>
+            <a href="https://botanisense.app/" target="_blank" rel="noopener">BotaniSense</a>
         </div>
     </div>
 
@@ -1724,7 +1724,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261030-060258';
+                const SW_QUERY = 'tree-map-v20261030-061450';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
