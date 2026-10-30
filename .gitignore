@@ -7,7 +7,9 @@ data/output/
 data/*.csv
 py/data/
 web/trees.pmtiles
+web/analytics.js
 web.tar.gz
+.deploy.env
 TreeData_PaloAlto_all.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,macos

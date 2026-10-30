@@ -62,9 +62,7 @@ class TreeSpeciesMap:
     def _fetch_tree_info_batch(self, species_batch):
       print('fetching', species_batch)
       from openai import OpenAI
-      # NOTE: Make sure you have set the OPENAI_API_KEY environment variable
-      # or replace 'sk-proj-...' with your actual API key
-      # os.environ['OPENAI_API_KEY'] = 'sk-proj-REVOKED'
+      # Set OPENAI_API_KEY in the environment before running enrichment.
       client = OpenAI()
       response = client.chat.completions.create(
         # model="gpt-4o-mini",

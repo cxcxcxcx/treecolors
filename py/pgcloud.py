@@ -27,8 +27,9 @@ SUMMARY_DIR = os.path.join(OUTPUT_DIR, "summary")
 for d in [RAW_DIR, OUTPUT_DIR, GEOJSON_DIR, SUMMARY_DIR]:
     os.makedirs(d, exist_ok=True)
 
-# Cookie for authentication
-COOKIE = "PHPSESSID=llf977tiukrjghiu799d1i6p9c; _ga=GA1.1.1170743925.1764087010; _ga_NEXVLPG3X9=GS2.1.s1764342627$o3$g1$t1764342639$j48$l0$h0"
+# Session cookie for pg-cloud.com.  Never commit a real cookie.
+# Export it before running:  export PGCLOUD_COOKIE='PHPSESSID=...'
+COOKIE = os.environ.get("PGCLOUD_COOKIE", "")
 
 def generate_request_id():
     """Generates a random hex string for uniqueRequestID."""
@@ -181,6 +182,11 @@ def get_species_mapping(folder_name):
     Step 1.5: Fetch species info to map species IDs to common names.
     Returns a dictionary {species_id: species_common_name}.
     """
+    if not COOKIE:
+        raise SystemExit(
+            "PGCLOUD_COOKIE is not set. Export a pg-cloud.com session cookie "
+            "before running this legacy scraper."
+        )
     print(f"Fetching species info for folder '{folder_name}'...")
     
     HEADERS = {
