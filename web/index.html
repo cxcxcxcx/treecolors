@@ -125,7 +125,8 @@
 
         .legend-info-button,
         .legend-copyright-button,
-        .legend-locate-button {
+        .legend-locate-button,
+        .legend-install-button {
             width: 28px;
             height: 28px;
             border-radius: 50%;
@@ -150,7 +151,9 @@
         .legend-copyright-button:hover,
         .legend-copyright-button:focus,
         .legend-locate-button:hover,
-        .legend-locate-button:focus {
+        .legend-locate-button:focus,
+        .legend-install-button:hover,
+        .legend-install-button:focus {
             background: #396a85;
             outline: none;
         }
@@ -632,6 +635,15 @@
         <div class="legend-header">
             <h3>Tree Species Color Map</h3>
             <div class="legend-buttons">
+                <button type="button" class="legend-install-button hidden" id="legend-install-button"
+                    aria-label="Install this map as an app" title="Install app">
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2"
+                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3v12"></path>
+                        <path d="m7 10 5 5 5-5"></path>
+                        <path d="M5 21h14"></path>
+                    </svg>
+                </button>
                 <button type="button" class="legend-locate-button" id="legend-locate-button" aria-label="Locate me">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -839,6 +851,28 @@
             event.stopPropagation();
             locateUser(false);
         });
+        let deferredInstallPrompt = null;
+        const installButton = document.getElementById('legend-install-button');
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            installButton.classList.remove('hidden');
+        });
+        installButton.addEventListener('click', async () => {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            installButton.classList.add('hidden');
+        });
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            installButton.classList.add('hidden');
+        });
+        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+            installButton.classList.add('hidden');
+        }
+
 
         function openLegendInfo() {
             legendInfoPopup.classList.remove('hidden');
@@ -1690,7 +1724,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261030-060119';
+                const SW_QUERY = 'tree-map-v20261030-060258';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
