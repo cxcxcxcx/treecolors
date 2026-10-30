@@ -11771,20 +11771,6 @@
   ],
   "explanation": "Carrotwood is an evergreen tree native to Australia, recognized for its attractive, leathery leaves and its orange-colored wood. It produces small, inconspicuous flowers but can produce an abundance of seeds that can spread in the environment."
  },
- "willow oak": {
-  "deciduous": true,
-  "fall_colors": true,
-  "beautiful_flowers": false,
-  "blooming_season": "Spring",
-  "chinese_common_names": [
-   "柳橡树"
-  ],
-  "common_names": [
-   "Willow Oak",
-   "Pin Oak"
-  ],
-  "explanation": "The Willow Oak is a member of the red oak group native to eastern and central United States. It has long, narrow leaves similar to willows and provides a dense shade and attractive autumn coloration."
- },
  "black tartarian cherry": {
   "deciduous": true,
   "fall_colors": false,
@@ -19926,10 +19912,10 @@
    "柳叶栎"
   ],
   "common_names": [
-   "Willow Oak",
-   "QUPE"
+   "QUPE",
+   "Willow Oak"
   ],
-  "explanation": "Quercus phellos is a species of oak that grows primarily in the southeastern United States. It is known for its willow-like leaves. The tree is deciduous and does not typically have notable fall colors. Its flowers are not particularly showy."
+  "explanation": "Quercus phellos (willow oak) is a deciduous oak with narrow willow-like leaves. Its autumn foliage is usually muted yellow to golden-bronze or russet, not the vivid red associated with maples, so the map groups it with other deciduous trees."
  },
  "acer cappadocicum": {
   "deciduous": true,
