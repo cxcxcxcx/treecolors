@@ -5,6 +5,8 @@ const ASSETS_TO_CACHE = [
     './favicon.ico',
     './icon-192.png',
     './icon-512.png',
+    './species_stats.json',
+    './sources.json',
     'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js',
     'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css',
     'https://unpkg.com/pmtiles@3.1.0/dist/pmtiles.js'

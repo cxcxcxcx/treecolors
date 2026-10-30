@@ -21,6 +21,7 @@ from .enrich import enrich
 from .export import process_city
 from .species import load_resolver
 from .sources import fetch_city
+from .web_assets import build_web_assets
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -70,11 +71,17 @@ def cmd_all(args: argparse.Namespace) -> int:
     resolver = load_resolver()
     for city in cities:
         process_city(city, resolver)
+    build_web_assets()
     return 0
 
 
 def cmd_enrich(args: argparse.Namespace) -> int:
     enrich(_select_cities(args), dry_run=args.dry_run)
+    return 0
+
+
+def cmd_web_assets(_: argparse.Namespace) -> int:
+    build_web_assets()
     return 0
 
 
@@ -107,6 +114,11 @@ def build_parser() -> argparse.ArgumentParser:
     enrich_parser.add_argument("--all", action="store_true", help="All configured cities")
     enrich_parser.add_argument("--dry-run", action="store_true", help="List unresolved names only")
     enrich_parser.set_defaults(func=cmd_enrich)
+
+    web_parser = subparsers.add_parser(
+        "web-assets", help="Generate species_stats.json and sources.json for the frontend"
+    )
+    web_parser.set_defaults(func=cmd_web_assets)
 
     tiles_parser = subparsers.add_parser("tiles", help="Build one PMTiles file from all GeoJSON")
     tiles_parser.set_defaults(func=cmd_tiles)

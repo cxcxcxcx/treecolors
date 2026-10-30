@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://treecolors.botanisense.app/sitemap.xml

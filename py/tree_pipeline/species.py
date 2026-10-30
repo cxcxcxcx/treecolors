@@ -36,6 +36,10 @@ _INVALID_PREFIXES = (
     "planting site",
     "wooded area",
     "private tree",
+    "empty pit",
+    "scheduled planting",
+    "tree requested",
+    "rescon",
     "_work",
     "n/a",
     "n a",
@@ -57,7 +61,7 @@ _INVALID_EXACT = {
     "n a",
 }
 
-_QUOTE_RE = re.compile(r"[\"'‘’“”][^\"'‘’“”]*[\"'‘’“”]")
+_QUOTE_RE = re.compile(r"[\"'‘’“”`][^\"'‘’“”`]*[\"'‘’“”`]")
 _PAREN_RE = re.compile(r"\([^)]*\)")
 _BRACKET_RE = re.compile(r"\[[^\]]*\]")
 _SPACE_RE = re.compile(r"\s+")
@@ -72,6 +76,7 @@ def clean_name(raw: str) -> str:
     value = str(raw).replace("\xa0", " ").replace("×", "x").strip()
     value = value.replace("–", "-").replace("—", "-")
     value = _PAREN_RE.sub(" ", value)
+    value = re.sub(r"\([^)]*$", " ", value)
     value = _BRACKET_RE.sub(" ", value)
     value = _QUOTE_RE.sub(" ", value)
     if " - " in value:

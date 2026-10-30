@@ -48,6 +48,7 @@ def _read_city_records(city: CitySpec) -> list[dict[str, Any]]:
                 record = json.loads(line)
                 record.setdefault("city", source.fixed_city or city.name)
                 record["_source"] = source.slug
+                record.setdefault("source_key", f"{city.slug}:{source.slug}")
                 records.append(record)
     return records
 
@@ -69,6 +70,7 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
     source_counts: Counter[str] = Counter()
     color_counts: Counter[str] = Counter()
     species_counts: Counter[str] = Counter()
+    species_colors: dict[str, tuple[str, str]] = {}
     kept: list[dict[str, Any]] = []
     deduped = 0
     no_geometry = 0
@@ -92,7 +94,25 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
         if is_invalid(raw_species):
             invalid[raw_species] += 1
             continue
-        resolution = resolver.resolve(raw_species)
+        def try_resolve(value: str):
+            if not value:
+                return None
+            hit = resolver.resolve(value)
+            if hit is not None:
+                return hit
+            if "," in value:
+                first, second = value.split(",", 1)
+                inverted = f"{second.strip()} {first.strip()}"
+                return resolver.resolve(inverted)
+            return None
+
+        resolution = try_resolve(raw_species)
+        # Some publishers put a species code in the main field and the common
+        # name in a second field (e.g. Mississauga's BOTNAME/BOTDESC).  Fall
+        # back to the common name before declaring the row unresolved.
+        common_species = str(record.get("common") or "").strip()
+        if resolution is None and common_species and common_species != raw_species:
+            resolution = try_resolve(common_species)
         if resolution is None or "deciduous" not in resolution.info:
             missing[raw_species] += 1
             continue
@@ -107,6 +127,7 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
         color_range = _color_range(resolution.key, info)
         color = deterministic_color(resolution.key, color_range=color_range)
         species_counts[resolution.display] += 1
+        species_colors.setdefault(resolution.display, (color, color_range))
         color_counts[color_range] += 1
 
         kept.append(
@@ -116,6 +137,7 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
                 "species_key": resolution.key,
                 "species": resolution.display,
                 "city": record.get("city") or city.name,
+                "source_key": record.get("source_key") or f"{city.slug}:unknown",
                 "color": color,
                 "color_range": color_range,
                 "deciduous": bool(info.get("deciduous")),
@@ -138,6 +160,7 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
             "properties": {
                 "species": item["species"],
                 "city": item["city"],
+                "source_key": item["source_key"],
                 "color": item["color"],
                 "color_range": item["color_range"],
                 "deciduous": item["deciduous"],
@@ -172,12 +195,16 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
     with summary_path.open("w", encoding="utf-8") as handle:
         json.dump(summary_list, handle, ensure_ascii=False, separators=(",", ":"))
 
-    bbox = {
-        "west": min(item["lng"] for item in kept),
-        "south": min(item["lat"] for item in kept),
-        "east": max(item["lng"] for item in kept),
-        "north": max(item["lat"] for item in kept),
-    }
+    bbox = (
+        {
+            "west": min(item["lng"] for item in kept),
+            "south": min(item["lat"] for item in kept),
+            "east": max(item["lng"] for item in kept),
+            "north": max(item["lat"] for item in kept),
+        }
+        if kept
+        else None
+    )
     qa = {
         "city": city.name,
         "slug": city.slug,
@@ -194,6 +221,15 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
         "missing_top": missing.most_common(30),
         "species_count": len(species_counts),
         "species_top": species_counts.most_common(30),
+        "species": [
+            {
+                "species": name,
+                "count": count,
+                "color": species_colors.get(name, ("#888888", "green"))[0],
+                "color_range": species_colors.get(name, ("#888888", "green"))[1],
+            }
+            for name, count in species_counts.most_common()
+        ],
         "color_counts": dict(color_counts),
         "bbox": bbox,
         "geojson": str(geojson_path.relative_to(PROJECT_ROOT)),

@@ -16,27 +16,41 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class SourceSpec:
-    """One ArcGIS REST tree layer (or another future adapter)."""
+    """One public tree inventory source.
+
+    ``kind`` selects the adapter: ArcGIS REST, Socrata, or CSV.
+    """
 
     slug: str
     name: str
     url: str
+    kind: str = "arcgis"  # arcgis | socrata | csv
     where: str = "1=1"
     out_fields: tuple[str, ...] = ()
-    # Ordered candidates for the scientific/species name.  The first non-empty
-    # value wins; later fields are fallbacks.
+    # Ordered candidates for the scientific/species name.
     species_fields: tuple[str, ...] = ()
+    # Optional concatenation, e.g. Calgary's genus + species.
+    species_concat: tuple[str, ...] = ()
+    species_separator: str = " "
     common_fields: tuple[str, ...] = ()
-    # If set, the layer's coded-value domain is used to turn a common-name code
-    # into a scientific name.  This is how Montgomery's ITEM field works.
+    # If set, the ArcGIS coded-value domain turns a common-name code into a
+    # scientific name (Montgomery's ITEM field).
     domain_field: str | None = None
     id_field: str = "OBJECTID"
     page_size: int = 2000
-    # "Oak, Willow" -> "Willow Oak" for Arlington-style common names.
+    # "Oak, Willow" -> "Willow Oak".
     invert_comma: bool = False
-    # "ACER RUBRUM - RED MAPLE" -> "ACER RUBRUM" for Philadelphia.
+    # "ACER RUBRUM - RED MAPLE" -> "ACER RUBRUM".
     split_dash: bool = False
+    # Socrata / CSV coordinate fields.
+    lat_field: str | None = None
+    lng_field: str | None = None
+    # Socrata ``point`` object or CSV JSON geometry column.
+    point_field: str | None = None
+    delimiter: str = ","
+    encoding: str = "utf-8-sig"
     fixed_city: str | None = None
+    homepage: str = ""
     notes: str = ""
 
 
@@ -50,9 +64,7 @@ class CitySpec:
     attribution: str = ""
 
 
-# --- Washington, DC ---------------------------------------------------------
-# DDOT UFA street trees are the authoritative public street-tree inventory.
-# NPS Tidal Basin cherry trees are federal trees and do not overlap UFA.
+# --- Existing East Coast coverage ------------------------------------------
 WASHINGTON_DC = CitySpec(
     slug="washington_dc",
     name="Washington, DC",
@@ -63,15 +75,12 @@ WASHINGTON_DC = CitySpec(
             slug="ufa_street_trees",
             name="DDOT Urban Forestry Street Trees",
             url="https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Urban_Tree_Canopy/MapServer/23",
-            # Keep the server-side filter simple: some city WAFs reject
-            # multi-clause SQL with IS NOT NULL / empty-string comparisons.
-            # Placeholder names are filtered in Python by the species resolver.
             where="RETIREDDT IS NULL",
             out_fields=("SCI_NM", "CMMN_NM", "OBJECTID"),
             species_fields=("SCI_NM", "CMMN_NM"),
             common_fields=("CMMN_NM",),
             fixed_city="Washington, DC",
-            notes="223k rows total; retired trees and placeholder names filtered.",
+            homepage="https://opendata.dc.gov/datasets/urban-forestry-street-trees",
         ),
         SourceSpec(
             slug="nps_cherry_trees",
@@ -84,16 +93,12 @@ WASHINGTON_DC = CitySpec(
             species_fields=("SCI_NM", "CMMN_NM"),
             common_fields=("CMMN_NM",),
             fixed_city="Washington, DC",
-            notes="3.75k federal cherry trees around the Tidal Basin/National Mall.",
+            homepage="https://www.nps.gov/subjects/cherryblossom/index.htm",
         ),
     ),
     attribution="DC Open Data / DDOT UFA; National Park Service",
 )
 
-
-# --- Arlington County, VA ---------------------------------------------------
-# County inventory, treated as a city-equivalent area.  No scientific-name
-# column or domain exists, so the species resolver uses common-name aliases.
 ARLINGTON_VA = CitySpec(
     slug="arlington_va",
     name="Arlington County, VA",
@@ -113,16 +118,12 @@ ARLINGTON_VA = CitySpec(
             common_fields=("CommonName",),
             invert_comma=True,
             fixed_city="Arlington, VA",
-            notes="Common names only; reverse alias lookup is used.",
+            homepage="https://gisdata-arlgis.opendata.arcgis.com/",
         ),
     ),
     attribution="Arlington County GIS Open Data",
 )
 
-
-# --- Montgomery County, MD --------------------------------------------------
-# MCDOT street trees + Montgomery Parks + city-level supplements for
-# Gaithersburg and downtown Bethesda.  All four are merged and deduplicated.
 MONTGOMERY_MD = CitySpec(
     slug="montgomery_md",
     name="Montgomery County, MD",
@@ -142,10 +143,7 @@ MONTGOMERY_MD = CitySpec(
             common_fields=("ITEM",),
             domain_field="ITEM",
             fixed_city="Montgomery County, MD",
-            notes=(
-                "ITEM is a common-name code; the field domain's 'name' value is "
-                "'Scientific,Common', so the domain supplies the scientific name."
-            ),
+            homepage="https://data.montgomerycountymd.gov/",
         ),
         SourceSpec(
             slug="parks_trees",
@@ -159,7 +157,7 @@ MONTGOMERY_MD = CitySpec(
             species_fields=("SPP_BOT", "SPP_COM"),
             common_fields=("SPP_COM",),
             fixed_city="Montgomery County, MD",
-            notes="33.5k park trees with botanical names.",
+            homepage="https://montgomeryparks.org/",
         ),
         SourceSpec(
             slug="gaithersburg_street_trees",
@@ -173,7 +171,7 @@ MONTGOMERY_MD = CitySpec(
             species_fields=("Botanical_Name", "Common_Name"),
             common_fields=("Common_Name",),
             fixed_city="Gaithersburg, MD",
-            notes="City-level supplement: 11.5k city-maintained street trees.",
+            homepage="https://www.gaithersburgmd.gov/",
         ),
         SourceSpec(
             slug="bethesda_bup_trees",
@@ -187,7 +185,7 @@ MONTGOMERY_MD = CitySpec(
             species_fields=("Species",),
             common_fields=("Species",),
             fixed_city="Bethesda, MD",
-            notes="Downtown Bethesda BID inventory: 1.4k trees.",
+            homepage="https://bethesdabid.com/",
         ),
     ),
     attribution=(
@@ -196,8 +194,6 @@ MONTGOMERY_MD = CitySpec(
     ),
 )
 
-
-# --- Baltimore City, MD -----------------------------------------------------
 BALTIMORE_MD = CitySpec(
     slug="baltimore_md",
     name="Baltimore City, MD",
@@ -207,23 +203,18 @@ BALTIMORE_MD = CitySpec(
         SourceSpec(
             slug="forestry_trees",
             name="Baltimore City Forestry Trees",
-            url=(
-                "https://baltegis.baltimorecity.gov/mapping/rest/services/"
-                "Forestry/Trees/MapServer/0"
-            ),
+            url="https://baltegis.baltimorecity.gov/mapping/rest/services/Forestry/Trees/MapServer/0",
             where="1=1",
             out_fields=("SPP", "OBJECTID"),
             species_fields=("SPP",),
             common_fields=("SPP",),
             fixed_city="Baltimore, MD",
-            notes="193k rows total; vacant sites/stumps filtered to ~113k trees.",
+            homepage="https://data.baltimorecity.gov/",
         ),
     ),
     attribution="Baltimore City Open Data / TreeBaltimore",
 )
 
-
-# --- Philadelphia, PA -------------------------------------------------------
 PHILADELPHIA_PA = CitySpec(
     slug="philadelphia_pa",
     name="Philadelphia, PA",
@@ -243,15 +234,12 @@ PHILADELPHIA_PA = CitySpec(
             common_fields=("tree_name",),
             split_dash=True,
             fixed_city="Philadelphia, PA",
-            notes="tree_name is 'SCIENTIFIC - COMMON'; first part is used.",
+            homepage="https://opendataphilly.org/datasets/philadelphia-tree-inventory/",
         ),
     ),
     attribution="City of Philadelphia Open Data / Philadelphia Parks & Recreation",
 )
 
-
-# --- Richmond, VA -----------------------------------------------------------
-# Closer to DC than Philadelphia and has a clean citywide inventory.
 RICHMOND_VA = CitySpec(
     slug="richmond_va",
     name="Richmond, VA",
@@ -270,10 +258,365 @@ RICHMOND_VA = CitySpec(
             species_fields=("SPP",),
             common_fields=("SPP",),
             fixed_city="Richmond, VA",
-            notes="122k rows total; vacant sites/stumps filtered to ~65k trees.",
+            homepage="https://www.rva.gov/public-works/",
         ),
     ),
     attribution="City of Richmond Open Data",
+)
+
+
+# --- Major US metros --------------------------------------------------------
+NEW_YORK_NY = CitySpec(
+    slug="new_york_ny",
+    name="New York City, NY",
+    state="NY",
+    bbox=(-74.27, 40.49, -73.68, 40.93),
+    sources=(
+        SourceSpec(
+            slug="street_tree_census",
+            name="NYC 2015 Street Tree Census",
+            url="https://data.cityofnewyork.us/resource/uvpi-gqnh.json",
+            kind="socrata",
+            where="status = 'Alive'",
+            species_fields=("spc_latin", "spc_common"),
+            common_fields=("spc_common",),
+            lat_field="latitude",
+            lng_field="longitude",
+            id_field=":id",
+            page_size=50000,
+            fixed_city="New York, NY",
+            homepage=(
+                "https://data.cityofnewyork.us/Environment/"
+                "2015-Street-Tree-Census-Tree-Data/uvpi-gqnh"
+            ),
+        ),
+    ),
+    attribution="NYC Open Data / NYC Parks",
+)
+
+BOSTON_MA = CitySpec(
+    slug="boston_ma",
+    name="Boston, MA",
+    state="MA",
+    bbox=(-71.20, 42.22, -70.90, 42.40),
+    sources=(
+        SourceSpec(
+            slug="bprd_trees",
+            name="Boston BPRD Trees",
+            url=(
+                "https://services.arcgis.com/sFnw0xNflSi8J0uh/arcgis/rest/services/"
+                "BPRD_Trees/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("spp_bot", "spp_com", "OBJECTID"),
+            species_fields=("spp_bot", "spp_com"),
+            common_fields=("spp_com",),
+            lat_field="y_latitude",
+            lng_field="x_longitude",
+            fixed_city="Boston, MA",
+            homepage="https://data.boston.gov/dataset/bprd-trees",
+        ),
+    ),
+    attribution="Analyze Boston / Boston Parks and Recreation",
+)
+
+SEATTLE_WA = CitySpec(
+    slug="seattle_wa",
+    name="Seattle, WA",
+    state="WA",
+    bbox=(-122.46, 47.49, -122.22, 47.74),
+    sources=(
+        SourceSpec(
+            slug="sdot_trees",
+            name="SDOT Trees (Active)",
+            url=(
+                "https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/"
+                "SDOT_Trees_(Active)/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("SCIENTIFIC_NAME", "BOTANICAL_NAME", "OBJECTID"),
+            species_fields=("SCIENTIFIC_NAME", "BOTANICAL_NAME"),
+            common_fields=("BOTANICAL_NAME",),
+            fixed_city="Seattle, WA",
+            homepage="https://data.seattle.gov/",
+        ),
+    ),
+    attribution="Seattle Open Data / SDOT",
+)
+
+PORTLAND_OR = CitySpec(
+    slug="portland_or",
+    name="Portland, OR",
+    state="OR",
+    bbox=(-122.84, 45.43, -122.47, 45.65),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="Portland Street Trees",
+            url="https://www.portlandmaps.com/od/rest/services/COP_OpenData_Environment/MapServer/25",
+            where="1=1",
+            out_fields=("Scientific", "Common", "Species", "OBJECTID"),
+            page_size=200,
+            species_fields=("Scientific", "Species", "Common"),
+            common_fields=("Common",),
+            fixed_city="Portland, OR",
+            homepage="https://www.portlandmaps.com/bps/",
+        ),
+    ),
+    attribution="Portland Maps / City of Portland",
+)
+
+AUSTIN_TX = CitySpec(
+    slug="austin_tx",
+    name="Austin, TX",
+    state="TX",
+    bbox=(-97.95, 30.13, -97.35, 30.52),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="Austin Tree Inventory",
+            url=(
+                "https://services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/"
+                "Tree_Inventory/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("SPECIES", "LATITUDE", "LONGTITUDE", "FID"),
+            species_fields=("SPECIES",),
+            common_fields=("SPECIES",),
+            invert_comma=True,
+            lat_field="LATITUDE",
+            lng_field="LONGTITUDE",
+            id_field="FID",
+            fixed_city="Austin, TX",
+            homepage="https://data.austintexas.gov/",
+        ),
+    ),
+    attribution="Austin Open Data",
+)
+
+DENVER_CO = CitySpec(
+    slug="denver_co",
+    name="Denver, CO",
+    state="CO",
+    bbox=(-105.11, 39.61, -104.73, 39.91),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="Denver Tree Inventory",
+            url="https://data.colorado.gov/resource/wz8h-dap6.json",
+            kind="socrata",
+            species_fields=("species_botanic", "species_common"),
+            common_fields=("species_common",),
+            lat_field="y_lat",
+            lng_field="x_long",
+            point_field="the_geom",
+            id_field=":id",
+            page_size=50000,
+            fixed_city="Denver, CO",
+            homepage="https://data.colorado.gov/Natural-Resources/Tree-Inventory-Denver/wz8h-dap6",
+        ),
+    ),
+    attribution="Colorado Information Marketplace / Denver Parks & Recreation",
+)
+
+
+# --- Major Canadian metros --------------------------------------------------
+TORONTO_ON = CitySpec(
+    slug="toronto_on",
+    name="Toronto, ON",
+    state="ON",
+    bbox=(-79.64, 43.58, -79.12, 43.86),
+    sources=(
+        SourceSpec(
+            slug="street_tree_data",
+            name="Toronto Street Tree Data",
+            url=(
+                "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/"
+                "6ac4569e-fd37-4cbc-ac63-db3624c5f6a2/resource/"
+                "b65cd31d-fabc-4222-83ef-8ddd11295d2b/download/street-tree-data-4326.csv"
+            ),
+            kind="csv",
+            species_fields=("BOTANICAL_NAME",),
+            common_fields=("COMMON_NAME",),
+            point_field="geometry",
+            delimiter=",",
+            encoding="utf-8-sig",
+            fixed_city="Toronto, ON",
+            homepage="https://open.toronto.ca/dataset/street-tree-data/",
+        ),
+    ),
+    attribution="City of Toronto Open Data",
+)
+
+MONTREAL_QC = CitySpec(
+    slug="montreal_qc",
+    name="Montreal, QC",
+    state="QC",
+    bbox=(-73.98, 45.40, -73.47, 45.70),
+    sources=(
+        SourceSpec(
+            slug="arbres_publics",
+            name="Montreal Public Trees",
+            url=(
+                "https://donnees.montreal.ca/dataset/"
+                "b89fd27d-4b49-461b-8e54-fa2b34a628c4/resource/"
+                "64e28fe6-ef37-437a-972d-d1d3f1f7d891/download/arbres-publics.csv"
+            ),
+            kind="csv",
+            species_fields=("Essence_latin",),
+            common_fields=("Essence_ang", "Essence_fr"),
+            lat_field="Latitude",
+            lng_field="Longitude",
+            delimiter=",",
+            encoding="utf-8-sig",
+            fixed_city="Montreal, QC",
+            homepage="https://donnees.montreal.ca/dataset/arbres",
+        ),
+    ),
+    attribution="Ville de Montréal Open Data (CC BY 4.0)",
+)
+
+OTTAWA_ON = CitySpec(
+    slug="ottawa_on",
+    name="Ottawa, ON",
+    state="ON",
+    bbox=(-76.00, 45.10, -75.40, 45.60),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="Ottawa Tree Inventory",
+            url="https://maps.ottawa.ca/arcgis/rest/services/Forestry/MapServer/0",
+            where="1=1",
+            out_fields=("SPECIES", "OBJECTID"),
+            page_size=1000,
+            species_fields=("SPECIES",),
+            domain_field="SPECIES",
+            common_fields=("SPECIES",),
+            fixed_city="Ottawa, ON",
+            homepage="https://open.ottawa.ca/",
+        ),
+    ),
+    attribution="City of Ottawa Open Data",
+)
+
+CALGARY_AB = CitySpec(
+    slug="calgary_ab",
+    name="Calgary, AB",
+    state="AB",
+    bbox=(-114.35, 50.80, -113.80, 51.20),
+    sources=(
+        SourceSpec(
+            slug="public_trees",
+            name="Calgary Public Trees",
+            url="https://data.calgary.ca/resource/tfs4-3wwa.json",
+            kind="socrata",
+            species_concat=("genus", "species"),
+            common_fields=("common_name",),
+            point_field="point",
+            id_field=":id",
+            page_size=50000,
+            fixed_city="Calgary, AB",
+            homepage="https://data.calgary.ca/Environment/Public-Trees/tfs4-3wwa",
+        ),
+    ),
+    attribution="City of Calgary Open Data",
+)
+
+EDMONTON_AB = CitySpec(
+    slug="edmonton_ab",
+    name="Edmonton, AB",
+    state="AB",
+    bbox=(-113.72, 53.40, -113.30, 53.72),
+    sources=(
+        SourceSpec(
+            slug="trees",
+            name="Edmonton Trees",
+            url="https://data.edmonton.ca/resource/eecg-fc54.json",
+            kind="socrata",
+            species_fields=("species_botanical", "species"),
+            common_fields=("species",),
+            lat_field="latitude",
+            lng_field="longitude",
+            id_field=":id",
+            page_size=50000,
+            fixed_city="Edmonton, AB",
+            homepage="https://data.edmonton.ca/Environmental-Services/Trees/eecg-fc54",
+        ),
+    ),
+    attribution="City of Edmonton Open Data",
+)
+
+WINNIPEG_MB = CitySpec(
+    slug="winnipeg_mb",
+    name="Winnipeg, MB",
+    state="MB",
+    bbox=(-97.35, 49.70, -96.95, 49.98),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="Winnipeg Tree Inventory",
+            url="https://data.winnipeg.ca/resource/hfwk-jp4h.json",
+            kind="socrata",
+            species_fields=("botanical_name", "common_name"),
+            common_fields=("common_name",),
+            point_field="point",
+            id_field=":id",
+            page_size=50000,
+            fixed_city="Winnipeg, MB",
+            homepage="https://data.winnipeg.ca/",
+        ),
+    ),
+    attribution="City of Winnipeg Open Data",
+)
+
+MISSISSAUGA_ON = CitySpec(
+    slug="mississauga_on",
+    name="Mississauga, ON",
+    state="ON",
+    bbox=(-79.85, 43.45, -79.53, 43.75),
+    sources=(
+        SourceSpec(
+            slug="city_owned_trees",
+            name="Mississauga City Owned Tree Inventory",
+            url=(
+                "https://services6.arcgis.com/hM5ymMLbxIyWTjn2/arcgis/rest/services/"
+                "2023_City_Owned_Tree_Inventory/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("BOTNAME", "BOTDESC", "LATITUDE", "LONGITUDE", "OBJECTID"),
+            species_fields=("BOTNAME", "BOTDESC"),
+            common_fields=("BOTDESC",),
+            lat_field="LATITUDE",
+            lng_field="LONGITUDE",
+            fixed_city="Mississauga, ON",
+            homepage="https://data.mississauga.ca/",
+        ),
+    ),
+    attribution="City of Mississauga Open Data",
+)
+
+HAMILTON_ON = CitySpec(
+    slug="hamilton_on",
+    name="Hamilton, ON",
+    state="ON",
+    bbox=(-80.25, 43.04, -79.61, 43.47),
+    sources=(
+        SourceSpec(
+            slug="public_tree_inventory",
+            name="Hamilton Public Tree Inventory",
+            url=(
+                "https://services.arcgis.com/rYz782eMbySr2srL/arcgis/rest/services/"
+                "Public_Tree_Inventory/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("SPECIES_SCIENTIFIC", "SPECIES_COMMON", "OBJECTID"),
+            species_fields=("SPECIES_SCIENTIFIC", "SPECIES_COMMON"),
+            common_fields=("SPECIES_COMMON",),
+            fixed_city="Hamilton, ON",
+            homepage="https://open.hamilton.ca/",
+        ),
+    ),
+    attribution="City of Hamilton Open Data",
 )
 
 
@@ -284,6 +627,20 @@ CITIES: tuple[CitySpec, ...] = (
     BALTIMORE_MD,
     PHILADELPHIA_PA,
     RICHMOND_VA,
+    NEW_YORK_NY,
+    BOSTON_MA,
+    SEATTLE_WA,
+    PORTLAND_OR,
+    AUSTIN_TX,
+    DENVER_CO,
+    TORONTO_ON,
+    MONTREAL_QC,
+    OTTAWA_ON,
+    CALGARY_AB,
+    EDMONTON_AB,
+    WINNIPEG_MB,
+    MISSISSAUGA_ON,
+    HAMILTON_ON,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}

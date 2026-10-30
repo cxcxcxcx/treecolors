@@ -50,6 +50,19 @@ Rules:
 """
 
 
+def _try_resolve(resolver: SpeciesResolver, value: str):
+    if not value:
+        return None
+    hit = resolver.resolve(value)
+    if hit is not None:
+        return hit
+    if "," in value:
+        first, second = value.split(",", 1)
+        inverted = f"{second.strip()} {first.strip()}"
+        return resolver.resolve(inverted)
+    return None
+
+
 def _read_unresolved(cities: list[CitySpec], resolver: SpeciesResolver) -> Counter[str]:
     unresolved: Counter[str] = Counter()
     for city in cities:
@@ -62,13 +75,20 @@ def _read_unresolved(cities: list[CitySpec], resolver: SpeciesResolver) -> Count
                     line = line.strip()
                     if not line:
                         continue
-                    raw = str(json.loads(line).get("raw") or "").strip()
-                    if not raw or len(raw) > 120:
+                    record = json.loads(line)
+                    raw = str(record.get("raw") or "").strip()
+                    common = str(record.get("common") or "").strip()
+                    candidate = raw or common
+                    if raw and common and common != raw and _try_resolve(resolver, raw) is None:
+                        # Prefer a human-readable common name for code-only
+                        # inventories (Mississauga BOTNAME/BOTDESC).
+                        candidate = common
+                    if not candidate or len(candidate) > 120:
                         continue
-                    if is_invalid(raw):
+                    if is_invalid(candidate):
                         continue
-                    if resolver.resolve(raw) is None:
-                        unresolved[raw] += 1
+                    if _try_resolve(resolver, candidate) is None:
+                        unresolved[candidate] += 1
     return unresolved
 
 

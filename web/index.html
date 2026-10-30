@@ -3,27 +3,29 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Fall Color Map | Explore Colorful Streets & Species</title>
+    <title>Fall Color Map | North American Street Trees</title>
+    <link rel="canonical" href="https://treecolors.botanisense.app/">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2d4f64">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Interactive tree map for Washington DC, Baltimore, Philadelphia, Richmond, Arlington, Montgomery County, and Bay Area cities. Discover deciduous trees with fall colors, evergreens, and ginkgo species with photos and species details.">
+        content="Interactive tree map for major US and Canadian cities, including New York, Toronto, Montreal, Chicago-area, Boston, Seattle, Portland, Denver, Austin, Washington DC, Baltimore, Philadelphia, Richmond, and the Bay Area. Discover deciduous trees with fall colors, evergreens, and ginkgo species.">
     <meta name="keywords"
-        content="Washington DC trees, Baltimore trees, Philadelphia trees, Richmond trees, Arlington trees, Montgomery County trees, fall colors map, Bay Area trees, urban forestry, deciduous trees, ginkgo, evergreen">
+        content="New York trees, Toronto trees, Montreal trees, Boston trees, Seattle trees, Portland trees, Denver trees, Austin trees, Washington DC trees, Baltimore trees, Philadelphia trees, Richmond trees, fall colors map, urban forestry, deciduous trees, ginkgo, evergreen">
     <meta name="author" content="Fall Color Map Project">
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Fall Color Map | Explore Colorful Streets & Species">
     <meta property="og:description"
-        content="Explore vibrant fall foliage across Washington DC, Baltimore, Philadelphia, Richmond, and the Bay Area. Click any tree to see species details, photos, and seasonal highlights.">
+        content="Explore vibrant fall foliage across major US and Canadian cities. Click any tree to see species details, source link, photos, and seasonal highlights.">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://treecolors.botanisense.app/">
     <meta property="og:locale" content="en_US">
     <meta property="og:site_name" content="Fall Color Map">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Fall Color Map">
     <meta name="twitter:description"
-        content="Browse East Coast and Bay Area neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
+        content="Browse North American neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <!-- PMTiles script left here for future use, but GeoJSON will be used below -->
@@ -33,14 +35,20 @@
         "@context": "https://schema.org",
         "@type": "WebPage",
         "name": "Fall Color Map",
-        "description": "Interactive map highlighting tree species across Washington DC, Baltimore, Philadelphia, Richmond, and Bay Area neighborhoods, including deciduous trees with fall colors, ginkgo, and evergreens.",
+        "description": "Interactive map highlighting tree species across major US and Canadian cities, including deciduous trees with fall colors, ginkgo, and evergreens.",
         "keywords": [
+            "New York trees",
+            "Toronto trees",
+            "Montreal trees",
+            "Boston trees",
+            "Seattle trees",
+            "Portland trees",
+            "Denver trees",
+            "Austin trees",
             "Washington DC trees",
             "Baltimore trees",
             "Philadelphia trees",
             "Richmond trees",
-            "Arlington trees",
-            "Montgomery County trees",
             "Bay Area trees",
             "fall foliage map",
             "urban forestry",
@@ -398,6 +406,165 @@
             padding: 0;
         }
 
+        .species-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 330px;
+            max-height: calc(100vh - 20px);
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        .species-panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px 14px 8px;
+        }
+
+        .species-panel-header h3 {
+            margin: 0;
+            font-size: 15px;
+            color: #2d4f64;
+        }
+
+        .species-scope {
+            margin-top: 2px;
+            color: #6b7783;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .species-panel-toggle {
+            border: none;
+            background: #eef3f7;
+            color: #2d4f64;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            flex: 0 0 auto;
+        }
+
+        .species-panel-body {
+            padding: 0 12px 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .species-panel.collapsed .species-panel-body {
+            display: none;
+        }
+
+        .species-search {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            border: 1px solid #ccd6df;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .species-search:focus {
+            border-color: #2d4f64;
+        }
+
+        .species-list {
+            margin-top: 8px;
+            overflow-y: auto;
+            max-height: 44vh;
+        }
+
+        .species-row {
+            display: grid;
+            grid-template-columns: 14px minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .species-row:hover {
+            background: #f1f6fa;
+        }
+
+        .species-row.active {
+            background: #e1eef8;
+            box-shadow: inset 3px 0 0 #2d4f64;
+        }
+
+        .species-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #888;
+        }
+
+        .species-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .species-count {
+            color: #64707b;
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .species-empty {
+            color: #7a8792;
+            padding: 10px 4px;
+            line-height: 1.4;
+        }
+
+        .species-clear {
+            margin-top: 8px;
+            padding: 7px 10px;
+            border: 1px solid #2d4f64;
+            background: #fff;
+            color: #2d4f64;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .species-clear:hover {
+            background: #eef3f7;
+        }
+
+        .species-clear.hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .species-panel {
+                top: auto;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                max-height: 42vh;
+            }
+
+            .species-list {
+                max-height: 26vh;
+            }
+        }
+
         @media (max-width: 600px) {
             .map-overlay {
                 max-width: 220px;
@@ -483,8 +650,8 @@
             <button type="button" class="legend-info-close" id="legend-info-close"
                 aria-label="Close introduction">&times;</button>
             <h4 id="legend-info-title">Explore Fall Color Trees</h4>
-            <p>This map highlights deciduous trees, evergreens, and ginkgo across Washington DC, Baltimore, Philadelphia,
-                Richmond, and Bay Area cities so you can scout neighborhoods for vibrant fall foliage.</p>
+            <p>This map highlights deciduous trees, evergreens, and ginkgo across major US and Canadian cities so you can
+                scout neighborhoods for vibrant fall foliage.</p>
             <p>The colors mirror the legend: rich greens for year-round foliage, golden hues for ginkgo, and warm reds
                 and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
             <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you
@@ -520,9 +687,37 @@
                         target="_blank" rel="noopener">Philadelphia</a> - PPR Tree Inventory</li>
                 <li><a href="https://www.rva.gov/public-works/"
                         target="_blank" rel="noopener">Richmond</a> - Tree Inventory</li>
+                <li><a href="https://data.cityofnewyork.us/Environment/2015-Street-Tree-Census-Tree-Data/uvpi-gqnh"
+                        target="_blank" rel="noopener">New York City</a> - 2015 Street Tree Census</li>
+                <li><a href="https://data.boston.gov/dataset/bprd-trees"
+                        target="_blank" rel="noopener">Boston</a> - BPRD Trees</li>
+                <li><a href="https://data.seattle.gov/"
+                        target="_blank" rel="noopener">Seattle</a> - SDOT Trees</li>
+                <li><a href="https://www.portlandmaps.com/bps/"
+                        target="_blank" rel="noopener">Portland</a> - Street Tree Inventory</li>
+                <li><a href="https://data.austintexas.gov/"
+                        target="_blank" rel="noopener">Austin</a> - Tree Inventory</li>
+                <li><a href="https://data.colorado.gov/Natural-Resources/Tree-Inventory-Denver/wz8h-dap6"
+                        target="_blank" rel="noopener">Denver</a> - Tree Inventory</li>
+                <li><a href="https://open.toronto.ca/dataset/street-tree-data/"
+                        target="_blank" rel="noopener">Toronto</a> - Street Tree Data</li>
+                <li><a href="https://donnees.montreal.ca/dataset/arbres"
+                        target="_blank" rel="noopener">Montreal</a> - Public Trees</li>
+                <li><a href="https://open.ottawa.ca/"
+                        target="_blank" rel="noopener">Ottawa</a> - Tree Inventory</li>
+                <li><a href="https://data.calgary.ca/Environment/Public-Trees/tfs4-3wwa"
+                        target="_blank" rel="noopener">Calgary</a> - Public Trees</li>
+                <li><a href="https://data.edmonton.ca/Environmental-Services/Trees/eecg-fc54"
+                        target="_blank" rel="noopener">Edmonton</a> - Trees</li>
+                <li><a href="https://data.winnipeg.ca/"
+                        target="_blank" rel="noopener">Winnipeg</a> - Tree Inventory</li>
+                <li><a href="https://data.mississauga.ca/"
+                        target="_blank" rel="noopener">Mississauga</a> - City Owned Tree Inventory</li>
+                <li><a href="https://open.hamilton.ca/"
+                        target="_blank" rel="noopener">Hamilton</a> - Public Tree Inventory</li>
             </ul>
             <p><strong>Also Included:</strong> Cupertino, Fremont, Los Angeles, San Diego, San Francisco, San Leandro,
-                Concord, Gaithersburg, and Bethesda.</p>
+                Concord, Gaithersburg, Bethesda, Arlington, and Montgomery County.</p>
         </div>
         <div class="legend-item">
             <div class="legend-color"
@@ -545,7 +740,24 @@
             <span>Other Deciduous Trees (less known for fall colors)</span>
         </div>
         <div class="legend-link">
-            <a href="https://botaniq.cc" target="_blank" rel="noopener">botaniq.cc</a>
+            <a href="https://treecolors.botanisense.app/" target="_blank" rel="noopener">treecolors.botanisense.app</a>
+        </div>
+    </div>
+
+    <div class="species-panel" id="species-panel">
+        <div class="species-panel-header">
+            <div>
+                <h3>Species in this area</h3>
+                <div class="species-scope" id="species-scope">Loading tree data…</div>
+            </div>
+            <button type="button" class="species-panel-toggle" id="species-panel-toggle"
+                aria-label="Collapse species panel" aria-expanded="true">−</button>
+        </div>
+        <div class="species-panel-body" id="species-panel-body">
+            <input id="species-search" class="species-search" type="search"
+                placeholder="Search species in this area…" autocomplete="off">
+            <div id="species-list" class="species-list"></div>
+            <button type="button" id="species-clear" class="species-clear hidden">Clear species highlight</button>
         </div>
     </div>
 
@@ -581,6 +793,18 @@
             zoom: 13
         });
 
+        let speciesStats = [];
+        let sourceInfo = { by_key: {}, by_city: {}, legacy: [] };
+        let selectedSpecies = null;
+        let speciesSearchTerm = '';
+        let userInteracted = false;
+        let autoLocateDone = false;
+        let speciesUpdateTimer = null;
+
+        ['mousedown', 'touchstart', 'wheel', 'dragstart'].forEach((eventName) => {
+            map.on(eventName, () => { userInteracted = true; });
+        });
+
         let popup = new maplibregl.Popup({
             closeButton: true,
             closeOnClick: false
@@ -613,40 +837,7 @@
 
         legendLocateButton.addEventListener('click', (event) => {
             event.stopPropagation();
-            if (!navigator.geolocation) {
-                alert('Geolocation is not supported by your browser');
-                return;
-            }
-
-            legendLocateButton.classList.add('loading'); // Optional: Add loading state style if desired
-
-            navigator.geolocation.getCurrentPosition((position) => {
-                const { latitude, longitude } = position.coords;
-
-                // Update marker position
-                userLocationMarker.setLngLat([longitude, latitude]).addTo(map);
-
-                // Calculate zoom level
-                const currentZoom = map.getZoom();
-                const targetZoom = Math.max(12, currentZoom);
-
-                // Fly to location
-                map.flyTo({
-                    center: [longitude, latitude],
-                    zoom: targetZoom,
-                    essential: true
-                });
-
-                legendLocateButton.classList.remove('loading');
-            }, (error) => {
-                console.error('Error getting location:', error);
-                let msg = 'Unable to retrieve your location';
-                if (error.code === 1) msg = 'Location permission denied';
-                else if (error.code === 2) msg = 'Location unavailable';
-                else if (error.code === 3) msg = 'Location request timed out';
-                alert(msg);
-                legendLocateButton.classList.remove('loading');
-            });
+            locateUser(false);
         });
 
         function openLegendInfo() {
@@ -1079,7 +1270,223 @@
             `;
         }
 
-        function buildPopupContent(properties, speciesName, wikiEntry, isLoading) {
+        function boundsIntersect(a, b) {
+            return !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
+        }
+
+        function sourceForFeature(properties, coordinates) {
+            if (properties && properties.source_key && sourceInfo.by_key[properties.source_key]) {
+                return sourceInfo.by_key[properties.source_key];
+            }
+            if (properties && properties.city && sourceInfo.by_city[properties.city]) {
+                return sourceInfo.by_city[properties.city];
+            }
+            if (coordinates && Array.isArray(sourceInfo.legacy)) {
+                const [lng, lat] = coordinates;
+                const hit = sourceInfo.legacy.find((item) => {
+                    if (!item.bbox) return false;
+                    return lng >= item.bbox[0] && lng <= item.bbox[2] && lat >= item.bbox[1] && lat <= item.bbox[3];
+                });
+                if (hit) return hit;
+            }
+            return null;
+        }
+
+        function aggregateSpecies(rows) {
+            const bySpecies = new Map();
+            rows.forEach((row) => {
+                if (!row.species) return;
+                const current = bySpecies.get(row.species) || {
+                    species: row.species,
+                    count: 0,
+                    color: row.color || '#888888'
+                };
+                current.count += row.count || 1;
+                bySpecies.set(row.species, current);
+            });
+            return Array.from(bySpecies.values()).sort((a, b) => b.count - a.count);
+        }
+
+        function speciesFromCityStats() {
+            const bounds = map.getBounds();
+            const view = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+            const rows = [];
+            speciesStats.forEach((city) => {
+                if (!city.bbox || !boundsIntersect(view, city.bbox)) return;
+                (city.species || []).forEach((entry) => {
+                    rows.push({
+                        species: entry.species,
+                        count: entry.count,
+                        color: entry.color
+                    });
+                });
+            });
+            return aggregateSpecies(rows);
+        }
+
+        function speciesFromVisibleTiles() {
+            if (!map.getLayer('trees-points')) return null;
+            const features = map.queryRenderedFeatures({ layers: ['trees-points'] });
+            if (!features.length) return null;
+            return aggregateSpecies(
+                features.map((feature) => ({
+                    species: feature.properties.species,
+                    count: 1,
+                    color: feature.properties.color
+                }))
+            );
+        }
+
+        function updateSpeciesPanel() {
+            const list = document.getElementById('species-list');
+            const scope = document.getElementById('species-scope');
+            if (!list || !scope) return;
+
+            const useVisible = map.getZoom() >= 12;
+            let items = useVisible ? speciesFromVisibleTiles() : null;
+            let label = useVisible ? 'Visible tree markers' : 'City-level estimate';
+            if (!items || !items.length) {
+                items = speciesFromCityStats();
+                label = 'City-level estimate';
+            }
+            if (!items || !items.length) {
+                scope.textContent = 'Zoom in to see species counts';
+                list.innerHTML = '<div class="species-empty">No tree data in this view yet. Zoom in or pan to a covered city.</div>';
+                return;
+            }
+
+            const total = items.reduce((sum, item) => sum + item.count, 0);
+            const term = speciesSearchTerm.trim().toLowerCase();
+            const filtered = term
+                ? items.filter((item) => item.species.toLowerCase().includes(term))
+                : items.slice(0, 12);
+            scope.textContent = `${label} · ${total.toLocaleString()} trees · ${items.length.toLocaleString()} species`;
+
+            if (!filtered.length) {
+                list.innerHTML = `<div class="species-empty">No species matches “${escapeHtml(speciesSearchTerm)}”.</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.slice(0, 30).map((item) => `
+                <div class="species-row${selectedSpecies === item.species ? ' active' : ''}" data-species="${escapeHtml(item.species)}">
+                    <span class="species-dot" style="background:${escapeHtml(item.color)}"></span>
+                    <span class="species-name" title="${escapeHtml(item.species)}">${escapeHtml(item.species)}</span>
+                    <span class="species-count">${item.count.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        function applySpeciesHighlight() {
+            if (!map.getLayer('trees-points')) return;
+            const opacity = selectedSpecies
+                ? ['case', ['==', ['get', 'species'], selectedSpecies], 0.95, 0.05]
+                : 0.8;
+            map.setPaintProperty('trees-points', 'circle-opacity', opacity);
+            const clearButton = document.getElementById('species-clear');
+            if (clearButton) clearButton.classList.toggle('hidden', !selectedSpecies);
+        }
+
+        function selectSpecies(species) {
+            selectedSpecies = selectedSpecies === species ? null : species;
+            applySpeciesHighlight();
+            updateSpeciesPanel();
+        }
+
+        function clearSpeciesHighlight() {
+            selectedSpecies = null;
+            applySpeciesHighlight();
+            updateSpeciesPanel();
+        }
+
+        async function loadSidecars() {
+            try {
+                const response = await fetch('./species_stats.json', { cache: 'no-cache' });
+                if (response.ok) {
+                    const data = await response.json();
+                    speciesStats = data.cities || [];
+                }
+            } catch (error) {
+                console.warn('species_stats.json unavailable', error);
+            }
+            try {
+                const response = await fetch('./sources.json', { cache: 'no-cache' });
+                if (response.ok) {
+                    sourceInfo = await response.json();
+                }
+            } catch (error) {
+                console.warn('sources.json unavailable', error);
+            }
+            updateSpeciesPanel();
+        }
+
+        function locateUser(auto = false) {
+            if (!navigator.geolocation) {
+                if (!auto) alert('Geolocation is not supported by your browser');
+                return;
+            }
+            if (!auto) legendLocateButton.classList.add('loading');
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                userLocationMarker.setLngLat([longitude, latitude]).addTo(map);
+                map.flyTo({
+                    center: [longitude, latitude],
+                    zoom: Math.max(13, map.getZoom()),
+                    essential: true
+                });
+                legendLocateButton.classList.remove('loading');
+            }, (error) => {
+                console.error('Error getting location:', error);
+                if (!auto) {
+                    let msg = 'Unable to retrieve your location';
+                    if (error.code === 1) msg = 'Location permission denied';
+                    else if (error.code === 2) msg = 'Location unavailable';
+                    else if (error.code === 3) msg = 'Location request timed out';
+                    alert(msg);
+                }
+                legendLocateButton.classList.remove('loading');
+            }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+        }
+
+        function maybeAutoLocate() {
+            if (autoLocateDone || userInteracted) return;
+            autoLocateDone = true;
+            locateUser(true);
+        }
+
+        document.getElementById('species-search').addEventListener('input', (event) => {
+            speciesSearchTerm = event.target.value || '';
+            updateSpeciesPanel();
+        });
+
+        document.getElementById('species-list').addEventListener('click', (event) => {
+            const row = event.target.closest('.species-row');
+            if (row && row.dataset.species) {
+                selectSpecies(row.dataset.species);
+            }
+        });
+
+        document.getElementById('species-clear').addEventListener('click', clearSpeciesHighlight);
+
+        document.getElementById('species-panel-toggle').addEventListener('click', () => {
+            const panel = document.getElementById('species-panel');
+            const button = document.getElementById('species-panel-toggle');
+            const collapsed = panel.classList.toggle('collapsed');
+            button.textContent = collapsed ? '+' : '−';
+            button.setAttribute('aria-expanded', String(!collapsed));
+        });
+
+        map.on('moveend', updateSpeciesPanel);
+        map.on('idle', updateSpeciesPanel);
+        map.on('sourcedata', (event) => {
+            if (event.sourceId === 'trees' && event.isSourceLoaded) {
+                clearTimeout(speciesUpdateTimer);
+                speciesUpdateTimer = setTimeout(updateSpeciesPanel, 250);
+            }
+        });
+        setTimeout(updateSpeciesPanel, 2500);
+        loadSidecars();
+
+        function buildPopupContent(properties, speciesName, wikiEntry, isLoading, coordinates) {
             const commonNamesText = formatNameList(properties.common_names);
             const chineseNamesText = formatNameList(properties.chinese_common_names);
             const deciduousValue = friendlyBoolean(properties.deciduous);
@@ -1094,6 +1501,10 @@
             const city = (properties.city || '').trim();
             if (city) {
                 basicsParts.push(`<div><strong>Location:</strong> ${escapeHtml(city)}</div>`);
+            }
+            const source = sourceForFeature(properties, coordinates);
+            if (source && source.url) {
+                basicsParts.push(`<div><strong>Source:</strong> <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.name || 'Tree inventory')}</a></div>`);
             }
             const bloomingSeason = (properties.blooming_season || '').trim();
             if (bloomingSeason && bloomingSeason.toLowerCase() !== 'n/a') {
@@ -1157,10 +1568,21 @@
                 const vectorLayers = (metadata && metadata.vector_layers) || [];
                 const layerId = vectorLayers.length > 0 ? vectorLayers[0].id : 'default';
 
-                // Fit to tileset bounds if available
+                // Fit to tileset bounds if available.  tile-join does not
+                // always preserve metadata.bounds, so fall back to the
+                // PMTiles header, which always carries the extent.
                 if (metadata && Array.isArray(metadata.bounds) && metadata.bounds.length === 4) {
                     const b = metadata.bounds; // [west, south, east, north]
-                    map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 50 });
+                    map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 50, maxZoom: 10 });
+                } else {
+                    pm.getHeader().then((header) => {
+                        if (header && Number.isFinite(header.minLon) && Number.isFinite(header.minLat)) {
+                            map.fitBounds(
+                                [[header.minLon, header.minLat], [header.maxLon, header.maxLat]],
+                                { padding: 50, maxZoom: 10 }
+                            );
+                        }
+                    }).catch(() => {});
                 }
 
                 if (!map.getSource('trees')) {
@@ -1199,7 +1621,7 @@
 
                     popup
                         .setLngLat(coordinates)
-                        .setHTML(buildPopupContent(properties, speciesName, cachedEntry, isLoading))
+                        .setHTML(buildPopupContent(properties, speciesName, cachedEntry, isLoading, coordinates))
                         .addTo(map);
                     scrollPopupToTop();
 
@@ -1212,7 +1634,7 @@
                             speciesInfoCache[speciesKey] = result;
                             delete speciesRequestCache[speciesKey];
                             if (currentSpeciesKey === speciesKey) {
-                                popup.setHTML(buildPopupContent(properties, speciesName, result, false));
+                                popup.setHTML(buildPopupContent(properties, speciesName, result, false, coordinates));
                                 scrollPopupToTop();
                             }
                             return result;
@@ -1221,7 +1643,7 @@
                         speciesRequestCache[speciesKey].then((result) => {
                             speciesInfoCache[speciesKey] = speciesInfoCache[speciesKey] || result;
                             if (currentSpeciesKey === speciesKey) {
-                                popup.setHTML(buildPopupContent(properties, speciesName, speciesInfoCache[speciesKey], false));
+                                popup.setHTML(buildPopupContent(properties, speciesName, speciesInfoCache[speciesKey], false, coordinates));
                                 scrollPopupToTop();
                             }
                         });
@@ -1242,6 +1664,10 @@
 
         // Add navigation controls
         map.addControl(new maplibregl.NavigationControl());
+
+        // Try to center on the user after the initial render.  If they have
+        // already started panning/zooming, leave their view alone.
+        map.once('load', () => setTimeout(maybeAutoLocate, 1500));
 
         // Add attribution (OpenStreetMap requires attribution)
         map.addControl(new maplibregl.AttributionControl({

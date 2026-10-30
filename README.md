@@ -14,11 +14,26 @@ contains every city; there is no per-city selector.
 | Baltimore, MD | Baltimore City Forestry / TreeBaltimore | ~113k |
 | Philadelphia, PA | Philadelphia Parks & Recreation 2023 inventory | ~150k |
 | Richmond, VA | Richmond Tree Inventory | ~77k |
+| New York City, NY | NYC 2015 Street Tree Census | ~652k |
+| Boston, MA | BPRD Trees | ~52k |
+| Seattle, WA | SDOT Trees | ~215k |
+| Portland, OR | Street Tree Inventory | ~216k |
+| Austin, TX | Tree Inventory | ~59k |
+| Denver, CO | Denver Tree Inventory | ~301k |
+| Toronto, ON | Street Tree Data | ~617k |
+| Montreal, QC | Public Trees | ~330k |
+| Ottawa, ON | Tree Inventory | ~287k |
+| Calgary, AB | Public Trees | ~564k |
+| Edmonton, AB | Trees | ~482k |
+| Winnipeg, MB | Tree Inventory | ~306k |
+| Mississauga, ON | City Owned Tree Inventory | ~413k |
+| Hamilton, ON | Public Tree Inventory | ~280k |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` scripts | existing |
 
-The East Coast batch is fetched by the city registry in
+All metro inventories are fetched by the city registry in
 `py/tree_pipeline/cities.py`. Adding a city is a data change: add a `CitySpec`
-with its ArcGIS layer URL and field mapping, then run the pipeline.
+with its source URL and field mapping, then run the pipeline. ArcGIS, Socrata
+and CSV sources are supported.
 
 ## Layout
 
@@ -32,8 +47,19 @@ data/
   output/qa/                     # per-city QA report
 web/
   index.html                     # MapLibre frontend
+  species_stats.json             # species panel stats per city (tracked)
+  sources.json                   # per-tree source links (tracked)
   trees.pmtiles                  # generated, git-ignored
 ```
+
+## Project skills
+
+Operational knowledge is captured for future agent sessions:
+
+- `.opencode/skills/tree-map-pipeline/SKILL.md` — data sources, adapters,
+  species resolution, QA, and tiling.
+- `.opencode/skills/tree-map-deploy/SKILL.md` — canonical URLs, nginx, deploy,
+  local Range server, and CDP verification.
 
 ## Pipeline
 
@@ -80,6 +106,10 @@ The knowledge base contains `deciduous`, `fall_colors`, `beautiful_flowers`,
 Names from city inventories are normalized first (cultivars, `spp.`, `var.`,
 hybrid `x`, comma-inverted common names, `SCIENTIFIC - COMMON`). Missing
 species are filled by the `enrich` command and cached for future runs.
+
+## Live map
+
+https://treecolors.botanisense.app/
 
 ## Deployment
 
