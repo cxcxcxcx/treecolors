@@ -6,8 +6,13 @@
     <title>Fall Color Map | North American Street Trees</title>
     <link rel="canonical" href="https://treecolors.botanisense.app/">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="app.webmanifest">
     <meta name="theme-color" content="#2d4f64">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Fall Color Map">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="Interactive tree map for major US and Canadian cities, including New York, Toronto, Montreal, Chicago-area, Boston, Seattle, Portland, Denver, Austin, Washington DC, Baltimore, Philadelphia, Richmond, and the Bay Area. Discover deciduous trees with fall colors, evergreens, and ginkgo species.">
@@ -793,6 +798,7 @@
         let speciesSearchTerm = '';
         let userInteracted = false;
         let autoLocateDone = false;
+        let userLocated = false;
         let speciesUpdateTimer = null;
 
         ['mousedown', 'touchstart', 'wheel', 'dragstart'].forEach((eventName) => {
@@ -1421,6 +1427,7 @@
             if (!auto) legendLocateButton.classList.add('loading');
             navigator.geolocation.getCurrentPosition((position) => {
                 const { latitude, longitude } = position.coords;
+                userLocated = true;
                 userLocationMarker.setLngLat([longitude, latitude]).addTo(map);
                 map.flyTo({
                     center: [longitude, latitude],
@@ -1565,12 +1572,12 @@
                 // Fit to tileset bounds if available.  tile-join does not
                 // always preserve metadata.bounds, so fall back to the
                 // PMTiles header, which always carries the extent.
-                if (metadata && Array.isArray(metadata.bounds) && metadata.bounds.length === 4) {
+                if (metadata && Array.isArray(metadata.bounds) && metadata.bounds.length === 4 && !userLocated) {
                     const b = metadata.bounds; // [west, south, east, north]
                     map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 50, maxZoom: 10 });
-                } else {
+                } else if (!userLocated) {
                     pm.getHeader().then((header) => {
-                        if (header && Number.isFinite(header.minLon) && Number.isFinite(header.minLat)) {
+                        if (header && Number.isFinite(header.minLon) && Number.isFinite(header.minLat) && !userLocated) {
                             map.fitBounds(
                                 [[header.minLon, header.minLat], [header.maxLon, header.maxLat]],
                                 { padding: 50, maxZoom: 10 }
@@ -1660,8 +1667,11 @@
         map.addControl(new maplibregl.NavigationControl());
 
         // Try to center on the user after the initial render.  If they have
-        // already started panning/zooming, leave their view alone.
-        map.once('load', () => setTimeout(maybeAutoLocate, 1500));
+        // already started panning/zooming, leave their view alone.  Multiple
+        // triggers make this robust against the PMTiles fitBounds race.
+        map.once('load', () => setTimeout(maybeAutoLocate, 1200));
+        map.once('idle', () => setTimeout(maybeAutoLocate, 600));
+        setTimeout(maybeAutoLocate, 3500);
 
         // Add attribution (OpenStreetMap requires attribution)
         map.addControl(new maplibregl.AttributionControl({
@@ -1670,9 +1680,20 @@
     </script>
     <script>
         if ('serviceWorker' in navigator) {
+            let refreshingForNewWorker = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshingForNewWorker) {
+                    refreshingForNewWorker = true;
+                    window.location.reload();
+                }
+            });
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
+                // A query string + updateViaCache:none bypasses stale CDN/browser
+                // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
+                const SW_QUERY = '20261030b';
+                navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
+                        registration.update();
                         console.log('ServiceWorker registration successful with scope: ', registration.scope);
                     }, (err) => {
                         console.log('ServiceWorker registration failed: ', err);

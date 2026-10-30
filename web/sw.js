@@ -1,10 +1,12 @@
-const CACHE_NAME = 'tree-map-v20261030-055309';
+const CACHE_NAME = 'tree-map-v20261030-055642';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './favicon.ico',
     './icon-192.png',
     './icon-512.png',
+    './app.webmanifest',
+    './manifest.json',
     './species_stats.json',
     './sources.json',
     'https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js',
@@ -13,6 +15,7 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS_TO_CACHE);
@@ -21,17 +24,17 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
+    event.waitUntil((async () => {
+        await self.clients.claim();
+        const cacheNames = await caches.keys();
+        await Promise.all(
+            cacheNames.map((cacheName) => {
+                if (cacheName !== CACHE_NAME) {
+                    return caches.delete(cacheName);
+                }
+            })
+        );
+    })());
 });
 
 self.addEventListener('fetch', (event) => {
