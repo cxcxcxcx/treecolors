@@ -111,7 +111,34 @@ species are filled by the `enrich` command and cached for future runs.
 
 https://treecolors.botanisense.app/
 
+## Development checks
+
+```bash
+PYTHONPATH=py python3 -m pytest -q py/tests
+python3 scripts/qa_summary.py
+python3 scripts/check_tiles.py
+
+scripts/serve_local.sh 8767       # PMTiles needs Range support
+scripts/verify_web.py --launch --url 'http://127.0.0.1:8767/?v=1'
+```
+
+The browser check asserts the map/layer/species panel/source links load and
+saves an optional screenshot.
+
 ## Deployment
+
+Copy `.deploy.env.example` to `.deploy.env` (git-ignored) and set
+`DEPLOY_HOST` / `DEPLOY_PATH`. Then:
+
+```bash
+./push.sh
+```
 
 `push.sh` syncs `web/` to the production host and bumps the service-worker
 cache version. Large raw data and generated tiles stay out of git.
+
+## License and data
+
+Code is MIT-licensed (`LICENSE`). Tree records remain under each publisher's
+terms; see `DATA_LICENSES.md`. Generated tiles are not committed. Species
+annotations are AI-assisted and are not a botanical authority.
