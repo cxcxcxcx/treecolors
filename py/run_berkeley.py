@@ -16,11 +16,11 @@ from tree_data import (
 
 # Define file paths for Berkeley data
 berkeley_download_url = 'https://spatial.lib.berkeley.edu/public/berkeley-s7gq2s/data.zip'
-berkeley_zip_file = os.path.join(project_root, 'berkeley_trees.zip')
-berkeley_extract_dir = os.path.join(project_root, 'berkeley_trees')
-berkeley_raw_data_file = os.path.join(project_root, 'City_Trees_Berkeley.csv')
-berkeley_summary_file = os.path.join(project_root, 'tree_summary_berkeley.json')
-berkeley_geojson_file = os.path.join(project_root, 'trees_berkeley.geojson')
+berkeley_zip_file = os.path.join(project_root, 'data', 'raw', 'berkeley_trees.zip')
+berkeley_extract_dir = os.path.join(project_root, 'data', 'raw', 'berkeley_trees')
+berkeley_raw_data_file = os.path.join(project_root, 'data', 'raw', 'City_Trees_Berkeley.csv')
+berkeley_summary_file = os.path.join(project_root, 'data', 'output', 'summary', 'tree_summary_berkeley.json')
+berkeley_geojson_file = os.path.join(project_root, 'data', 'output', 'geojson', 'trees_berkeley.geojson')
 
 # --- Data Download and Loading ---
 if os.path.exists(berkeley_raw_data_file):

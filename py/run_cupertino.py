@@ -4,10 +4,10 @@ import json
 from tree_data import group_by_specifies, export_groups_as_json, build_geojson, find_center_and_zoom, build_map, get_shared_tree_map, project_root
 
 # Define file paths for Cupertino data
-cupertino_raw_data_file = './Trees_cupertino.csv'
-cupertino_summary_file = './tree_summary_cupertino.json'
-cupertino_map_file = './web/cupertino.html'
-cupertino_geojson_file = os.path.join(project_root, 'trees_cupertino.geojson')
+cupertino_raw_data_file = os.path.join(project_root, 'data', 'raw', 'Trees_cupertino.csv')
+cupertino_summary_file = os.path.join(project_root, 'data', 'output', 'summary', 'tree_summary_cupertino.json')
+cupertino_map_file = os.path.join(project_root, 'data', 'output', 'cupertino.html')
+cupertino_geojson_file = os.path.join(project_root, 'data', 'output', 'geojson', 'trees_cupertino.geojson')
 
 # --- Data Loading and Transformation ---
 if os.path.exists(cupertino_raw_data_file):

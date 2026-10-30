@@ -6,10 +6,10 @@ from pyproj import Transformer
 from tree_data import group_by_specifies, export_groups_as_json, build_geojson, find_center_and_zoom, build_map, get_shared_tree_map, project_root
 
 
-palo_alto_raw_data_file = os.path.join(project_root, 'TreeData_PaloAlto_all.json')
-palo_alto_summary_file = os.path.join(project_root, 'tree_summary_palo_alto.json')
-palo_alto_map_file = os.path.join(project_root, 'palo_alto.html')
-palo_alto_geojson_file = os.path.join(project_root, 'trees_palo_alto.geojson')
+palo_alto_raw_data_file = os.path.join(project_root, 'data', 'raw', 'TreeData_PaloAlto_all.json')
+palo_alto_summary_file = os.path.join(project_root, 'data', 'output', 'summary', 'tree_summary_palo_alto.json')
+palo_alto_map_file = os.path.join(project_root, 'data', 'output', 'palo_alto.html')
+palo_alto_geojson_file = os.path.join(project_root, 'data', 'output', 'geojson', 'trees_palo_alto.geojson')
 
 
 # --- Data Fetching and Transformation ---

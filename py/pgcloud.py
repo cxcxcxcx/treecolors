@@ -17,7 +17,18 @@ import math
 # Configuration
 BASE_URL = "https://pg-cloud.com/main/server/db.php"
 LAYER_NAME = "trees"
-OUTPUT_DIR = "data"
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RAW_DIR = os.path.join(PROJECT_ROOT, "data", "raw")
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "data", "output")
+GEOJSON_DIR = os.path.join(OUTPUT_DIR, "geojson")
+SUMMARY_DIR = os.path.join(OUTPUT_DIR, "summary")
+
+# Ensure directories exist
+for d in [RAW_DIR, OUTPUT_DIR, GEOJSON_DIR, SUMMARY_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+# Cookie for authentication
+COOKIE = "PHPSESSID=llf977tiukrjghiu799d1i6p9c; _ga=GA1.1.1170743925.1764087010; _ga_NEXVLPG3X9=GS2.1.s1764342627$o3$g1$t1764342639$j48$l0$h0"
 
 def generate_request_id():
     """Generates a random hex string for uniqueRequestID."""
@@ -157,7 +168,7 @@ def save_tree_summary(all_tree_data, folder_name):
         })
 
     # Save to file
-    filename = os.path.join(OUTPUT_DIR, f"tree_summary_{folder_name.lower()}.json")
+    filename = os.path.join(SUMMARY_DIR, f"tree_summary_{folder_name.lower()}.json")
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(output_list, f, indent=4)
     
@@ -179,17 +190,17 @@ def get_species_mapping(folder_name):
         "priority": "u=1, i",
         "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
         "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "\"macOS\"",
+        "sec-ch-ua-platform": "\"Windows\"",
         "sec-fetch-dest": "empty",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-origin",
         "x-client-version": "v3.9.3",
         "x-requested-with": "XMLHttpRequest",
         # Cookie is required to authenticate the request
-        "cookie": "PHPSESSID=llf977tiukrjghiu799d1i6p9c; _ga=GA1.1.1170743925.1764087010; _ga_NEXVLPG3X9=GS2.1.s1764087009$o1$g1$t1764087165$j59$l0$h0",
+        "cookie": COOKIE,
         "Referer": f"https://pg-cloud.com/{folder_name}/",
         "Origin": "https://pg-cloud.com",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
     }
 
     # Payload reconstructed from user sample (action at the end)
@@ -224,7 +235,7 @@ def get_species_mapping(folder_name):
     data = response.json()
 
     # Debug: Save raw species response
-    debug_filename = os.path.join(OUTPUT_DIR, f"{folder_name}_species_debug.json")
+    debug_filename = os.path.join(RAW_DIR, f"{folder_name}_species_debug.json")
     with open(debug_filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2)
     print(f"Saved raw species response to {debug_filename}")
@@ -246,8 +257,8 @@ def scrape_city_trees(folder_name, extent_coordinates, show_archived="0", max_fe
     """
     Orchestrates the scraping of tree data for a given city folder and extent.
     """
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists(RAW_DIR):
+        os.makedirs(RAW_DIR)
 
     # 1. Get all IDs
     all_ids = get_all_tree_ids(folder_name, extent_coordinates, show_archived, max_features)
@@ -291,7 +302,7 @@ def scrape_city_trees(folder_name, extent_coordinates, show_archived="0", max_fe
 
     # 3. Save to file
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(OUTPUT_DIR, f"{folder_name.lower()}_trees_full_{timestamp}.json")
+    filename = os.path.join(RAW_DIR, f"{folder_name.lower()}_trees_full_{timestamp}.json")
 
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(all_tree_data, f, indent=2)
@@ -318,7 +329,7 @@ def scrape_city_trees(folder_name, extent_coordinates, show_archived="0", max_fe
     # Build GeoJSON
     geojson_data = build_geojson(groups, tree_map.species_data)
     
-    geojson_filename = os.path.join(OUTPUT_DIR, f"trees_{folder_name.lower()}.geojson")
+    geojson_filename = os.path.join(GEOJSON_DIR, f"trees_{folder_name.lower()}.geojson")
     with open(geojson_filename, 'w', encoding='utf-8') as f:
         json.dump(geojson_data, f, indent=2)
         
@@ -327,34 +338,74 @@ def scrape_city_trees(folder_name, extent_coordinates, show_archived="0", max_fe
     return all_tree_data
 
 def main():
-    # Define parameters for SanLeandroCA
-    san_leandro_folder = "SanLeandroCA"
-    san_leandro_extent = [
-        "-13614382.411135172",
-        "4523530.47036788",
-        "-13597260.516799292",
-        "4552500.104087961"
-    ]
+    # City Configurations
+    cities = {
+        "1": {
+            "name": "SanLeandroCA",
+            "folder": "SanLeandroCA",
+            "extent": [
+                "-13614382.411135172",
+                "4523530.47036788",
+                "-13597260.516799292",
+                "4552500.104087961"
+            ],
+            "kwargs": {}
+        },
+        "2": {
+            "name": "FremontCA",
+            "folder": "FremontCA",
+            "extent": [
+                "-13593557.169324214",
+                "4484157.9342681365",
+                "-13559313.380652456",
+                "4542097.201708301"
+            ],
+            "kwargs": {"show_archived": "1"}
+        },
+        "3": {
+            "name": "SanDiegoCA",
+            "folder": "SDTT",
+            "extent": [
+                "-13065792.309315076",
+                "3829227.1598276645",
+                "-13004642.686686935",
+                "3887166.427267828"
+            ],
+            "kwargs": {}
+        },
+        "4": {
+            "name": "ConcordCA",
+            "folder": "ConcordCA",
+            "extent": [
+                "-13598393.477503227",
+                "4544428.15576764",
+                "-13569347.40675486",
+                "4602596.73429266"
+            ],
+            "kwargs": {}
+        }
+    }
 
-    # Call the new reusable scrape_city_trees function for SanLeandroCA
-    print("\n--- Starting scraping for SanLeandroCA ---")
-    scrape_city_trees(san_leandro_folder, san_leandro_extent)
-    print("--- Finished scraping for SanLeandroCA ---\n")
+    print("\nAvailable Cities:")
+    for key, city in cities.items():
+        print(f"{key}. {city['name']}")
+    print("A. All Cities")
 
-    # Define parameters for FremontCA from the user's fetch call
-    fremont_folder = "FremontCA"
-    fremont_extent = [
-        "-13593557.169324214",
-        "4484157.9342681365",
-        "-13559313.380652456",
-        "4542097.201708301"
-    ]
+    choice = input("\nEnter the number of the city to download (or 'A' for all): ").strip().upper()
 
-    # Call the new reusable scrape_city_trees function for FremontCA
-    # Use show_archived="1" and max_features="2000" as per the user's provided fetch call
-    print("\n--- Starting scraping for FremontCA ---")
-    scrape_city_trees(fremont_folder, fremont_extent, show_archived="1")
-    print("--- Finished scraping for FremontCA ---\n")
+    selected_cities = []
+    if choice == 'A':
+        selected_cities = list(cities.values())
+    elif choice in cities:
+        selected_cities = [cities[choice]]
+    else:
+        print("Invalid selection. Exiting.")
+        return
+
+    for city in selected_cities:
+        print(f"\n--- Starting scraping for {city['name']} ---")
+        scrape_city_trees(city['folder'], city['extent'], **city['kwargs'])
+        print(f"--- Finished scraping for {city['name']} ---\n")
 
 if __name__ == "__main__":
     main()

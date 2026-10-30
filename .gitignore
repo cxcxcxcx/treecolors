@@ -1,6 +1,15 @@
 build/
 py/__pycache__/
 
+# Large / generated data stays out of git; curated species metadata is tracked.
+data/raw/
+data/output/
+data/*.csv
+py/data/
+web/trees.pmtiles
+web.tar.gz
+TreeData_PaloAlto_all.json
+
 # Created by https://www.toptal.com/developers/gitignore/api/node,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,macos
 

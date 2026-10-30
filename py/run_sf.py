@@ -12,9 +12,9 @@ from tree_data import (
 )
 
 # Define file paths for San Francisco data
-sf_raw_data_file = os.path.join(project_root, 'Street_Tree_List_20251103.csv')
-sf_summary_file = os.path.join(project_root, 'tree_summary_sf.json')
-sf_geojson_file = os.path.join(project_root, 'trees_sf.geojson')
+sf_raw_data_file = os.path.join(project_root, 'data', 'raw', 'Street_Tree_List_20251103.csv')
+sf_summary_file = os.path.join(project_root, 'data', 'output', 'summary', 'tree_summary_sf.json')
+sf_geojson_file = os.path.join(project_root, 'data', 'output', 'geojson', 'trees_sf.geojson')
 
 # --- Data Loading and Preparation ---
 if os.path.exists(sf_raw_data_file):

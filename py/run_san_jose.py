@@ -7,9 +7,9 @@ from tree_data import group_by_specifies, export_groups_as_json, build_geojson, 
 
 # Define file paths for San Jose data
 
-san_jose_raw_data_file = './Street_Tree_San_Jose.csv'
-san_jose_summary_file = './tree_summary_san_jose.json'
-san_jose_geojson_file = os.path.join(project_root, 'trees_san_jose.geojson')
+san_jose_raw_data_file = os.path.join(project_root, 'data', 'raw', 'Street_Tree_San_Jose.csv')
+san_jose_summary_file = os.path.join(project_root, 'data', 'output', 'summary', 'tree_summary_san_jose.json')
+san_jose_geojson_file = os.path.join(project_root, 'data', 'output', 'geojson', 'trees_san_jose.geojson')
 
 # --- Function Definitions (assuming these are defined elsewhere or in a preceding cell) ---
 # def group_by_specifies(...): ...
