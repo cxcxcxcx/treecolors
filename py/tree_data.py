@@ -274,7 +274,7 @@ def load_shared_tree_info(additional_species=None):
     Returns:
         TreeSpeciesMap instance with loaded species data.
     """
-    shared_info_file = os.path.join(project_root, 'data', 'tree_info', 'tree_info_palo_alto_1000_gpt4o.json')
+    shared_info_file = os.path.join(project_root, 'data', 'tree_info', 'species_info.json')
     tree_map = TreeSpeciesMap()
     
     if os.path.exists(shared_info_file):
@@ -326,7 +326,7 @@ def get_shared_tree_map(additional_species=None):
             print(f"Fetching {len(species_to_fetch)} additional species...")
             _tree_map_all_big.add_species_by_list(species_to_fetch)
             # Save updated tree info
-            shared_info_file = os.path.join(project_root, 'data', 'tree_info', 'tree_info_palo_alto_1000_gpt4o.json')
+            shared_info_file = os.path.join(project_root, 'data', 'tree_info', 'species_info.json')
             with open(shared_info_file, 'w') as f:
                 json.dump(_tree_map_all_big.species_data, f, indent=4)
             print(f"Updated tree info saved to {shared_info_file}")

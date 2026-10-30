@@ -9,21 +9,21 @@
     <meta name="theme-color" content="#2d4f64">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Interactive tree map for Palo Alto, San Jose, Cupertino, Berkeley, Fremont, Los Angeles, Oakland, San Diego, San Francisco, San Leandro, Concord, and nearby Bay Area cities. Discover deciduous trees with fall colors, evergreens, and ginkgo species with photos and species details.">
+        content="Interactive tree map for Washington DC, Baltimore, Philadelphia, Richmond, Arlington, Montgomery County, and Bay Area cities. Discover deciduous trees with fall colors, evergreens, and ginkgo species with photos and species details.">
     <meta name="keywords"
-        content="Bay Area trees, fall colors map, Palo Alto trees, San Jose trees, Cupertino trees, Berkeley trees, Fremont trees, Los Angeles trees, Oakland trees, San Diego trees, San Francisco trees, San Leandro trees, Concord trees, urban forestry, deciduous trees, ginkgo, evergreen">
-    <meta name="author" content="Bay Area Tree Map Project">
+        content="Washington DC trees, Baltimore trees, Philadelphia trees, Richmond trees, Arlington trees, Montgomery County trees, fall colors map, Bay Area trees, urban forestry, deciduous trees, ginkgo, evergreen">
+    <meta name="author" content="Fall Color Map Project">
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Fall Color Map | Explore Colorful Streets & Species">
     <meta property="og:description"
-        content="Explore vibrant fall foliage across Bay Area neighborhoods. Click any tree to see species details, photos, and seasonal highlights.">
+        content="Explore vibrant fall foliage across Washington DC, Baltimore, Philadelphia, Richmond, and the Bay Area. Click any tree to see species details, photos, and seasonal highlights.">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="en_US">
     <meta property="og:site_name" content="Fall Color Map">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Fall Color Map">
     <meta name="twitter:description"
-        content="Browse Bay Area neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
+        content="Browse East Coast and Bay Area neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <!-- PMTiles script left here for future use, but GeoJSON will be used below -->
@@ -33,8 +33,14 @@
         "@context": "https://schema.org",
         "@type": "WebPage",
         "name": "Fall Color Map",
-        "description": "Interactive map highlighting tree species across Bay Area neighborhoods, including deciduous trees with fall colors, ginkgo, and evergreens.",
+        "description": "Interactive map highlighting tree species across Washington DC, Baltimore, Philadelphia, Richmond, and Bay Area neighborhoods, including deciduous trees with fall colors, ginkgo, and evergreens.",
         "keywords": [
+            "Washington DC trees",
+            "Baltimore trees",
+            "Philadelphia trees",
+            "Richmond trees",
+            "Arlington trees",
+            "Montgomery County trees",
             "Bay Area trees",
             "fall foliage map",
             "urban forestry",
@@ -477,8 +483,8 @@
             <button type="button" class="legend-info-close" id="legend-info-close"
                 aria-label="Close introduction">&times;</button>
             <h4 id="legend-info-title">Explore Fall Color Trees</h4>
-            <p>This map highlights deciduous trees, evergreens, and ginkgo across Bay Area cities so you can scout
-                neighborhoods for vibrant fall foliage.</p>
+            <p>This map highlights deciduous trees, evergreens, and ginkgo across Washington DC, Baltimore, Philadelphia,
+                Richmond, and Bay Area cities so you can scout neighborhoods for vibrant fall foliage.</p>
             <p>The colors mirror the legend: rich greens for year-round foliage, golden hues for ginkgo, and warm reds
                 and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
             <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you
@@ -500,9 +506,23 @@
                     - Street Tree Dataset</li>
                 <li><a href="https://services6.arcgis.com/evmyRZRrsopdeog7/arcgis/rest/services/TreeData/FeatureServer/0"
                         target="_blank" rel="noopener">Palo Alto</a> - Tree Data Feature Service</li>
+                <li><a href="https://opendata.dc.gov/datasets/urban-forestry-street-trees"
+                        target="_blank" rel="noopener">Washington DC</a> - DDOT Urban Forestry Street Trees</li>
+                <li><a href="https://www.nps.gov/subjects/cherryblossom/index.htm"
+                        target="_blank" rel="noopener">Washington DC</a> - NPS Tidal Basin Cherry Trees</li>
+                <li><a href="https://gisdata-arlgis.opendata.arcgis.com/"
+                        target="_blank" rel="noopener">Arlington County</a> - DPR Trees</li>
+                <li><a href="https://data.montgomerycountymd.gov/"
+                        target="_blank" rel="noopener">Montgomery County</a> - MCDOT and Parks tree inventories</li>
+                <li><a href="https://data.baltimorecity.gov/"
+                        target="_blank" rel="noopener">Baltimore City</a> - TreeBaltimore inventory</li>
+                <li><a href="https://opendataphilly.org/datasets/philadelphia-tree-inventory/"
+                        target="_blank" rel="noopener">Philadelphia</a> - PPR Tree Inventory</li>
+                <li><a href="https://www.rva.gov/public-works/"
+                        target="_blank" rel="noopener">Richmond</a> - Tree Inventory</li>
             </ul>
-            <p><strong>Other Supported Cities:</strong> Cupertino, Fremont, Los Angeles, San Diego, San Francisco, San
-                Leandro, Concord.</p>
+            <p><strong>Also Included:</strong> Cupertino, Fremont, Los Angeles, San Diego, San Francisco, San Leandro,
+                Concord, Gaithersburg, and Bethesda.</p>
         </div>
         <div class="legend-item">
             <div class="legend-color"
@@ -1070,6 +1090,10 @@
             const combinedNames = [commonNamesText, chineseNamesText].filter(Boolean).join(' · ');
             if (combinedNames) {
                 basicsParts.push(`<div><strong>Common:</strong> ${escapeHtml(combinedNames)}</div>`);
+            }
+            const city = (properties.city || '').trim();
+            if (city) {
+                basicsParts.push(`<div><strong>Location:</strong> ${escapeHtml(city)}</div>`);
             }
             const bloomingSeason = (properties.blooming_season || '').trim();
             if (bloomingSeason && bloomingSeason.toLowerCase() !== 'n/a') {

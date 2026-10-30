@@ -1,14 +1,29 @@
-tippecanoe --force -o data/output/trees.mbtiles -zg --drop-densest-as-needed -l trees \
- data/output/geojson/trees_palo_alto.geojson \
- data/output/geojson/trees_san_jose.geojson \
- data/output/geojson/trees_cupertino.geojson \
- data/output/geojson/trees_sf.geojson \
- data/output/geojson/trees_berkeley.geojson \
- data/output/geojson/trees_fremontca.geojson \
- data/output/geojson/trees_sanleandroca.geojson \
- data/output/geojson/trees_sdtt.geojson \
- data/output/geojson/trees_los_angeles.geojson \
- data/output/geojson/trees_vancouver.geojson \
- data/output/geojson/trees_concordca.geojson
-#  data/output/geojson/trees_oakland.geojson (bad lat lng)
+#!/usr/bin/env bash
+# Build one vector tileset from every city GeoJSON.
+#
+# Adding a city does not require editing this file: drop its
+# data/output/geojson/trees_<slug>.geojson in place and rerun.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+mapfile -t files < <(
+  find data/output/geojson -maxdepth 1 -name 'trees_*.geojson' \
+    ! -name 'trees_oakland.geojson' | sort
+)
+
+if [ "${#files[@]}" -eq 0 ]; then
+  echo "No trees_*.geojson files found under data/output/geojson" >&2
+  exit 1
+fi
+
+printf 'Building tiles from %d GeoJSON files:\n' "${#files[@]}"
+printf '  %s\n' "${files[@]}"
+
+tippecanoe --force \
+  -o data/output/trees.mbtiles \
+  -zg --drop-densest-as-needed \
+  -l trees \
+  "${files[@]}"
+
 pmtiles convert data/output/trees.mbtiles web/trees.pmtiles
+echo "Wrote web/trees.pmtiles"

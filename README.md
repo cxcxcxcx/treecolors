@@ -1,69 +1,87 @@
-# Bay Area Tree Map Project
+# Fall Color Tree Map
 
-This project visualizes tree data for various cities, primarily in the Bay Area (and now expanding to other regions like Vancouver).
+Interactive map of individual street/park trees, colored by whether the species
+is evergreen, deciduous, known for fall color, or a ginkgo. One PMTiles file
+contains every city; there is no per-city selector.
 
-## Directory Structure
+## Cities
 
-The project follows a specific directory structure to organize data and scripts:
+| Group | Source | Kept trees |
+|---|---|---:|
+| Washington, DC | DDOT UFA Street Trees + NPS Tidal Basin cherry trees | ~201k |
+| Arlington, VA | Arlington County DPR Trees | ~29k |
+| Montgomery County, MD | MCDOT street trees + Montgomery Parks + Gaithersburg + Bethesda BUP | ~106k |
+| Baltimore, MD | Baltimore City Forestry / TreeBaltimore | ~113k |
+| Philadelphia, PA | Philadelphia Parks & Recreation 2023 inventory | ~150k |
+| Richmond, VA | Richmond Tree Inventory | ~77k |
+| Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` scripts | existing |
 
-- **`data/`**: The main data directory.
-    - **`raw/`**: Contains raw input files (CSVs, ZIPs, JSONs) downloaded from city open data portals.
-    - **`tree_info/`**: Contains JSON files with AI-generated tree species information (e.g., `tree_info_palo_alto_1000_gpt4o.json`).
-    - **`output/`**: Contains generated output files.
-        - **`geojson/`**: Generated GeoJSON files for each city (e.g., `trees_palo_alto.geojson`).
-        - **`summary/`**: Intermediate summary JSON files (e.g., `tree_summary_palo_alto.json`).
-        - `trees.mbtiles`: The final vector tileset generated from all GeoJSONs.
-- **`py/`**: Contains Python scripts for data processing.
-    - `pgcloud.py`: Main script for fetching data from pg-cloud.com based cities.
-    - `tree_data.py`: Shared utilities for processing tree data, species mapping, and GeoJSON generation.
-    - `run_*.py`: Individual scripts for processing specific cities (e.g., `run_vancouver.py`, `run_palo_alto.py`).
-- **`web/`**: Contains the frontend web application.
-- **`build_tiles.sh`**: Shell script to generate the `trees.mbtiles` file using `tippecanoe`.
+The East Coast batch is fetched by the city registry in
+`py/tree_pipeline/cities.py`. Adding a city is a data change: add a `CitySpec`
+with its ArcGIS layer URL and field mapping, then run the pipeline.
 
-## How to Add a New City
+## Layout
 
-To add a new city to the map, follow these steps:
+```text
+data/
+  raw/<city>/<source>.jsonl      # fetched, normalized records (git-ignored)
+  tree_info/species_info.json    # curated species trait knowledge base (tracked)
+  tree_info/species_aliases.json # enrichment aliases (tracked)
+  output/geojson/trees_*.geojson # one file per city
+  output/summary/                # species + coordinate summaries
+  output/qa/                     # per-city QA report
+web/
+  index.html                     # MapLibre frontend
+  trees.pmtiles                  # generated, git-ignored
+```
 
-1.  **Obtain Data**: Find a source for the city's tree data (usually a CSV or Shapefile from an open data portal).
+## Pipeline
 
-2.  **Create a Processing Script**:
-    - Create a new Python script in `py/` named `run_<city_name>.py`.
-    - Use existing scripts (e.g., `py/run_vancouver.py` or `py/run_berkeley.py`) as a template.
-    - The script should:
-        - Download the raw data to `data/raw/`.
-        - Load and clean the data (standardize column names, handle missing coordinates).
-        - **Species Name**: Construct a clean species name. Ideally use `Genus Species` format (e.g., "Acer rubrum"). Fallback to Common Name if Scientific Name is unavailable or poor quality.
-        - Group data by species using `tree_data.group_by_specifies`.
-        - Save a summary JSON to `data/output/summary/`.
-        - Fetch/Update tree info using `tree_data.get_shared_tree_map`.
-        - Generate a GeoJSON file to `data/output/geojson/`.
+Run from `py/`:
 
-3.  **Update `build_tiles.sh`**:
-    - Add the new GeoJSON file path to the `tippecanoe` command in `build_tiles.sh`.
+```bash
+cd py
 
-4.  **Run the Pipeline**:
-    - Run your python script: `python3 py/run_<city_name>.py`
-    - Run the tile builder: `./build_tiles.sh`
+python -m tree_pipeline list
+python -m tree_pipeline fetch --city washington_dc
+python -m tree_pipeline process --city washington_dc
+python -m tree_pipeline all --city washington_dc
 
-## Running the Pipeline
+# All configured cities
+python -m tree_pipeline all --all
 
-1.  **Process Data**:
-    Run the individual city scripts to update their GeoJSONs.
-    ```bash
-    python3 py/run_vancouver.py
-    # ... run other scripts as needed
-    ```
+# Fill missing species with GPT-4o (offline annotation, not location prediction)
+python -m tree_pipeline enrich --all
+```
 
-2.  **Build Tiles**:
-    Generate the vector tileset.
-    ```bash
-    ./build_tiles.sh
-    ```
-    This will create `data/output/trees.mbtiles` and convert it to `web/trees.pmtiles`.
+Then build the single tileset from the repository root:
 
-## Dependencies
+```bash
+./build_tiles.sh
+```
 
-- Python 3
-- pandas, requests, geopandas, shapely, pyproj
-- `tippecanoe` (for tile generation)
-- `pmtiles` (for converting mbtiles to pmtiles)
+`build_tiles.sh` auto-discovers every `data/output/geojson/trees_*.geojson`,
+so adding a city does not require editing the shell script.
+
+## Species / fall-color logic
+
+`tree_data.build_geojson` / `tree_pipeline.export` look up each species in
+`data/tree_info/species_info.json` and apply a fixed rule:
+
+```text
+Ginkgo                    -> orange
+evergreen                 -> green
+deciduous + fall_colors   -> red
+deciduous                 -> brown
+```
+
+The knowledge base contains `deciduous`, `fall_colors`, `beautiful_flowers`,
+`blooming_season`, Chinese common names, and a short explanation per species.
+Names from city inventories are normalized first (cultivars, `spp.`, `var.`,
+hybrid `x`, comma-inverted common names, `SCIENTIFIC - COMMON`). Missing
+species are filled by the `enrich` command and cached for future runs.
+
+## Deployment
+
+`push.sh` syncs `web/` to the production host and bumps the service-worker
+cache version. Large raw data and generated tiles stay out of git.
