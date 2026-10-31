@@ -1,11 +1,11 @@
-const CACHE_NAME = 'tree-map-v20261031-044638';
+const CACHE_NAME = 'tree-map-v20261031-045407';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './favicon.ico',
-    './icon-botanisense-red-side-192.png',
-    './icon-botanisense-red-side-512.png',
-    './apple-touch-botanisense-red-side.png',
+    './icon-botanisense-red-side-192.png?v=20261031a',
+    './icon-botanisense-red-side-512.png?v=20261031a',
+    './apple-touch-botanisense-red-side.png?v=20261031a',
     './app.webmanifest',
     './manifest.json',
     './species_stats.json',
