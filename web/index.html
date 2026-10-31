@@ -262,6 +262,25 @@
             line-height: 1;
         }
 
+        .plate-wrap {
+            margin-top: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .plate-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 6px;
+        }
+
+        .plate-caption {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #888;
+        }
+
         .wiki-section {
             margin-top: 12px;
             padding-top: 10px;
@@ -1131,6 +1150,21 @@
             }
         }
 
+        function buildPlateSection(speciesName) {
+            const found = plateFor(speciesName);
+            if (!found) return '';
+            const label = found.common ? `${found.common} botanical plate` : `${speciesName} botanical plate`;
+            return `
+                <div class="wiki-section">
+                    <h5>Botanical Plate</h5>
+                    <div class="plate-wrap">
+                        <img src="./plates/${encodeURIComponent(found.plate)}.png" alt="${escapeHtml(label)}" loading="lazy" onerror="this.closest('.wiki-section').remove()">
+                    </div>
+                    <div class="plate-caption">AI-generated illustration — check details against photos below.</div>
+                </div>
+            `;
+        }
+
         function buildWikipediaSection(speciesName, wikiEntry, isLoading) {
             const escapedSpecies = escapeHtml(speciesName);
             if (isLoading) {
@@ -1230,6 +1264,26 @@
                 }
             }
             return '';
+        }
+
+        function plateFor(speciesName) {
+            const key = (speciesName || '').trim().toLowerCase();
+            for (const city of speciesStats) {
+                for (const entry of (city.species || [])) {
+                    if (entry.species === speciesName && entry.plate) {
+                        return { plate: entry.plate, common: entry.common || '' };
+                    }
+                }
+            }
+            // case-insensitive fallback across all cities
+            for (const city of speciesStats) {
+                for (const entry of (city.species || [])) {
+                    if (entry.species && entry.species.toLowerCase() === key && entry.plate) {
+                        return { plate: entry.plate, common: entry.common || '' };
+                    }
+                }
+            }
+            return null;
         }
 
         function aggregateSpecies(rows) {
@@ -1485,6 +1539,7 @@
                             <span>Flowers ${flowersValue}</span>
                         </div>
                     </div>
+                    ${buildPlateSection(speciesName)}
                     ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
                 </div>
             `;
@@ -1638,7 +1693,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261031-053325';
+                const SW_QUERY = 'tree-map-v20261031-060126';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

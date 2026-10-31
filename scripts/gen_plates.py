@@ -149,6 +149,8 @@ def main() -> int:
     parser.add_argument("--all-fall", action="store_true",
                         help="All fall-color species in the knowledge base")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--coverage", type=float, default=0.0,
+                        help="Top displays covering PCT of all trees (e.g. 80)")
     parser.add_argument("--out", default="samples")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
@@ -174,20 +176,53 @@ def main() -> int:
         else:
             names.extend([name for name, _ in counts.most_common(args.limit or 4)])
 
+    if args.coverage > 0:
+        import glob
+        from collections import Counter
+        from tree_pipeline.species import load_resolver as _lr
+        counts: Counter[str] = Counter()
+        for path in glob.glob(str(PROJECT_ROOT / "data" / "output" / "qa" / "*.json")):
+            with open(path) as handle:
+                qa = json.load(handle)
+            for entry in qa.get("species", []):
+                counts[entry["species"]] += entry["count"]
+        grand = sum(counts.values())
+        resolver = _lr()
+        seen_keys: set[str] = set()
+        key_names: list[str] = []
+        cum = 0
+        for display, _ in counts.most_common():
+            hit = resolver.resolve(display)
+            key = hit.key if hit else display.lower()
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            key_names.append(display)
+            cum += counts[display]
+            if cum / grand >= args.coverage / 100:
+                break
+        names = key_names
+        print(f"coverage {args.coverage}%: {len(names)} unique keys")
+
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     done = skipped = failed = 0
+    done_keys: set[str] = set()
     for name in names:
-        slug = "".join(c if c.isalnum() else "_" for c in name.lower()).strip("_")
-        target = out_dir / f"{slug}.png"
-        if target.exists() and not args.force:
-            print(f"  [skip] {name} (exists)")
-            skipped += 1
-            continue
         spec = _describe(name, kb)
         if spec is None:
             print(f"  [unresolved] {name}")
             failed += 1
+            continue
+        if spec["key"] in done_keys:
+            skipped += 1
+            continue
+        done_keys.add(spec["key"])
+        slug = "".join(c if c.isalnum() else "_" for c in spec["key"].lower()).strip("_")
+        target = out_dir / f"{slug}.png"
+        if target.exists() and not args.force:
+            print(f"  [skip] {name} (exists)")
+            skipped += 1
             continue
         prompt = GUIDE_PROMPT.format(**spec)
         print(f"  [gen] {name} ...", flush=True)

@@ -103,10 +103,22 @@ def _qa_by_slug() -> dict[str, dict[str, Any]]:
     return result
 
 
+PLATE_DIR = PROJECT_ROOT / "samples" / "plates80"
+
+
+def _plate_files() -> set[str]:
+    if not PLATE_DIR.exists():
+        return set()
+    return {path.stem for path in PLATE_DIR.glob("*.png")}
+
+
 def _with_common(entries: list[dict[str, Any]], resolver) -> list[dict[str, Any]]:
     """Attach a display common name looked up from the species knowledge base."""
+    plates = _plate_files()
     for entry in entries:
         common = ""
+        key = ""
+        plate = ""
         hit = resolver.resolve(entry["species"])
         if hit is not None:
             display = entry["species"].strip().lower()
@@ -125,6 +137,13 @@ def _with_common(entries: list[dict[str, Any]], resolver) -> list[dict[str, Any]
                 common = name
                 break
         entry["common"] = common
+        if hit is not None:
+            key = hit.key
+            slug = "".join(c if c.isalnum() else "_" for c in key.lower()).strip("_")
+            if slug in plates:
+                plate = slug
+        entry["key"] = key
+        entry["plate"] = plate
     return entries
 
 
