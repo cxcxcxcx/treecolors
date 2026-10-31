@@ -142,7 +142,7 @@
   "explanation": "Quercus agrifolia is an evergreen oak native to the coastal regions of California. It is known for its rugged appearance and ecological significance."
  },
  "ulmus parvifolia": {
-  "deciduous": false,
+  "deciduous": true,
   "fall_colors": false,
   "beautiful_flowers": false,
   "blooming_season": "Late Summer to Fall",
@@ -161,7 +161,7 @@
    "Greenstone elm",
    "Elm, September"
   ],
-  "explanation": "Ulmus parvifolia is an adaptable and hardy tree, often used in urban landscaping. Its distinctive bark and form make it an attractive choice."
+  "explanation": "Chinese elm is a deciduous tree (Missouri Botanical Garden); fall color is insignificant."
  },
  "sequoia sempervirens": {
   "deciduous": false,
@@ -1127,7 +1127,7 @@
  },
  "gleditsia triacanthos": {
   "deciduous": true,
-  "fall_colors": false,
+  "fall_colors": true,
   "beautiful_flowers": false,
   "blooming_season": "Late Spring",
   "chinese_common_names": [
@@ -1139,7 +1139,7 @@
    "Honey Locust",
    "GASH"
   ],
-  "explanation": "Gleditsia triacanthos, or honey locust, is a tree native to central North America. It is used in landscaping for its delicate, fern-like foliage and its tolerance to urban conditions."
+  "explanation": "Honeylocust is a deciduous tree whose fine foliage turns a bright, clear yellow in fall (Missouri Botanical Garden)."
  },
  "casuarina cunninghamiana": {
   "common_names": [
@@ -1156,7 +1156,7 @@
  },
  "cercis canadensis": {
   "deciduous": true,
-  "fall_colors": false,
+  "fall_colors": true,
   "beautiful_flowers": true,
   "blooming_season": "Spring",
   "chinese_common_names": [
@@ -1170,7 +1170,7 @@
    "Red Bud",
    "CERA"
   ],
-  "explanation": "Cercis canadensis, commonly known as the Eastern Redbud, is a small, deciduous tree native to eastern North America. It is well-known for its profusion of early spring blossoms, which are small and pink to reddish-purple, making the tree a popular ornamental choice."
+  "explanation": "Eastern redbud is a deciduous tree with attractive yellow fall color (NCSU Extension)."
  },
  "tilia cordata 'greenspire'": {
   "deciduous": true,
@@ -2298,7 +2298,7 @@
  },
  "prunus yedoensis": {
   "deciduous": true,
-  "fall_colors": false,
+  "fall_colors": true,
   "beautiful_flowers": true,
   "blooming_season": "Spring",
   "chinese_common_names": [
@@ -2307,7 +2307,7 @@
   "common_names": [
    "Yoshino Cherry"
   ],
-  "explanation": "Prunus yedoensis, commonly known as Yoshino Cherry, is widely celebrated for its stunning springtime blooms of delicate pink-white flowers. While it is a deciduous tree, it's admired more for spring blossoms than fall foliage."
+  "explanation": "Yoshino cherry foliage turns yellow with bronze tints, to yellow-orange in fall (Missouri Botanical Garden). A signature spring bloomer and reliable fall color in DC."
  },
  "washingtonia robusta": {
   "deciduous": false,
@@ -5626,20 +5626,6 @@
    "Maple"
   ],
   "explanation": "Acer species, commonly referred to as maples, are widely known for their vibrant fall foliage. They are popular ornamental trees with diverse forms and sizes."
- },
- "prunus sp": {
-  "deciduous": true,
-  "fall_colors": false,
-  "beautiful_flowers": true,
-  "blooming_season": "Spring",
-  "chinese_common_names": [
-   "李属"
-  ],
-  "common_names": [
-   "Flowering Cherry",
-   "Flowering Plum"
-  ],
-  "explanation": "Prunus species, including cherries, plums, and almonds, are prized for their beautiful spring blossoms. They are widely planted as ornamental trees."
  },
  "fraxinus sp": {
   "deciduous": true,
@@ -15126,17 +15112,6 @@
   ],
   "explanation": "Engelmann Oak is a species of oak native to Southern California and northwestern Baja California. It is less widespread and recognized for its drought tolerance."
  },
- "platanus × acerifolia": {
-  "deciduous": true,
-  "fall_colors": true,
-  "beautiful_flowers": false,
-  "blooming_season": "N/A",
-  "chinese_common_names": [],
-  "common_names": [
-   "London Plane Tree"
-  ],
-  "explanation": "The London Plane Tree is a hybrid between the American sycamore and the Oriental plane tree, known for its ability to thrive in urban areas and its characteristic flaky bark."
- },
  "unknown_species": {
   "deciduous": "N/A",
   "fall_colors": "N/A",
@@ -16826,20 +16801,6 @@
    "Coral Tree"
   ],
   "explanation": "Valued for its striking red or orange flowers and thorny trunk, creating a dramatic display in gardens, especially in warmer regions."
- },
- "platanus x hispanica": {
-  "deciduous": true,
-  "fall_colors": true,
-  "beautiful_flowers": false,
-  "blooming_season": "N/A",
-  "chinese_common_names": [
-   "伦敦悬铃木"
-  ],
-  "common_names": [
-   "Liberty London Plane Tree",
-   "London Plane"
-  ],
-  "explanation": "A hybrid between two plane tree species, it is known for its mottled bark, resilience to urban pollution, and spectacular autumn colors."
  },
  "x chitalpa tashkentensis": {
   "deciduous": true,
@@ -19550,7 +19511,7 @@
  },
  "prunus x yedoensis": {
   "deciduous": true,
-  "fall_colors": false,
+  "fall_colors": true,
   "beautiful_flowers": true,
   "blooming_season": "Spring",
   "chinese_common_names": [
@@ -19562,7 +19523,7 @@
    "Prunus x yodoensis",
    "Prunus yeodensis"
   ],
-  "explanation": "Known for its beautiful cherry blossoms, this tree is widely planted in Japan and has become a symbol of spring."
+  "explanation": "Yoshino cherry foliage turns yellow with bronze tints, to yellow-orange in fall (Missouri Botanical Garden)."
  },
  "fraxinus americana": {
   "deciduous": true,
@@ -19905,7 +19866,7 @@
  },
  "quercus phellos": {
   "deciduous": true,
-  "fall_colors": false,
+  "fall_colors": true,
   "beautiful_flowers": false,
   "blooming_season": "Spring",
   "chinese_common_names": [
@@ -19915,7 +19876,7 @@
    "QUPE",
    "Willow Oak"
   ],
-  "explanation": "Quercus phellos (willow oak) is a deciduous oak with narrow willow-like leaves. Its autumn foliage is usually muted yellow to golden-bronze or russet, not the vivid red associated with maples, so the map groups it with other deciduous trees."
+  "explanation": "Quercus phellos (willow oak) is a deciduous oak with narrow willow-like leaves. Fall foliage turns yellow to bronze and russet-red, variable but showy (NCSU lists Gold/Yellow, Orange, Red)."
  },
  "acer cappadocicum": {
   "deciduous": true,
