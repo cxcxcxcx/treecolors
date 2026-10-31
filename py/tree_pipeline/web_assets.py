@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from .cities import CITIES
+from .species import load_resolver
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -102,7 +103,33 @@ def _qa_by_slug() -> dict[str, dict[str, Any]]:
     return result
 
 
+def _with_common(entries: list[dict[str, Any]], resolver) -> list[dict[str, Any]]:
+    """Attach a display common name looked up from the species knowledge base."""
+    for entry in entries:
+        common = ""
+        hit = resolver.resolve(entry["species"])
+        if hit is not None:
+            display = entry["species"].strip().lower()
+            for name in hit.info.get("common_names") or []:
+                name = str(name).strip()
+                if not name:
+                    continue
+                low = name.lower()
+                if low == display or low in display or display in low:
+                    continue
+                # skip inventory codes such as QUPE
+                if name.isupper() and len(name) <= 6 and " " not in name:
+                    continue
+                if name.islower() or name.isupper():
+                    name = name.title()
+                common = name
+                break
+        entry["common"] = common
+    return entries
+
+
 def build_species_stats() -> dict[str, Any]:
+    resolver = load_resolver()
     qa_by_slug = _qa_by_slug()
     cities: list[dict[str, Any]] = []
     for path in sorted(GEOJSON_DIR.glob("trees_*.geojson")):
@@ -120,7 +147,7 @@ def build_species_stats() -> dict[str, Any]:
                     "name": meta["name"],
                     "bbox": meta.get("bbox") or qa.get("bbox"),
                     "total": qa["kept"],
-                    "species": qa["species"],
+                    "species": _with_common(qa["species"], resolver),
                 }
             )
             print(f"  stats {slug}: {qa['kept']:,} (QA)")
@@ -148,15 +175,18 @@ def build_species_stats() -> dict[str, Any]:
                 "name": meta["name"],
                 "bbox": meta.get("bbox"),
                 "total": sum(counts.values()),
-                "species": [
-                    {
-                        "species": species,
-                        "count": count,
-                        "color": colors[species][0],
-                        "color_range": colors[species][1],
-                    }
-                    for species, count in counts.most_common()
-                ],
+                "species": _with_common(
+                    [
+                        {
+                            "species": species,
+                            "count": count,
+                            "color": colors[species][0],
+                            "color_range": colors[species][1],
+                        }
+                        for species, count in counts.most_common()
+                    ],
+                    resolver,
+                ),
             }
         )
         del data

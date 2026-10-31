@@ -125,7 +125,6 @@
         }
 
         .legend-info-button,
-        .legend-copyright-button,
         .legend-locate-button,
         .legend-install-button {
             width: 28px;
@@ -142,15 +141,9 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        .legend-copyright-button {
-            font-size: 12px;
-            font-weight: bold;
-        }
 
         .legend-info-button:hover,
         .legend-info-button:focus,
-        .legend-copyright-button:hover,
-        .legend-copyright-button:focus,
         .legend-locate-button:hover,
         .legend-locate-button:focus,
         .legend-install-button:hover,
@@ -186,78 +179,21 @@
         }
 
         .legend-info-popup,
-        .legend-copyright-popup {
-            position: absolute;
-            top: calc(100% + 12px);
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-            padding: 14px;
-            font-size: 13px;
-            line-height: 1.5;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            z-index: 3;
-        }
 
         .legend-info-popup.hidden,
-        .legend-copyright-popup.hidden {
-            display: none;
-        }
 
         .legend-info-popup h4,
-        .legend-copyright-popup h4 {
-            margin: 0 0 8px 0;
-            font-size: 15px;
-            color: #2d4f64;
-        }
 
         .legend-info-popup p,
-        .legend-copyright-popup p {
-            margin: 6px 0;
-            color: #444;
-        }
 
-        .legend-copyright-popup ul {
-            margin: 8px 0;
-            padding-left: 20px;
-        }
 
-        .legend-copyright-popup li {
-            margin: 6px 0;
-        }
 
-        .legend-copyright-popup a {
-            color: #1a5dab;
-            text-decoration: none;
-        }
 
-        .legend-copyright-popup a:hover {
-            text-decoration: underline;
-        }
 
         .legend-info-close,
-        .legend-copyright-close {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            border: none;
-            background: transparent;
-            color: #2d4f64;
-            font-size: 18px;
-            cursor: pointer;
-            line-height: 1;
-            padding: 4px;
-        }
 
         .legend-info-close:hover,
         .legend-info-close:focus,
-        .legend-copyright-close:hover,
-        .legend-copyright-close:focus {
-            color: #000;
-            outline: none;
-        }
 
         .info-popup {
             background: white;
@@ -520,6 +456,17 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            line-height: 1.25;
+        }
+
+        .species-sub {
+            display: block;
+            font-size: 11px;
+            color: #8a94a0;
+            font-style: italic;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .species-count {
@@ -604,21 +551,13 @@
             }
 
             .legend-info-button,
-            .legend-copyright-button,
             .legend-locate-button {
                 width: 26px;
                 height: 26px;
                 font-size: 14px;
             }
 
-            .legend-copyright-button {
-                font-size: 11px;
-            }
 
-            .legend-copyright-popup {
-                font-size: 12px;
-                padding: 12px;
-            }
 
             .maplibregl-popup-close-button {
                 width: 30px;
@@ -653,8 +592,6 @@
                 </button>
                 <button type="button" class="legend-info-button" id="legend-info-button" aria-label="About this map"
                     aria-expanded="false">i</button>
-                <button type="button" class="legend-copyright-button" id="legend-copyright-button"
-                    aria-label="Copyright and data sources" aria-expanded="false">©</button>
             </div>
         </div>
         <div class="legend-info-popup hidden" id="legend-info-popup" role="dialog" aria-modal="false"
@@ -668,11 +605,7 @@
                 and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
             <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you
                 recognize each tree in the real world.</p>
-        </div>
-        <div class="legend-copyright-popup hidden" id="legend-copyright-popup" role="dialog" aria-modal="false"
-            aria-labelledby="legend-copyright-title">
-            <button type="button" class="legend-copyright-close" id="legend-copyright-close"
-                aria-label="Close copyright">&times;</button>
+            <div id="learia-label="Close copyright">&times;</button>
             <h4 id="legend-copyright-title">Copyright & Data Sources</h4>
             <p>All tree data is from public tree datasets. Species information is annotated using AI.</p>
             <p><strong>Source Data:</strong></p>
@@ -801,8 +734,8 @@
                     }
                 ]
             },
-            center: [-122.1430, 37.4419], // Default to Palo Alto area
-            zoom: 13
+            center: [-98.5, 39.8], // Continental USA; refined by fitBounds once tiles load
+            zoom: 3
         });
 
         let speciesStats = [];
@@ -832,9 +765,6 @@
         const legendInfoButton = document.getElementById('legend-info-button');
         const legendInfoPopup = document.getElementById('legend-info-popup');
         const legendInfoClose = document.getElementById('legend-info-close');
-        const legendCopyrightButton = document.getElementById('legend-copyright-button');
-        const legendCopyrightPopup = document.getElementById('legend-copyright-popup');
-        const legendCopyrightClose = document.getElementById('legend-copyright-close');
         const legendLocateButton = document.getElementById('legend-locate-button');
 
         // Add user location marker
@@ -889,31 +819,8 @@
         function toggleLegendInfo() {
             if (legendInfoPopup.classList.contains('hidden')) {
                 openLegendInfo();
-                // Close copyright popup if open
-                closeLegendCopyright();
             } else {
                 closeLegendInfo();
-            }
-        }
-
-        function openLegendCopyright() {
-            legendCopyrightPopup.classList.remove('hidden');
-            legendCopyrightButton.setAttribute('aria-expanded', 'true');
-        }
-
-        function closeLegendCopyright() {
-            legendCopyrightPopup.classList.add('hidden');
-            legendCopyrightButton.setAttribute('aria-expanded', 'false');
-            legendCopyrightButton.focus({ preventScroll: true });
-        }
-
-        function toggleLegendCopyright() {
-            if (legendCopyrightPopup.classList.contains('hidden')) {
-                openLegendCopyright();
-                // Close info popup if open
-                closeLegendInfo();
-            } else {
-                closeLegendCopyright();
             }
         }
 
@@ -927,27 +834,11 @@
             closeLegendInfo();
         });
 
-        legendCopyrightButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-            toggleLegendCopyright();
-        });
-
-        legendCopyrightClose.addEventListener('click', (event) => {
-            event.stopPropagation();
-            closeLegendCopyright();
-        });
-
         document.addEventListener('click', (event) => {
             if (!legendInfoPopup.classList.contains('hidden')) {
                 if (!legendInfoPopup.contains(event.target) && event.target !== legendInfoButton) {
                     legendInfoPopup.classList.add('hidden');
                     legendInfoButton.setAttribute('aria-expanded', 'false');
-                }
-            }
-            if (!legendCopyrightPopup.classList.contains('hidden')) {
-                if (!legendCopyrightPopup.contains(event.target) && event.target !== legendCopyrightButton) {
-                    legendCopyrightPopup.classList.add('hidden');
-                    legendCopyrightButton.setAttribute('aria-expanded', 'false');
                 }
             }
         });
@@ -1327,6 +1218,15 @@
             return null;
         }
 
+        function commonNameFor(species) {
+            for (const city of speciesStats) {
+                for (const entry of (city.species || [])) {
+                    if (entry.species === species && entry.common) return entry.common;
+                }
+            }
+            return '';
+        }
+
         function aggregateSpecies(rows) {
             const bySpecies = new Map();
             rows.forEach((row) => {
@@ -1334,9 +1234,11 @@
                 const current = bySpecies.get(row.species) || {
                     species: row.species,
                     count: 0,
-                    color: row.color || '#888888'
+                    color: row.color || '#888888',
+                    common: row.common || commonNameFor(row.species)
                 };
                 current.count += row.count || 1;
+                if (!current.common && row.common) current.common = row.common;
                 bySpecies.set(row.species, current);
             });
             return Array.from(bySpecies.values()).sort((a, b) => b.count - a.count);
@@ -1367,7 +1269,8 @@
                 features.map((feature) => ({
                     species: feature.properties.species,
                     count: 1,
-                    color: feature.properties.color
+                    color: feature.properties.color,
+                    common: commonNameFor(feature.properties.species)
                 }))
             );
         }
@@ -1393,7 +1296,8 @@
             const total = items.reduce((sum, item) => sum + item.count, 0);
             const term = speciesSearchTerm.trim().toLowerCase();
             const filtered = term
-                ? items.filter((item) => item.species.toLowerCase().includes(term))
+                ? items.filter((item) => item.species.toLowerCase().includes(term) ||
+                    (item.common && item.common.toLowerCase().includes(term)))
                 : items.slice(0, 12);
             scope.textContent = `${label} · ${total.toLocaleString()} trees · ${items.length.toLocaleString()} species`;
 
@@ -1402,13 +1306,17 @@
                 return;
             }
 
-            list.innerHTML = filtered.slice(0, 30).map((item) => `
+            list.innerHTML = filtered.slice(0, 30).map((item) => {
+                const primary = item.common || item.species;
+                const secondary = item.common ? item.species : '';
+                const title = item.common ? `${item.common} (${item.species})` : item.species;
+                return `
                 <div class="species-row${selectedSpecies === item.species ? ' active' : ''}" data-species="${escapeHtml(item.species)}">
                     <span class="species-dot" style="background:${escapeHtml(item.color)}"></span>
-                    <span class="species-name" title="${escapeHtml(item.species)}">${escapeHtml(item.species)}</span>
+                    <span class="species-name" title="${escapeHtml(title)}">${escapeHtml(primary)}${secondary ? `<span class="species-sub">${escapeHtml(secondary)}</span>` : ''}</span>
                     <span class="species-count">${item.count.toLocaleString()}</span>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function applySpeciesHighlight() {
@@ -1725,7 +1633,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261031-042755';
+                const SW_QUERY = 'tree-map-v20261031-044458';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

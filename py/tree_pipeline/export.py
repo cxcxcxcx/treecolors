@@ -71,6 +71,10 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
     color_counts: Counter[str] = Counter()
     species_counts: Counter[str] = Counter()
     species_colors: dict[str, tuple[str, str]] = {}
+    # Canonical display name per resolved species key, so the same species
+    # from different cities (e.g. "Quercus rubra" vs "Quercus Rubra") renders,
+    # counts, and highlights as one entry.
+    canonical_display: dict[str, str] = {}
     kept: list[dict[str, Any]] = []
     deduped = 0
     no_geometry = 0
@@ -126,7 +130,8 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
         info = resolution.info
         color_range = _color_range(resolution.key, info)
         color = deterministic_color(resolution.key, color_range=color_range)
-        species_counts[resolution.display] += 1
+        display = canonical_display.setdefault(resolution.key, resolution.display)
+        species_counts[display] += 1
         species_colors.setdefault(resolution.display, (color, color_range))
         color_counts[color_range] += 1
 
