@@ -83,7 +83,19 @@ def _describe(name: str, kb: dict) -> dict | None:
     }
 
 
-def _generate(prompt: str, key: str, retries: int = 3) -> bytes:
+GRID_PROMPT = """Botanical illustration sheet: a {n}x{n} grid of {count} separate botanical studies, one per species, each study centred inside its own equal cell on a plain off-white background, vintage natural-history style, watercolour with fine ink linework, muted natural colours.
+
+Nothing may cross, overlap or touch a cell boundary: every cell holds exactly one complete illustration with generous empty margin on all four sides. Do not draw grid lines, frames or dividers.
+
+The species, in reading order (left to right, top to bottom):
+{listing}
+
+For each one show what makes that species recognisable: correct leaf shape, margin and venation, its real autumn foliage colour, and flower or fruit where diagnostic. Every species must look clearly different from the others.
+
+There must be NO text, NO letters, NO numbers, NO captions and NO watermark anywhere on the image."""
+
+
+def _generate(prompt: str, key: str, retries: int = 3, image_size: str = "1K") -> bytes:
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         raise SystemExit("GEMINI_API_KEY is not set")
@@ -92,7 +104,7 @@ def _generate(prompt: str, key: str, retries: int = 3) -> bytes:
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
             "responseModalities": ["TEXT", "IMAGE"],
-            "imageConfig": {"aspectRatio": "1:1", "imageSize": "1K"},
+            "imageConfig": {"aspectRatio": "1:1", "imageSize": image_size},
         },
     }
     last_error: Exception | None = None
@@ -140,6 +152,81 @@ def _add_caption(image_bytes: bytes, scientific: str) -> bytes:
     return buffer.getvalue()
 
 
+def _slice_sheet(image_bytes: bytes, n: int, inset: float = 0.02) -> list[bytes]:
+    """Cut an n x n species sheet into individual plates, in reading order."""
+    import io
+    from PIL import Image
+
+    sheet = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    width = sheet.width // n
+    height = sheet.height // n
+    pad_x = int(width * inset)
+    pad_y = int(height * inset)
+    cells: list[bytes] = []
+    for row in range(n):
+        for col in range(n):
+            box = (
+                col * width + pad_x,
+                row * height + pad_y,
+                (col + 1) * width - pad_x,
+                (row + 1) * height - pad_y,
+            )
+            buffer = io.BytesIO()
+            sheet.crop(box).save(buffer, format="PNG")
+            cells.append(buffer.getvalue())
+    return cells
+
+
+def _run_grid(names: list[str], kb: dict, out_dir: Path, args) -> int:
+    """Cover many species cheaply: one NxN sheet, then slice it into plates."""
+    n = args.grid
+    per_sheet = n * n
+    sheets_dir = Path(args.sheets_dir) if args.sheets_dir else out_dir / "sheets"
+    sheets_dir.mkdir(parents=True, exist_ok=True)
+
+    specs: list[dict] = []
+    seen: set[str] = set()
+    for name in names:
+        spec = _describe(name, kb)
+        if spec is None:
+            print(f"  [unresolved] {name}")
+            continue
+        if spec["key"] in seen:
+            continue
+        seen.add(spec["key"])
+        spec["slug"] = "".join(c if c.isalnum() else "_" for c in spec["key"].lower()).strip("_")
+        if (out_dir / f"{spec['slug']}.png").exists() and not args.force:
+            continue
+        specs.append(spec)
+
+    print(f"grid {n}x{n}: {len(specs)} species to generate "
+          f"({(len(specs) + per_sheet - 1) // per_sheet} sheets)")
+    done = failed = 0
+    for index in range(0, len(specs), per_sheet):
+        chunk = specs[index:index + per_sheet]
+        listing = "\n".join(
+            f"{position}. {spec['Scientific']} ({spec['common']}) — {spec['features']}"
+            for position, spec in enumerate(chunk, 1)
+        )
+        prompt = GRID_PROMPT.format(n=n, count=len(chunk), listing=listing)
+        label = f"sheet_{index // per_sheet + 1:03d}"
+        print(f"  [sheet] {label}: {len(chunk)} species ...", flush=True)
+        try:
+            raw = _generate(prompt, label, image_size=args.image_size)
+        except RuntimeError as exc:
+            print(f"  [error] {label}: {exc}")
+            failed += len(chunk)
+            continue
+        (sheets_dir / f"{label}.png").write_bytes(raw)
+        cells = _slice_sheet(raw, n)
+        for spec, cell in zip(chunk, cells):
+            (out_dir / f"{spec['slug']}.png").write_bytes(cell)
+            done += 1
+        time.sleep(2)
+    print(f"done={done} failed={failed}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--species", action="append", default=[],
@@ -153,6 +240,11 @@ def main() -> int:
                         help="Top displays covering PCT of all trees (e.g. 80)")
     parser.add_argument("--out", default="samples")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--grid", type=int, default=0,
+                        help="Generate NxN species sheets and slice them (3 or 4)")
+    parser.add_argument("--image-size", default="1K", choices=["1K", "2K", "4K"])
+    parser.add_argument("--sheets-dir", default="",
+                        help="Where to keep the unsliced sheets (default <out>/sheets)")
     args = parser.parse_args()
 
     kb = _kb()
@@ -206,6 +298,8 @@ def main() -> int:
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
+    if args.grid:
+        return _run_grid(names, kb, out_dir, args)
     done = skipped = failed = 0
     done_keys: set[str] = set()
     for name in names:
