@@ -609,7 +609,7 @@
                 and purples for species that shine in autumn. Browns and dark tones mark other deciduous trees.</p>
             <p>Tap any tree marker to see species details, common names, and curated Wikipedia photos to help you
                 recognize each tree in the real world.</p>
-            <div id="learia-label="Close copyright">&times;</button>
+            <div id="legend-sources">
             <h4 id="legend-copyright-title">Copyright & Data Sources</h4>
             <p>All tree data is from public tree datasets. Species information is annotated using AI.</p>
             <p><strong>Source Data:</strong></p>
@@ -667,6 +667,7 @@
             </ul>
             <p><strong>Also Included:</strong> Cupertino, Fremont, Los Angeles, San Diego, San Francisco, San Leandro,
                 Concord, Gaithersburg, Bethesda, Arlington, and Montgomery County.</p>
+            </div>
         </div>
         <div class="legend-item">
             <div class="legend-color"
@@ -1637,7 +1638,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261031-045407';
+                const SW_QUERY = 'tree-map-v20261031-052559';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
