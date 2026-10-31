@@ -194,3 +194,4 @@ web/plates/
 web/preview/
 tmp_icons2/
 samples/
+*.bak-merge
