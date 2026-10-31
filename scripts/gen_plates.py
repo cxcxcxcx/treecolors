@@ -30,9 +30,11 @@ sys.path.insert(0, str(PROJECT_ROOT / "py"))
 
 MODEL = "gemini-nano-banana-2.1"
 
-PLATE_PROMPT = """Botanical illustration plate, vintage natural-history style, on a plain off-white background, for the tree {scientific} ({common}).
-Four labeled studies arranged in a clean 2x2 grid with thin rules: (1) summer leaf, front and underside, with a vein-detail inset; (2) autumn foliage showing {fall_desc}; (3) {flower_desc}; (4) {fruit_desc}. A small whole-tree silhouette sits centered at the bottom.
-Accurate morphology above all: correct leaf shape, venation, flower structure and fruit for this exact species. Watercolor with fine ink linework, muted natural colors. The ONLY text on the plate is one small elegant Latin caption "{scientific}" in correct italics at the bottom center, with lowercase species epithet. No figure numbers, no other words, no dates, no watermark. Every panel must show the foliage of THIS species only, with the same leaf shape in all panels."""
+GUIDE_PROMPT = """Botanical illustration, vintage natural-history style, single balanced composition on a plain off-white background, for the tree {scientific} ({common}).
+Subject guide — show what makes THIS species recognizable, in this priority order: {features}.
+Composition guide: one dominant study (the first item above) taking about half the frame, the rest arranged around it with generous white space. Priority: {emphasis}. A small whole-tree silhouette sits at the bottom only if it aids recognition.
+Accurate morphology above all: correct leaf shape, margin, venation, flower structure and fruit for this exact species; the same foliage must look consistent everywhere it appears. Watercolor with fine ink linework, muted natural colors.
+There must be NO text, NO letters, NO captions, NO numbers and NO watermark anywhere on the image — leave a clean empty band at the bottom for a caption that will be added separately."""
 
 
 def _kb() -> dict:
@@ -49,14 +51,35 @@ def _describe(name: str, kb: dict) -> dict | None:
         return None
     info = hit.info
     common = (info.get("common_names") or [name])[0]
-    fall = "brilliant red autumn foliage" if info.get("fall_colors") else "typical late-season foliage"
+    has_fall = bool(info.get("fall_colors"))
+    has_flowers = bool(info.get("beautiful_flowers"))
+    season = (info.get("blooming_season") or "").strip()
+    parts: list[str] = []
+    if has_flowers:
+        season_txt = f" ({season})" if season and season.lower() != "n/a" else ""
+        parts.append(f"flowering branch{season_txt} with correct flower structure")
+    if has_fall:
+        parts.append("branch in peak autumn color plus a summer-leaf study with vein detail")
+    else:
+        parts.append("mature leaves, front and underside, with vein detail")
+    parts.append("characteristic fruit and seed")
+    if has_flowers and has_fall:
+        emphasis = "give spring flowers and autumn foliage equal weight"
+    elif has_flowers:
+        emphasis = "lead with the flowers; leaves and fruit support"
+    elif has_fall:
+        emphasis = "lead with the autumn color; leaf detail and fruit support"
+    else:
+        emphasis = "lead with foliage detail and fruit; habit silhouette supports"
+    words = hit.key.split()
+    scientific = words[0].capitalize() + (" " + " ".join(words[1:]) if len(words) > 1 else "")
     return {
         "key": hit.key,
         "scientific": hit.key,
+        "Scientific": scientific,
         "common": common,
-        "fall_desc": fall,
-        "flower_desc": f"characteristic flowers of {hit.key} ({info.get('blooming_season', 'N/A')} blooming)".replace("  ", " "),
-        "fruit_desc": f"characteristic fruit and seed of {hit.key}",
+        "features": "; ".join(parts),
+        "emphasis": emphasis,
     }
 
 
@@ -90,6 +113,31 @@ def _generate(prompt: str, key: str, retries: int = 3) -> bytes:
             last_error = exc
             time.sleep(2 ** (attempt + 1))
     raise RuntimeError(f"failed after {retries} attempts: {last_error}")
+
+
+CAPTION_FONT = "/usr/share/fonts/TTF/DejaVuSerifCondensed-Italic.ttf"
+
+
+def _add_caption(image_bytes: bytes, scientific: str) -> bytes:
+    """Overlay the Latin caption ourselves — model-rendered text is unreliable."""
+    import io
+    from PIL import Image, ImageDraw, ImageFont
+
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype(CAPTION_FONT, max(28, image.width // 32))
+    except OSError:
+        font = ImageFont.load_default()
+    text = scientific
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    margin = int(image.height * 0.035)
+    draw.text(((image.width - tw) / 2, image.height - margin - (bbox[3] - bbox[1])),
+              text, font=font, fill=(45, 45, 45))
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def main() -> int:
@@ -141,10 +189,11 @@ def main() -> int:
             print(f"  [unresolved] {name}")
             failed += 1
             continue
-        prompt = PLATE_PROMPT.format(**spec)
+        prompt = GUIDE_PROMPT.format(**spec)
         print(f"  [gen] {name} ...", flush=True)
         try:
-            target.write_bytes(_generate(prompt, spec["key"]))
+            raw = _generate(prompt, spec["key"])
+            target.write_bytes(_add_caption(raw, spec["Scientific"]))
             done += 1
         except RuntimeError as exc:
             print(f"  [error] {name}: {exc}")
