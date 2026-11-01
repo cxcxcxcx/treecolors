@@ -90,8 +90,8 @@
 
         .map-overlay {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: calc(10px + env(safe-area-inset-top, 0px));
+            left: calc(10px + env(safe-area-inset-left, 0px));
             background: white;
             padding: 15px;
             border-radius: 5px;
@@ -119,7 +119,10 @@
         }
 
         .map-overlay.collapsed .legend-item,
-        .map-overlay.collapsed .legend-link {
+        .map-overlay.collapsed .legend-link,
+        .map-overlay.collapsed .legend-install-button,
+        .map-overlay.collapsed .legend-locate-button,
+        .map-overlay.collapsed .legend-info-button {
             display: none;
         }
 
@@ -205,6 +208,25 @@
             padding-top: 12px;
             border-top: 1px solid #e2e2e2;
             font-size: 13px;
+        }
+
+        .legend-about-button {
+            border: 0;
+            background: none;
+            padding: 0;
+            font: inherit;
+            color: #1a5dab;
+            cursor: pointer;
+        }
+
+        .legend-about-button:hover,
+        .legend-about-button:focus {
+            text-decoration: underline;
+        }
+
+        .legend-link-sep {
+            color: #b9c4cc;
+            margin: 0 6px;
         }
 
         .legend-link a {
@@ -408,8 +430,8 @@
 
         .species-panel {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: calc(10px + env(safe-area-inset-top, 0px));
+            right: calc(10px + env(safe-area-inset-right, 0px));
             width: 330px;
             max-height: calc(100vh - 20px);
             background: #fff;
@@ -489,7 +511,7 @@
 
         .species-row {
             display: grid;
-            grid-template-columns: 30px 14px minmax(0, 1fr) auto;
+            grid-template-columns: 30px 14px minmax(0, 1fr) auto 22px;
             gap: 8px;
             align-items: center;
             padding: 6px 5px;
@@ -517,6 +539,28 @@
 
         .species-leaf.empty {
             background: transparent;
+        }
+
+        .species-info-button {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid #ccd8e0;
+            background: #fff;
+            color: #2d4f64;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .species-info-button:hover,
+        .species-info-button:focus {
+            background: #e8f1f8;
         }
 
         .species-dot {
@@ -671,8 +715,6 @@
                         <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
                     </svg>
                 </button>
-                <button type="button" class="legend-info-button" id="legend-info-button" aria-label="About this map"
-                    aria-expanded="false">i</button>
             </div>
         </div>
         <div class="legend-info-popup hidden" id="legend-info-popup" role="dialog" aria-modal="false"
@@ -767,6 +809,9 @@
             <span>Other Deciduous Trees (less known for fall colors)</span>
         </div>
         <div class="legend-link">
+            <button type="button" class="legend-about-button" id="legend-info-button"
+                aria-expanded="false">About this map</button>
+            <span class="legend-link-sep">·</span>
             <a href="https://botanisense.app/" target="_blank" rel="noopener">BotaniSense</a>
         </div>
     </div>
@@ -1487,6 +1532,8 @@
                     <span class="species-dot" style="background:${escapeHtml(item.color)}"></span>
                     <span class="species-name" title="${escapeHtml(title)}">${escapeHtml(primary)}${secondary ? `<span class="species-sub">${escapeHtml(secondary)}</span>` : ''}</span>
                     <span class="species-count">${item.count.toLocaleString()}</span>
+                    <button type="button" class="species-info-button" data-species-info="${escapeHtml(item.species)}"
+                        title="Show species details" aria-label="Show details for ${escapeHtml(primary)}">i</button>
                 </div>`;
             }).join('');
         }
@@ -1575,7 +1622,37 @@
             updateSpeciesPanel();
         });
 
+        function showSpeciesDetails(speciesName) {
+            if (!speciesName) return;
+            if (map.getLayer('trees-points')) {
+                const features = map.queryRenderedFeatures({ layers: ['trees-points'],
+                    filter: ['==', ['get', 'species'], speciesName] });
+                if (features.length && typeof window.openTreePopup === 'function') {
+                    window.openTreePopup(features[0], features[0].geometry.coordinates.slice());
+                    return;
+                }
+            }
+            // Not rendered at this zoom: still show what we know about the species.
+            const meta = speciesMeta.get(speciesName) || {};
+            if (typeof window.openTreePopup !== 'function') return;
+            window.openTreePopup({ properties: {
+                species: speciesName,
+                common_names: meta.common || '',
+                city: '',
+                deciduous: null,
+                fall_colors: null,
+                beautiful_flowers: null,
+                blooming_season: ''
+            } }, map.getCenter().toArray());
+        }
+
         document.getElementById('species-list').addEventListener('click', (event) => {
+            const info = event.target.closest('.species-info-button');
+            if (info) {
+                event.stopPropagation();
+                showSpeciesDetails(info.dataset.speciesInfo);
+                return;
+            }
             const row = event.target.closest('.species-row');
             if (row && row.dataset.species) {
                 selectSpecies(row.dataset.species);
@@ -1641,9 +1718,6 @@
             return `
                 <div class="info-popup">
                     <h4>${escapeHtml(speciesName)}</h4>
-                    <div class="info-basics">
-                        ${basics}
-                    </div>
                     <div class="info-chips">
                         <div class="${deciduousClass}" title="Deciduous">
                             <span class="icon">&#127795;</span>
@@ -1659,7 +1733,10 @@
                         </div>
                     </div>
                     ${buildPlateSection(speciesName)}
-                    ${meta ? `<div class="info-basics info-meta">${meta}</div>` : ''}
+                    <div class="info-basics info-meta">
+                        ${basics}
+                        ${meta}
+                    </div>
                     ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
                 </div>
             `;
@@ -1732,46 +1809,54 @@
                     });
                 }
 
+                function openTreePopup(feature, point) {
+                const properties = feature.properties;
+                const coordinates = point.slice();
+
+                const speciesName = properties.species || 'Unknown species';
+                const speciesKey = speciesName.trim().toLowerCase();
+                currentSpeciesKey = speciesKey;
+
+                const cachedEntry = speciesInfoCache[speciesKey];
+                const isLoading = !cachedEntry;
+
+                popup
+                    .setLngLat(coordinates)
+                    .setHTML(buildPopupContent(properties, speciesName, cachedEntry, isLoading, coordinates))
+                    .addTo(map);
+                scrollPopupToTop();
+
+                if (cachedEntry) {
+                    return;
+                }
+
+                if (!speciesRequestCache[speciesKey]) {
+                    speciesRequestCache[speciesKey] = fetchWikipediaData(speciesName).then((result) => {
+                        speciesInfoCache[speciesKey] = result;
+                        delete speciesRequestCache[speciesKey];
+                        if (currentSpeciesKey === speciesKey) {
+                            popup.setHTML(buildPopupContent(properties, speciesName, result, false, coordinates));
+                            scrollPopupToTop();
+                        }
+                        return result;
+                    });
+                } else {
+                    speciesRequestCache[speciesKey].then((result) => {
+                        speciesInfoCache[speciesKey] = speciesInfoCache[speciesKey] || result;
+                        if (currentSpeciesKey === speciesKey) {
+                            popup.setHTML(buildPopupContent(properties, speciesName, speciesInfoCache[speciesKey], false, coordinates));
+                            scrollPopupToTop();
+                        }
+                    });
+                }
+                }
+
+                // The species list lives outside this map callback, so expose
+                // the popup opener for the row "i" buttons.
+                window.openTreePopup = openTreePopup;
+
                 map.on('click', 'trees-points', function (e) {
-                    const properties = e.features[0].properties;
-                    const coordinates = e.features[0].geometry.coordinates.slice();
-
-                    const speciesName = properties.species || 'Unknown species';
-                    const speciesKey = speciesName.trim().toLowerCase();
-                    currentSpeciesKey = speciesKey;
-
-                    const cachedEntry = speciesInfoCache[speciesKey];
-                    const isLoading = !cachedEntry;
-
-                    popup
-                        .setLngLat(coordinates)
-                        .setHTML(buildPopupContent(properties, speciesName, cachedEntry, isLoading, coordinates))
-                        .addTo(map);
-                    scrollPopupToTop();
-
-                    if (cachedEntry) {
-                        return;
-                    }
-
-                    if (!speciesRequestCache[speciesKey]) {
-                        speciesRequestCache[speciesKey] = fetchWikipediaData(speciesName).then((result) => {
-                            speciesInfoCache[speciesKey] = result;
-                            delete speciesRequestCache[speciesKey];
-                            if (currentSpeciesKey === speciesKey) {
-                                popup.setHTML(buildPopupContent(properties, speciesName, result, false, coordinates));
-                                scrollPopupToTop();
-                            }
-                            return result;
-                        });
-                    } else {
-                        speciesRequestCache[speciesKey].then((result) => {
-                            speciesInfoCache[speciesKey] = speciesInfoCache[speciesKey] || result;
-                            if (currentSpeciesKey === speciesKey) {
-                                popup.setHTML(buildPopupContent(properties, speciesName, speciesInfoCache[speciesKey], false, coordinates));
-                                scrollPopupToTop();
-                            }
-                        });
-                    }
+                    openTreePopup(e.features[0], e.features[0].geometry.coordinates.slice());
                 });
 
                 map.on('mouseenter', 'trees-points', function () {
@@ -1813,7 +1898,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261101-015703';
+                const SW_QUERY = 'tree-map-v20261101-021629';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
