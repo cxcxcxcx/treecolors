@@ -65,6 +65,18 @@ python3 scripts/derive_qa.py            # reports for the legacy cities (qa/deri
 python3 scripts/merge_duplicate_keys.py --dry-run   # common-name keys vs binomials
 ```
 
+## UI regression checks
+
+```bash
+python3 tests/ui/check_ui.py                       # against production
+python3 tests/ui/check_ui.py --url http://127.0.0.1:8767/
+```
+
+Drives headless Chrome over the DevTools protocol and asserts what a layout
+change can silently break: the species list renders, leaf thumbnails actually
+load, popup section order, the popup title, the collapsible legend, and that a
+species row opens its detail popup. Exits non-zero on failure.
+
 ## Tests
 
 ```bash

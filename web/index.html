@@ -267,8 +267,15 @@
         }
 
         .info-popup h4 {
-            margin: 0 0 8px 0;
+            margin: 0 0 2px 0;
             color: #333;
+        }
+
+        .info-popup .info-sci {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            font-style: italic;
+            color: #7b8794;
         }
 
         .info-popup p {
@@ -1715,9 +1722,13 @@
             const fallColorClass = fallColorsValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
             const flowersClass = flowersValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
 
+            const firstCommon = (combinedNames ? combinedNames.split(' · ')[0] : '').trim();
+            const title = firstCommon || speciesName;
+
             return `
                 <div class="info-popup">
-                    <h4>${escapeHtml(speciesName)}</h4>
+                    <h4>${escapeHtml(title)}</h4>
+                    ${firstCommon ? `<div class="info-sci">${escapeHtml(speciesName)}</div>` : ''}
                     <div class="info-chips">
                         <div class="${deciduousClass}" title="Deciduous">
                             <span class="icon">&#127795;</span>
@@ -1898,7 +1909,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261101-021629';
+                const SW_QUERY = 'tree-map-v20261101-022337';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
