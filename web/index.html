@@ -1644,11 +1644,38 @@
             }).join('');
         }
 
+        function matchingSpecies() {
+            const term = speciesSearchTerm.trim().toLowerCase();
+            if (!term) return null;
+            const matches = [];
+            speciesMeta.forEach((meta, name) => {
+                if (name.toLowerCase().includes(term) ||
+                    (meta.common || '').toLowerCase().includes(term)) {
+                    matches.push(name);
+                }
+            });
+            return matches;
+        }
+
+        function speciesMatchesFilter(name) {
+            const term = speciesSearchTerm.trim().toLowerCase();
+            if (!term) return true;
+            const meta = speciesMeta.get(name) || {};
+            return name.toLowerCase().includes(term) ||
+                (meta.common || '').toLowerCase().includes(term);
+        }
+
         function applySpeciesHighlight() {
             if (!map.getLayer('trees-points')) return;
-            const opacity = selectedSpecies
-                ? ['case', ['==', ['get', 'species'], selectedSpecies], 0.95, 0.05]
-                : 0.8;
+            const matches = matchingSpecies();
+            let opacity = 0.8;
+            if (matches) {
+                opacity = matches.length
+                    ? ['match', ['get', 'species'], matches, 0.92, 0.06]
+                    : 0.06;
+            } else if (selectedSpecies) {
+                opacity = ['case', ['==', ['get', 'species'], selectedSpecies], 0.95, 0.05];
+            }
             map.setPaintProperty('trees-points', 'circle-opacity', opacity);
             if (selectedSpecies) {
                 map.setPaintProperty('trees-points', 'circle-stroke-width', [
@@ -1733,6 +1760,7 @@
 
         document.getElementById('species-search').addEventListener('input', (event) => {
             speciesSearchTerm = event.target.value || '';
+            applySpeciesHighlight();
             updateSpeciesPanel();
         });
 
@@ -1781,7 +1809,19 @@
             }
         }
 
-        function openTreeSheet(properties, speciesName) {
+        function ensurePointVisibleAboveSheet(coordinates) {
+            if (!coordinates) return;
+            const sheet = document.getElementById('species-sheet');
+            const height = sheet ? sheet.getBoundingClientRect().height : 0;
+            const margin = 28;
+            const limit = window.innerHeight - height - margin;
+            const point = map.project(coordinates);
+            if (point.y > limit) {
+                map.panBy([0, point.y - limit], { duration: 350 });
+            }
+        }
+
+        function openTreeSheet(properties, speciesName, coordinates) {
             const sheet = document.getElementById('species-sheet');
             const body = document.getElementById('species-sheet-body');
             if (!sheet || !body) return;
@@ -1790,6 +1830,7 @@
                 !speciesInfoCache[key], null);
             sheet.classList.remove('hidden');
             body.scrollTop = 0;
+            requestAnimationFrame(() => ensurePointVisibleAboveSheet(coordinates));
             ensureWiki(speciesName, (result) => {
                 if (sheet.classList.contains('hidden')) return;
                 body.innerHTML = buildPopupContent(properties, speciesName, result, false, null);
@@ -1964,7 +2005,7 @@
                     const properties = feature.properties;
                     markSelectedTree(point.slice());
                     if (typeof window.openTreeSheet === 'function') {
-                        window.openTreeSheet(properties, properties.species || 'Unknown species');
+                        window.openTreeSheet(properties, properties.species || 'Unknown species', point.slice());
                     }
                 }
 
@@ -1995,6 +2036,10 @@
                         }
                     });
                     if (best) {
+                        const name = best.properties.species || '';
+                        if (!speciesMatchesFilter(name)) {
+                            return; // the list is filtered; do not pick hidden species
+                        }
                         openTreePopup(best, best.geometry.coordinates.slice());
                     }
                 });
@@ -2060,7 +2105,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261101-023500';
+                const SW_QUERY = 'tree-map-v20261101-034541';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
