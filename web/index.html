@@ -118,6 +118,40 @@
             gap: 8px;
         }
 
+        .map-overlay.collapsed .legend-item,
+        .map-overlay.collapsed .legend-link {
+            display: none;
+        }
+
+        .map-overlay.collapsed h3 {
+            font-size: 15px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        .map-overlay.collapsed .legend-toggle-button svg {
+            transform: rotate(-90deg);
+        }
+
+        .legend-toggle-button {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            border: 1px solid #ccd8e0;
+            background: #fff;
+            color: #2d4f64;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+
+        .legend-toggle-button:hover,
+        .legend-toggle-button:focus {
+            background: #eef4f8;
+        }
+
         .legend-buttons {
             display: flex;
             gap: 6px;
@@ -260,6 +294,10 @@
         .info-chip .icon {
             font-size: 14px;
             line-height: 1;
+        }
+
+        .plate-section .plate-wrap {
+            margin-top: 0;
         }
 
         .plate-wrap {
@@ -611,6 +649,13 @@
         <div class="legend-header">
             <h3>Tree Species Color Map</h3>
             <div class="legend-buttons">
+                <button type="button" class="legend-toggle-button" id="legend-toggle-button"
+                    aria-label="Collapse legend" aria-expanded="true" title="Collapse legend">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2"
+                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                </button>
                 <button type="button" class="legend-install-button hidden" id="legend-install-button"
                     aria-label="Install this map as an app" title="Install app">
                     <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2"
@@ -804,6 +849,37 @@
         const legendInfoPopup = document.getElementById('legend-info-popup');
         const legendInfoClose = document.getElementById('legend-info-close');
         const legendLocateButton = document.getElementById('legend-locate-button');
+        const legendOverlay = document.querySelector('.map-overlay');
+        const legendToggleButton = document.getElementById('legend-toggle-button');
+        const LEGEND_COLLAPSED_KEY = 'treecolors.legendCollapsed';
+
+        function setLegendCollapsed(collapsed, persist = true) {
+            legendOverlay.classList.toggle('collapsed', collapsed);
+            legendToggleButton.setAttribute('aria-expanded', String(!collapsed));
+            const label = collapsed ? 'Expand legend' : 'Collapse legend';
+            legendToggleButton.setAttribute('aria-label', label);
+            legendToggleButton.setAttribute('title', label);
+            if (persist) {
+                try {
+                    localStorage.setItem(LEGEND_COLLAPSED_KEY, collapsed ? '1' : '0');
+                } catch (error) {
+                    /* storage can be unavailable in private mode */
+                }
+            }
+        }
+
+        legendToggleButton.addEventListener('click', (event) => {
+            event.stopPropagation();
+            setLegendCollapsed(!legendOverlay.classList.contains('collapsed'));
+        });
+
+        try {
+            if (localStorage.getItem(LEGEND_COLLAPSED_KEY) === '1') {
+                setLegendCollapsed(true, false);
+            }
+        } catch (error) {
+            /* ignore */
+        }
 
         // Add user location marker
         const userLocationEl = document.createElement('div');
@@ -1169,8 +1245,7 @@
             if (!found) return '';
             const label = found.common ? `${found.common} botanical plate` : `${speciesName} botanical plate`;
             return `
-                <div class="wiki-section">
-                    <h5>Botanical Plate</h5>
+                <div class="wiki-section plate-section">
                     <div class="plate-wrap">
                         <img src="./plates/${encodeURIComponent(found.plate)}.png" alt="${escapeHtml(label)}" loading="lazy" onerror="this.closest('.wiki-section').remove()">
                     </div>
@@ -1569,9 +1644,6 @@
                     <div class="info-basics">
                         ${basics}
                     </div>
-                    ${buildPlateSection(speciesName)}
-                    ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
-                    ${meta ? `<div class="info-basics info-meta">${meta}</div>` : ''}
                     <div class="info-chips">
                         <div class="${deciduousClass}" title="Deciduous">
                             <span class="icon">&#127795;</span>
@@ -1586,6 +1658,9 @@
                             <span>Flowers ${flowersValue}</span>
                         </div>
                     </div>
+                    ${buildPlateSection(speciesName)}
+                    ${meta ? `<div class="info-basics info-meta">${meta}</div>` : ''}
+                    ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
                 </div>
             `;
         }
@@ -1738,7 +1813,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261031-202300';
+                const SW_QUERY = 'tree-map-v20261101-015703';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
