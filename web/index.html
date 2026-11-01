@@ -451,7 +451,7 @@
 
         .species-row {
             display: grid;
-            grid-template-columns: 14px minmax(0, 1fr) auto;
+            grid-template-columns: 30px 14px minmax(0, 1fr) auto;
             gap: 8px;
             align-items: center;
             padding: 6px 5px;
@@ -466,6 +466,19 @@
         .species-row.active {
             background: #e1eef8;
             box-shadow: inset 3px 0 0 #2d4f64;
+        }
+
+        .species-leaf {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            object-fit: cover;
+            background: #f6f2e6;
+            display: block;
+        }
+
+        .species-leaf.empty {
+            background: transparent;
         }
 
         .species-dot {
@@ -1371,6 +1384,7 @@
                 const title = item.common ? `${item.common} (${item.species})` : item.species;
                 return `
                 <div class="species-row${selectedSpecies === item.species ? ' active' : ''}" data-species="${escapeHtml(item.species)}">
+                    ${item.leaf ? `<img class="species-leaf" src="./leaves/${encodeURIComponent(item.leaf)}.png" alt="" loading="lazy" onerror="this.classList.add('empty');this.removeAttribute('src')">` : '<span class="species-leaf empty"></span>'}
                     <span class="species-dot" style="background:${escapeHtml(item.color)}"></span>
                     <span class="species-name" title="${escapeHtml(title)}">${escapeHtml(primary)}${secondary ? `<span class="species-sub">${escapeHtml(secondary)}</span>` : ''}</span>
                     <span class="species-count">${item.count.toLocaleString()}</span>
@@ -1693,7 +1707,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261031-064955';
+                const SW_QUERY = 'tree-map-v20261031-195551';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

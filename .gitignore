@@ -195,3 +195,5 @@ web/preview/
 tmp_icons2/
 samples/
 *.bak-merge
+web/leaves/
+data/work/

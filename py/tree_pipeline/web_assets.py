@@ -104,6 +104,7 @@ def _qa_by_slug() -> dict[str, dict[str, Any]]:
 
 
 PLATE_DIR = PROJECT_ROOT / "samples" / "plates80"
+LEAF_DIR = PROJECT_ROOT / "samples" / "leaves"
 
 
 def _plate_files() -> set[str]:
@@ -112,9 +113,16 @@ def _plate_files() -> set[str]:
     return {path.stem for path in PLATE_DIR.glob("*.png")}
 
 
+def _leaf_files() -> set[str]:
+    if not LEAF_DIR.exists():
+        return set()
+    return {path.stem for path in LEAF_DIR.glob("*.png")}
+
+
 def _with_common(entries: list[dict[str, Any]], resolver) -> list[dict[str, Any]]:
     """Attach a display common name looked up from the species knowledge base."""
     plates = _plate_files()
+    leaves = _leaf_files()
     for entry in entries:
         common = ""
         key = ""
@@ -143,6 +151,7 @@ def _with_common(entries: list[dict[str, Any]], resolver) -> list[dict[str, Any]
             if slug in plates:
                 plate = slug
         entry["key"] = key
+        entry["leaf"] = slug if slug in leaves else ""
         entry["plate"] = plate
     return entries
 

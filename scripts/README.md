@@ -43,6 +43,28 @@ python3 scripts/check_tiles.py
 
 Verifies the PMTiles file exists, is not tiny, has max zoom 12, and has bounds.
 
+
+## Species artwork
+
+```bash
+python3 scripts/gen_plates.py --grid 3 --species "Acer rubrum" ...   # one-off sheet
+python3 scripts/batch_plates.py plan     --mode leaf  --top 108      # cost + list
+python3 scripts/batch_plates.py submit   --mode leaf  --top 108      # Batch API
+python3 scripts/batch_plates.py status   --mode leaf
+python3 scripts/batch_plates.py download --mode leaf                 # slice -> web/leaves
+```
+
+`--mode plate` fills the popup illustration, `--mode leaf` fills the species-list
+thumbnail. Both send 3x3 species sheets (one billed image per nine species) and
+slice them with a 2% inset. Coverage and cost maths must come from
+`web/species_stats.json`; see `docs/DATA_SOURCES.md` for why `qa/` alone is
+misleading.
+
+```bash
+python3 scripts/derive_qa.py            # reports for the legacy cities (qa/derived/)
+python3 scripts/merge_duplicate_keys.py --dry-run   # common-name keys vs binomials
+```
+
 ## Tests
 
 ```bash
