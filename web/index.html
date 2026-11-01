@@ -776,6 +776,7 @@
         });
 
         let speciesStats = [];
+        let speciesMeta = new Map();
         let sourceInfo = { by_key: {}, by_city: {}, legacy: [] };
         let selectedSpecies = null;
         let speciesSearchTerm = '';
@@ -1270,7 +1271,25 @@
             return null;
         }
 
+        function rebuildSpeciesMeta() {
+            speciesMeta = new Map();
+            speciesStats.forEach((city) => {
+                (city.species || []).forEach((entry) => {
+                    if (!entry.species) return;
+                    const previous = speciesMeta.get(entry.species) || {};
+                    speciesMeta.set(entry.species, {
+                        common: previous.common || entry.common || '',
+                        leaf: previous.leaf || entry.leaf || '',
+                        plate: previous.plate || entry.plate || '',
+                        key: previous.key || entry.key || ''
+                    });
+                });
+            });
+        }
+
         function commonNameFor(species) {
+            const meta = speciesMeta.get(species);
+            if (meta && meta.common) return meta.common;
             for (const city of speciesStats) {
                 for (const entry of (city.species || [])) {
                     if (entry.species === species && entry.common) return entry.common;
@@ -1303,11 +1322,14 @@
             const bySpecies = new Map();
             rows.forEach((row) => {
                 if (!row.species) return;
+                const meta = speciesMeta.get(row.species) || {};
                 const current = bySpecies.get(row.species) || {
                     species: row.species,
                     count: 0,
                     color: row.color || '#888888',
-                    common: row.common || commonNameFor(row.species)
+                    common: row.common || meta.common || commonNameFor(row.species),
+                    leaf: meta.leaf || '',
+                    plate: meta.plate || ''
                 };
                 current.count += row.count || 1;
                 if (!current.common && row.common) current.common = row.common;
@@ -1326,7 +1348,9 @@
                     rows.push({
                         species: entry.species,
                         count: entry.count,
-                        color: entry.color
+                        color: entry.color,
+                        common: entry.common || '',
+                        leaf: entry.leaf || ''
                     });
                 });
             });
@@ -1420,6 +1444,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     speciesStats = data.cities || [];
+                    rebuildSpeciesMeta();
                 }
             } catch (error) {
                 console.warn('species_stats.json unavailable', error);
@@ -1515,19 +1540,24 @@
             if (combinedNames) {
                 basicsParts.push(`<div><strong>Common:</strong> ${escapeHtml(combinedNames)}</div>`);
             }
+            const basics = basicsParts.join('');
+
+            // Reference details sit below the artwork: the plate is the reason
+            // people open this panel, the inventory link is bookkeeping.
+            const metaParts = [];
             const city = (properties.city || '').trim();
             if (city) {
-                basicsParts.push(`<div><strong>Location:</strong> ${escapeHtml(city)}</div>`);
-            }
-            const source = sourceForFeature(properties, coordinates);
-            if (source && source.url) {
-                basicsParts.push(`<div><strong>Source:</strong> <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.name || 'Tree inventory')}</a></div>`);
+                metaParts.push(`<div><strong>Location:</strong> ${escapeHtml(city)}</div>`);
             }
             const bloomingSeason = (properties.blooming_season || '').trim();
             if (bloomingSeason && bloomingSeason.toLowerCase() !== 'n/a') {
-                basicsParts.push(`<div><strong>Blooming:</strong> ${escapeHtml(bloomingSeason)}</div>`);
+                metaParts.push(`<div><strong>Blooming:</strong> ${escapeHtml(bloomingSeason)}</div>`);
             }
-            const basics = basicsParts.join('');
+            const source = sourceForFeature(properties, coordinates);
+            if (source && source.url) {
+                metaParts.push(`<div><strong>Source:</strong> <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.name || 'Tree inventory')}</a></div>`);
+            }
+            const meta = metaParts.join('');
 
             const deciduousClass = deciduousValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
             const fallColorClass = fallColorsValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
@@ -1539,6 +1569,9 @@
                     <div class="info-basics">
                         ${basics}
                     </div>
+                    ${buildPlateSection(speciesName)}
+                    ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
+                    ${meta ? `<div class="info-basics info-meta">${meta}</div>` : ''}
                     <div class="info-chips">
                         <div class="${deciduousClass}" title="Deciduous">
                             <span class="icon">&#127795;</span>
@@ -1553,8 +1586,6 @@
                             <span>Flowers ${flowersValue}</span>
                         </div>
                     </div>
-                    ${buildPlateSection(speciesName)}
-                    ${buildWikipediaSection(speciesName, wikiEntry, isLoading)}
                 </div>
             `;
         }
@@ -1707,7 +1738,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261031-195847';
+                const SW_QUERY = 'tree-map-v20261031-200907';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
