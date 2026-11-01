@@ -548,6 +548,77 @@
             background: transparent;
         }
 
+        .species-sheet {
+            position: fixed;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: min(560px, 100%);
+            max-height: 68vh;
+            background: #fff;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -8px 30px rgba(20, 40, 60, 0.28);
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            animation: sheet-in 0.18s ease-out;
+        }
+
+        @keyframes sheet-in {
+            from { transform: translate(-50%, 12px); opacity: 0.6; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        .species-sheet .sheet-body {
+            overflow-y: auto;
+            padding: 18px 20px 22px;
+        }
+
+        .sheet-close {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border: 0;
+            border-radius: 50%;
+            background: #f0f4f7;
+            color: #2d4f64;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .sheet-close:hover {
+            background: #e2ebf1;
+        }
+
+        .maplibregl-popup-content {
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 10px 28px rgba(20, 40, 60, 0.28);
+            border: 0;
+        }
+
+        .maplibregl-popup-close-button {
+            font-size: 20px;
+            padding: 4px 8px;
+            color: #667;
+        }
+
+        .selection-ring {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 2px #1f6feb, 0 2px 6px rgba(0, 0, 0, 0.35);
+            background: transparent;
+            pointer-events: none;
+        }
+
         .species-info-button {
             width: 20px;
             height: 20px;
@@ -823,6 +894,11 @@
         </div>
     </div>
 
+    <div class="species-sheet hidden" id="species-sheet" role="dialog" aria-label="Species details">
+        <button type="button" class="sheet-close" id="species-sheet-close" aria-label="Close species details">&times;</button>
+        <div class="sheet-body" id="species-sheet-body"></div>
+    </div>
+
     <div class="species-panel" id="species-panel">
         <div class="species-panel-header">
             <div>
@@ -846,6 +922,7 @@
         // Alternative: Use 'https://tiles.openstreetmap.org/styles/osm-bright/style.json' for OSM Foundation tiles
         const map = new maplibregl.Map({
             container: 'map',
+            attributionControl: false,  // we add our own compact control below
             style: {
                 version: 8,
                 sources: {
@@ -886,10 +963,28 @@
             map.on(eventName, () => { userInteracted = true; });
         });
 
+        let selectionMarker = null;
+
+        function markSelectedTree(coordinates) {
+            if (!coordinates) return;
+            if (!selectionMarker) {
+                const ring = document.createElement('div');
+                ring.className = 'selection-ring';
+                selectionMarker = new maplibregl.Marker({ element: ring });
+            }
+            selectionMarker.setLngLat(coordinates).addTo(map);
+        }
+
         let popup = new maplibregl.Popup({
             closeButton: true,
             closeOnClick: false
         });
+        popup.on('close', () => {
+            if (selectionMarker) {
+                selectionMarker.remove();
+            }
+        });
+
         function updatePopupMaxWidth() {
             const maxWidth = window.innerWidth <= 600 ? 320 : 420;
             popup.setMaxWidth(`${maxWidth}px`);
@@ -1030,6 +1125,16 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        }
+
+        function isInventoryCode(name) {
+            return name === name.toUpperCase() && name.length <= 6 && !name.includes(' ');
+        }
+
+        function firstUsefulName(list) {
+            const parts = (list || '').split(' · ').map((part) => part.trim()).filter(Boolean);
+            const useful = parts.filter((part) => !isInventoryCode(part));
+            return useful[0] || parts[0] || '';
         }
 
         function formatNameList(value) {
@@ -1551,6 +1656,14 @@
                 ? ['case', ['==', ['get', 'species'], selectedSpecies], 0.95, 0.05]
                 : 0.8;
             map.setPaintProperty('trees-points', 'circle-opacity', opacity);
+            if (selectedSpecies) {
+                map.setPaintProperty('trees-points', 'circle-stroke-width', [
+                    'case', ['==', ['get', 'species'], selectedSpecies], 1.6, 0
+                ]);
+                map.setPaintProperty('trees-points', 'circle-stroke-color', '#ffffff');
+            } else {
+                map.setPaintProperty('trees-points', 'circle-stroke-width', 0);
+            }
             const clearButton = document.getElementById('species-clear');
             if (clearButton) clearButton.classList.toggle('hidden', !selectedSpecies);
         }
@@ -1629,20 +1742,33 @@
             updateSpeciesPanel();
         });
 
-        function showSpeciesDetails(speciesName) {
-            if (!speciesName) return;
-            if (map.getLayer('trees-points')) {
-                const features = map.queryRenderedFeatures({ layers: ['trees-points'],
-                    filter: ['==', ['get', 'species'], speciesName] });
-                if (features.length && typeof window.openTreePopup === 'function') {
-                    window.openTreePopup(features[0], features[0].geometry.coordinates.slice());
-                    return;
-                }
+        function ensureWiki(speciesName, done) {
+            const key = speciesName.trim().toLowerCase();
+            if (speciesInfoCache[key]) {
+                done(speciesInfoCache[key]);
+                return;
             }
-            // Not rendered at this zoom: still show what we know about the species.
+            if (!speciesRequestCache[key]) {
+                speciesRequestCache[key] = fetchWikipediaData(speciesName).then((result) => {
+                    speciesInfoCache[key] = result;
+                    delete speciesRequestCache[key];
+                    return result;
+                });
+            }
+            speciesRequestCache[key].then(done).catch(() => {});
+        }
+
+        function propertiesForSpecies(speciesName) {
+            if (map.getLayer('trees-points')) {
+                const rendered = map.queryRenderedFeatures({ layers: ['trees-points'],
+                    filter: ['==', ['get', 'species'], speciesName] });
+                if (rendered.length) return rendered[0].properties;
+                const source = map.querySourceFeatures('trees', { sourceLayer: 'trees',
+                    filter: ['==', ['get', 'species'], speciesName] });
+                if (source.length) return source[0].properties;
+            }
             const meta = speciesMeta.get(speciesName) || {};
-            if (typeof window.openTreePopup !== 'function') return;
-            window.openTreePopup({ properties: {
+            return {
                 species: speciesName,
                 common_names: meta.common || '',
                 city: '',
@@ -1650,8 +1776,34 @@
                 fall_colors: null,
                 beautiful_flowers: null,
                 blooming_season: ''
-            } }, map.getCenter().toArray());
+            };
         }
+
+        function closeSpeciesSheet() {
+            const sheet = document.getElementById('species-sheet');
+            if (sheet) sheet.classList.add('hidden');
+        }
+
+        function showSpeciesDetails(speciesName) {
+            if (!speciesName) return;
+            const sheet = document.getElementById('species-sheet');
+            const body = document.getElementById('species-sheet-body');
+            if (!sheet || !body) return;
+            const properties = propertiesForSpecies(speciesName);
+            const key = speciesName.trim().toLowerCase();
+            body.innerHTML = buildPopupContent(properties, speciesName, speciesInfoCache[key], !speciesInfoCache[key], null);
+            sheet.classList.remove('hidden');
+            body.scrollTop = 0;
+            ensureWiki(speciesName, (result) => {
+                if (sheet.classList.contains('hidden')) return;
+                body.innerHTML = buildPopupContent(properties, speciesName, result, false, null);
+            });
+        }
+
+        document.getElementById('species-sheet-close').addEventListener('click', closeSpeciesSheet);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeSpeciesSheet();
+        });
 
         document.getElementById('species-list').addEventListener('click', (event) => {
             const info = event.target.closest('.species-info-button');
@@ -1722,7 +1874,7 @@
             const fallColorClass = fallColorsValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
             const flowersClass = flowersValue === 'Yes' ? 'info-chip yes' : 'info-chip no';
 
-            const firstCommon = (combinedNames ? combinedNames.split(' · ')[0] : '').trim();
+            const firstCommon = firstUsefulName(combinedNames);
             const title = firstCommon || speciesName;
 
             return `
@@ -1835,6 +1987,7 @@
                     .setLngLat(coordinates)
                     .setHTML(buildPopupContent(properties, speciesName, cachedEntry, isLoading, coordinates))
                     .addTo(map);
+                markSelectedTree(coordinates);
                 scrollPopupToTop();
 
                 if (cachedEntry) {
@@ -1866,8 +2019,31 @@
                 // the popup opener for the row "i" buttons.
                 window.openTreePopup = openTreePopup;
 
-                map.on('click', 'trees-points', function (e) {
-                    openTreePopup(e.features[0], e.features[0].geometry.coordinates.slice());
+                // Circles are only a few pixels wide, so a precise click misses
+                // often in dense areas. Query a 12px box and take the nearest.
+                map.on('click', function (event) {
+                    if (!map.getLayer('trees-points')) return;
+                    const pad = 12;
+                    const box = [
+                        [event.point.x - pad, event.point.y - pad],
+                        [event.point.x + pad, event.point.y + pad]
+                    ];
+                    const features = map.queryRenderedFeatures(box, { layers: ['trees-points'] });
+                    if (!features.length) return;
+                    let best = null;
+                    let bestDistance = Infinity;
+                    features.forEach((feature) => {
+                        const projected = map.project(feature.geometry.coordinates);
+                        const distance = (projected.x - event.point.x) ** 2
+                            + (projected.y - event.point.y) ** 2;
+                        if (distance < bestDistance) {
+                            bestDistance = distance;
+                            best = feature;
+                        }
+                    });
+                    if (best) {
+                        openTreePopup(best, best.geometry.coordinates.slice());
+                    }
                 });
 
                 map.on('mouseenter', 'trees-points', function () {
@@ -1896,6 +2072,28 @@
         map.addControl(new maplibregl.AttributionControl({
             compact: true
         }));
+
+        // The raster source and the vector tiles both declare OSM attribution,
+        // which renders the same credit twice. Keep the first one.
+        function dedupeAttribution() {
+            const inner = document.querySelector('.maplibregl-ctrl-attrib-inner');
+            if (!inner) return;
+            const seen = new Set();
+            Array.from(inner.querySelectorAll('a')).forEach((link) => {
+                const key = (link.getAttribute('href') || link.textContent || '').trim();
+                if (!key) return;
+                if (seen.has(key)) {
+                    const previous = link.previousSibling;
+                    if (previous && previous.nodeType === Node.TEXT_NODE) previous.remove();
+                    link.remove();
+                } else {
+                    seen.add(key);
+                }
+            });
+        }
+
+        map.on('load', dedupeAttribution);
+        map.on('idle', dedupeAttribution);
     </script>
     <script>
         if ('serviceWorker' in navigator) {
@@ -1909,7 +2107,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261101-022337';
+                const SW_QUERY = 'tree-map-v20261101-022858';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

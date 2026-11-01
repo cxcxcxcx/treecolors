@@ -109,11 +109,17 @@ def checks(cdp: Cdp) -> list[tuple[str, bool, str]]:
     rows = cdp.eval("document.querySelectorAll('.species-row').length") or 0
     results.append(("species list renders", rows > 0, f"{rows} rows"))
 
-    thumbs = cdp.eval("""(() => {
-      const imgs = Array.from(document.querySelectorAll('img.species-leaf'));
-      const loaded = imgs.filter(i => i.complete && i.naturalWidth > 0).length;
-      return {total: imgs.length, loaded};
-    })()""") or {}
+    # Lazy-loaded images need a moment; poll instead of sampling once.
+    thumbs = {}
+    for _ in range(20):
+        thumbs = cdp.eval("""(() => {
+          const imgs = Array.from(document.querySelectorAll('img.species-leaf'));
+          const loaded = imgs.filter(i => i.complete && i.naturalWidth > 0).length;
+          return {total: imgs.length, loaded};
+        })()""") or {}
+        if thumbs.get("loaded"):
+            break
+        time.sleep(0.5)
     results.append(("leaf thumbnails load",
                     thumbs.get("total", 0) > 0 and thumbs.get("loaded", 0) > 0,
                     f"{thumbs.get('loaded')}/{thumbs.get('total')} loaded"))
@@ -137,6 +143,15 @@ def checks(cdp: Cdp) -> list[tuple[str, bool, str]]:
                     str(popup.get("title"))))
     results.append(("plate has no header line", popup.get("plateHeader") is False, ""))
 
+    code_title = cdp.eval("""(() => {
+      const props = {species:'Quercus phellos', common_names:'["Willow Oak","QUPE"]',
+                     city:'DC', deciduous:true, fall_colors:true, beautiful_flowers:false};
+      const html = buildPopupContent(props, 'Quercus phellos', null, false, [-77, 38]);
+      return (html.match(/<h4>([^<]*)<\\/h4>/) || [])[1] || '';
+    })()""")
+    results.append(("inventory codes are not used as titles",
+                    code_title == "Willow Oak", str(code_title)))
+
     legend = cdp.eval("""(() => {
       const overlay = document.querySelector('.map-overlay');
       const toggle = document.getElementById('legend-toggle-button');
@@ -158,17 +173,39 @@ def checks(cdp: Cdp) -> list[tuple[str, bool, str]]:
 
     detail = cdp.eval("""(() => {
       const button = document.querySelector('.species-info-button');
-      if (!button) return {opened: false, reason: 'no button'};
+      if (!button) return Promise.resolve({opened: false, reason: 'no button'});
       button.click();
-      return new Promise(resolve => setTimeout(() => {
-        const popup = document.querySelector('.maplibregl-popup');
-        resolve({opened: !!popup,
-                 title: popup ? (popup.querySelector('h4')?.innerText || '') : ''});
-      }, 2000));
+      return new Promise(resolve => {
+        let tries = 0;
+        const tick = () => {
+          const sheet = document.getElementById('species-sheet');
+          const title = sheet && !sheet.classList.contains('hidden')
+              ? (sheet.querySelector('h4')?.innerText || '').trim() : '';
+          if (title || tries++ > 25) {
+            resolve({opened: !!sheet && !sheet.classList.contains('hidden'),
+                     title,
+                     mapPopup: !!document.querySelector('.maplibregl-popup')});
+            return;
+          }
+          setTimeout(tick, 200);
+        };
+        tick();
+      });
     })()""", await_promise=True) or {}
-    results.append(("species row opens a detail popup",
-                    detail.get("opened") and bool(detail.get("title")),
+    results.append(("species row opens the detail sheet",
+                    detail.get("opened") and bool(detail.get("title"))
+                    and not detail.get("mapPopup"),
                     f"title={detail.get('title')!r}"))
+
+    attribution = cdp.eval("""(() => {
+      const links = Array.from(document.querySelectorAll('.maplibregl-ctrl-attrib-inner a'))
+          .map(a => a.textContent.trim());
+      return {links, unique: new Set(links).size};
+    })()""") or {}
+    results.append(("attribution credits are not duplicated",
+                    attribution.get("links") == sorted(set(attribution.get("links", [])), key=attribution.get("links", []).index)
+                    if attribution.get("links") else False,
+                    str(attribution.get("links"))))
 
     return results
 
