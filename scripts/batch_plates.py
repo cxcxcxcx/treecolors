@@ -39,19 +39,21 @@ from merge_duplicate_keys import slugify  # noqa: E402
 MODEL = "gemini-nano-banana-2.1"
 API = "https://generativelanguage.googleapis.com/v1beta"
 COLUMNS = 3
-BATCH_PRICE = 0.0168  # per 1K image, Batch tier
+BATCH_PRICE = {"1K": 0.0168, "2K": 0.0252, "4K": 0.0567}  # per image, Batch tier
 RESOLVE_ALIASES = ("samples/plates80", "web/plates")
 
 MODES = {
     "plate": {
         "samples": PROJECT_ROOT / "samples" / "plates80",
         "web": PROJECT_ROOT / "web" / "plates",
+        "backup": PROJECT_ROOT / "samples" / "plates_v1",
         "resize": 0,
         "state": PROJECT_ROOT / "data" / "work" / "batch_plates.json",
     },
     "leaf": {
         "samples": PROJECT_ROOT / "samples" / "leaves",
         "web": PROJECT_ROOT / "web" / "leaves",
+        "backup": PROJECT_ROOT / "samples" / "leaves_v1",
         "resize": 256,
         "state": PROJECT_ROOT / "data" / "work" / "batch_leaves.json",
     },
@@ -64,9 +66,11 @@ Nothing may cross, overlap or touch a cell boundary: every cell holds exactly on
 The species, in reading order (left to right, top to bottom):
 {listing}
 
-For each one show what makes that species recognisable: correct leaf shape, margin and venation, its real foliage colour in its most characteristic season (autumn colour for deciduous species, normal green for evergreen ones), and flower or fruit where diagnostic. Every species must look clearly different from the others.
+For each one show what makes that species recognisable: correct leaf shape, margin and venation, its real foliage colour in its most characteristic season (autumn colour for deciduous species, normal green for evergreen ones), plus its real flowers, catkins or cones and its fruit where diagnostic. Every species must look clearly different from the others.
 
-There must be NO text, NO letters, NO numbers, NO captions and NO watermark anywhere on the image."""
+Every leaf, flower, catkin, cone and fruit must belong to the species in its own cell. Never add a generic maple-like leaf or any plant part borrowed from a neighbouring cell or another species.
+
+There must be NO text of any kind: do not write the species name, a caption, a label, a number or a watermark in any cell. Leave the bottom of each cell empty."""
 
 LEAF_PROMPT = """Botanical illustration sheet: a {rows}x{cols} grid of {count} small plant icons, one per species, each centred inside its own equal cell on a plain cream background, flat botanical illustration with fine ink linework and solid muted colours. For most species this is one detached leaf; for conifers, palms and other plants whose single leaf is not recognisable, use a small sprig, needle cluster or frond instead.
 
@@ -156,23 +160,30 @@ def _listing(chunk: list[dict], mode: str) -> str:
 
 
 def _grid_plan(count: int) -> list[int]:
-    """Split N species into square grids: 9 (3x3), then 4 (2x2), then singles.
+    """Split N species into square grids, minimising the number of images.
 
-    A rectangular split of a square image would squash every cell, so a tail of
-    two or three species is cheaper and cleaner as single-image requests.
+    Sizes are 9 (3x3), 4 (2x2) or 1 (single).  Every request costs one image,
+    so the split is a small DP rather than "nine at a time and singles for the
+    tail" -- 197 species is 21x9 + 2x4 = 23 images, not 26.
     """
+    inf = 10 ** 9
+    best = [inf] * (count + 1)
+    choice = [0] * (count + 1)
+    best[0] = 0
+    for total in range(1, count + 1):
+        for size in (9, 4, 1):
+            if size <= total and best[total - size] + 1 < best[total]:
+                best[total] = best[total - size] + 1
+                choice[total] = size
     sizes: list[int] = []
-    while count >= 9:
-        sizes.append(9)
-        count -= 9
-    if count >= 4:
-        sizes.append(4)
-        count -= 4
-    sizes.extend([1] * count)
+    remaining = count
+    while remaining:
+        sizes.append(choice[remaining])
+        remaining -= choice[remaining]
     return sizes
 
 
-def _build_requests(specs: list[dict], mode: str) -> tuple[list[dict], dict[str, list[str]]]:
+def _build_requests(specs: list[dict], mode: str, image_size: str = "1K") -> tuple[list[dict], dict[str, list[str]]]:
     template = PLATE_PROMPT if mode == "plate" else LEAF_PROMPT
     requests, mapping = [], {}
     cursor = 0
@@ -193,7 +204,7 @@ def _build_requests(specs: list[dict], mode: str) -> tuple[list[dict], dict[str,
                 "contents": [{"parts": [{"text": text}]}],
                 "generation_config": {
                     "response_modalities": ["TEXT", "IMAGE"],
-                    "image_config": {"aspect_ratio": "1:1", "image_size": "1K"},
+                    "image_config": {"aspect_ratio": "1:1", "image_size": image_size},
                 },
             },
         })
@@ -236,7 +247,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
     specs = _target_species(args.mode, args.top, _keys(args))
     sheets = len(_grid_plan(len(specs)))
     print(f"mode={args.mode}  species={len(specs)}  sheets={sheets}  "
-          f"batch cost=${sheets * BATCH_PRICE:.2f}")
+          f"size={args.image_size}  batch cost=${sheets * BATCH_PRICE[args.image_size]:.2f}")
     for spec in specs[:12]:
         print(f"  {spec['count']:8,d}  {spec['Scientific']}")
     return 0
@@ -247,7 +258,7 @@ def cmd_submit(args: argparse.Namespace) -> int:
     if not specs:
         print("nothing to generate")
         return 0
-    requests, mapping = _build_requests(specs, args.mode)
+    requests, mapping = _build_requests(specs, args.mode, args.image_size)
     jsonl = ("\n".join(json.dumps(request) for request in requests) + "\n").encode()
     print(f"mode={args.mode}: {len(specs)} species in {len(requests)} sheets "
           f"({len(jsonl)/1024:.0f} KB) ...", flush=True)
@@ -268,6 +279,7 @@ def cmd_submit(args: argparse.Namespace) -> int:
         "created": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "sheets": len(requests),
         "species": len(specs),
+        "image_size": args.image_size,
         "mapping": mapping,
     }
     state_path = MODES[args.mode]["state"]
@@ -341,6 +353,15 @@ def cmd_download(args: argparse.Namespace) -> int:
                     cell = _caption_grid_cell(cell, scientific)
             if config["resize"]:
                 cell = _resize(cell, config["resize"])
+            # Never lose an earlier generation: keep the first version we replace.
+            backup = config.get("backup")
+            if backup:
+                backup.mkdir(parents=True, exist_ok=True)
+                for directory in (config["samples"], config["web"]):
+                    existing = directory / f"{slug}.png"
+                    archived = backup / f"{slug}.png"
+                    if existing.exists() and not archived.exists():
+                        archived.write_bytes(existing.read_bytes())
             (config["samples"] / f"{slug}.png").write_bytes(cell)
             (config["web"] / f"{slug}.png").write_bytes(cell)
             written += 1
@@ -445,6 +466,7 @@ def main() -> int:
                               help="Only the N most common species still missing artwork")
             part.add_argument("--keys", default="",
                               help="Comma-separated species keys to redraw, ignoring existing files")
+            part.add_argument("--image-size", default="1K", choices=["1K", "2K", "4K"])
         if name == "submit":
             part.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
