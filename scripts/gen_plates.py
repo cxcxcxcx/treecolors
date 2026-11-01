@@ -33,8 +33,8 @@ MODEL = "gemini-nano-banana-2.1"
 GUIDE_PROMPT = """Botanical illustration, vintage natural-history style, single balanced composition on a plain off-white background, for the tree {scientific} ({common}).
 Subject guide — show what makes THIS species recognizable, in this priority order: {features}.
 Composition guide: one dominant study (the first item above) taking about half the frame, the rest arranged around it with generous white space. Priority: {emphasis}. A small whole-tree silhouette sits at the bottom only if it aids recognition.
-Accurate morphology above all: correct leaf shape, margin, venation, flower structure and fruit for this exact species; the same foliage must look consistent everywhere it appears. Watercolor with fine ink linework, muted natural colors.
-There must be NO text, NO letters, NO captions, NO numbers and NO watermark anywhere on the image — leave a clean empty band at the bottom for a caption that will be added separately."""
+Accurate morphology above all: correct leaf shape, margin, venation, flower structure and fruit for this exact species; the same foliage must look consistent everywhere it appears. Every leaf, flower, catkin, cone and fruit must belong to this species — never add a generic maple-like leaf, or any plant part borrowed from another species. Watercolor with fine ink linework, muted natural colors.
+There must be NO text of any kind: do not write the species name, a caption, a label, a number or a watermark anywhere on the image. Leave a clean empty band at the bottom for a caption that is added separately."""
 
 
 def _kb() -> dict:
@@ -60,7 +60,8 @@ def _describe(name: str, kb: dict) -> dict | None:
         season_txt = f" ({season})" if season and season.lower() != "n/a" else ""
         parts.append(f"flowering branch{season_txt} with correct flower structure")
     if has_fall:
-        parts.append("branch in peak autumn color plus a summer-leaf study with vein detail")
+        parts.append("branch in peak autumn color plus a summer-green leaf of the same species "
+                     "(same shape and venation, only the colour differs)")
     elif deciduous:
         # Muted but real: plane, basswood, black locust and friends still turn
         # yellow or bronze, so the plate must not show a midsummer green tree.
@@ -68,6 +69,8 @@ def _describe(name: str, kb: dict) -> dict | None:
                      "or russet as this species actually turns) plus a summer-leaf study")
     else:
         parts.append("mature leaves, front and underside, with vein detail")
+    if not has_flowers:
+        parts.append("its real flowers, catkins or cones where the species has them")
     parts.append("characteristic fruit and seed")
     if has_flowers and has_fall:
         emphasis = "give spring flowers and autumn foliage equal weight"
@@ -98,7 +101,7 @@ The species, in reading order (left to right, top to bottom):
 
 For each one show what makes that species recognisable: correct leaf shape, margin and venation, its real autumn foliage colour, and flower or fruit where diagnostic. Every species must look clearly different from the others.
 
-There must be NO text, NO letters, NO numbers, NO captions and NO watermark anywhere on the image."""
+There must be NO text of any kind: do not write the species name, a caption, a label, a number or a watermark in any cell. Leave the bottom of each cell empty."""
 
 
 def _generate(prompt: str, key: str, retries: int = 3, image_size: str = "1K") -> bytes:
