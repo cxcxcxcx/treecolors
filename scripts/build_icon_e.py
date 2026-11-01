@@ -38,20 +38,13 @@ OAK_SVG = ROOT / "samples" / "icons" / "oak_leaf_cc0.svg"
 OAK_VIEWBOX = (68.185349, 112.6434)  # width, height of the source drawing
 
 
-def leaf_shapes(cx: float, cy: float, height: float) -> str:
-    """Bur oak leaf from Wikimedia Commons (CC0), recoloured to the icon palette.
-
-    The source drawing sits behind a translate() on its group, so that offset is
-    kept and the whole thing is then scaled into the icon's cream circle.
-    """
+def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
+    """Return (svg transform, outline path) for the CC0 bur oak leaf."""
     import xml.etree.ElementTree as ET
 
     ns = {"svg": "http://www.w3.org/2000/svg"}
     root = ET.fromstring(OAK_SVG.read_text())
     paths = root.findall(".//svg:path", ns)
-    if len(paths) < 2:
-        raise SystemExit("oak leaf svg: expected an outline and a vein path")
-
     group = root.find(".//svg:g", ns)
     inner = group.get("transform", "") if group is not None else ""
 
@@ -60,17 +53,57 @@ def leaf_shapes(cx: float, cy: float, height: float) -> str:
     width = src_w * scale
     x = cx - width / 2
     y = cy - height / 2
+    transform = f"translate({x:.2f} {y:.2f}) scale({scale:.4f}) {inner}"
+    return transform, paths[0].get("d")
 
-    outline = paths[0].get("d")
-    veins = paths[1].get("d")
+
+def leaf_shapes(cx: float, cy: float, height: float) -> str:
+    """Bur oak leaf (CC0) with veins drawn inside its own outline.
+
+    The source drawing carries a second path for veins that sits on a different
+    scale, which is why copying it produced a drifting midrib. The outline is
+    kept and the veins are generated here, clipped to the leaf shape.
+    """
+    transform, outline = _leaf_geometry(cx, cy, height)
+
+    # Rasterise the outline once to get its real bounds in icon coordinates.
+    probe = (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">'
+             f'<g transform="{transform}"><path d="{outline}" fill="#000"/></g></svg>')
+    probe_path = OUT / "_probe.svg"
+    probe_path.write_text(probe)
+    subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", "-o",
+                    str(OUT / "_probe.png"), str(probe_path)], check=True)
+    mask = Image.open(OUT / "_probe.png").convert("RGBA").split()[-1]
+    x0, y0, x1, y1 = mask.getbbox()
+    probe_path.unlink(missing_ok=True)
+    (OUT / "_probe.png").unlink(missing_ok=True)
+
+    left, right = x0, x1
+    top, bottom = y0, y1
+    mid_x = (left + right) / 2
+    stem_top = bottom - (bottom - top) * 0.10
+
+    veins = [f'<path d="M {mid_x:.1f},{top + 6:.1f} L {mid_x:.1f},{stem_top:.1f}"/>']
+    for fraction in (0.12, 0.26, 0.40, 0.54, 0.68, 0.80):
+        y = top + (stem_top - top) * fraction
+        for side in (-1, 1):
+            end_x = mid_x + side * (right - left) * 0.30
+            end_y = y - (stem_top - top) * 0.10
+            veins.append(
+                f'<path d="M {mid_x:.1f},{y:.1f} Q {mid_x + side * (right - left) * 0.13:.1f},'
+                f'{y - (stem_top - top) * 0.05:.1f} {end_x:.1f},{end_y:.1f}"/>'
+            )
+
     return (
-        f'<g transform="translate({x:.2f} {y:.2f}) scale({scale:.4f})">'
-        f'<g transform="{inner}">'
-        f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF_DARK}" '
-        f'stroke-width="0.9" stroke-linejoin="round"/>'
-        f'<path d="{veins}" fill="none" stroke="{LEAF_DARK}" stroke-width="0.7" '
-        f'stroke-linecap="round" opacity="0.7"/>'
-        f"</g></g>"
+        f'<defs><clipPath id="leafClip">'
+        f'<path d="{outline}" transform="{transform}"/></clipPath></defs>'
+        f'<g transform="{transform}">'
+        f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF_DARK}" stroke-width="0.9" stroke-linejoin="round"/>'
+        f'</g>'
+        f'<g clip-path="url(#leafClip)" fill="none" stroke="{LEAF_DARK}" '
+        f'stroke-width="2.2" stroke-linecap="round" opacity="0.75">'
+        + "".join(veins)
+        + "</g>"
     )
 
 
