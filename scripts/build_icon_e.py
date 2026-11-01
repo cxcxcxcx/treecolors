@@ -38,9 +38,41 @@ OAK_SVG = ROOT / "assets" / "iconography" / "oak_leaf_source.svg"
 OAK_VIEWBOX = (117.355, 200.0)  # width, height of the source drawing
 
 
+def _mask_for(outline: str, transform: str) -> "Image.Image":
+    probe = (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">'
+             f'<g transform="{transform}"><path d="{outline}" fill="#000"/></g></svg>')
+    probe_path = OUT / "_probe.svg"
+    probe_path.write_text(probe)
+    subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", "-o",
+                    str(OUT / "_probe.png"), str(probe_path)], check=True)
+    probe_path.unlink(missing_ok=True)
+    mask = Image.open(OUT / "_probe.png").convert("RGBA").split()[-1]
+    (OUT / "_probe.png").unlink(missing_ok=True)
+    return mask
+
+
+def _principal_angle(mask: "Image.Image") -> float:
+    """Angle of the leaf's long axis, in degrees, measured from the x axis."""
+    import numpy as np
+
+    ys, xs = np.nonzero(np.array(mask) > 40)
+    xs = xs.astype(float) - xs.mean()
+    ys = ys.astype(float) - ys.mean()
+    mu20 = (xs * xs).mean()
+    mu02 = (ys * ys).mean()
+    mu11 = (xs * ys).mean()
+    return math.degrees(0.5 * math.atan2(2 * mu11, mu20 - mu02))
+
+
 def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
-    """Return (svg transform, outline path) for the CC0 bur oak leaf."""
+    """Return (transform, outline) with the leaf straightened automatically.
+
+    The source drawings all lean a little; measuring the mask's principal axis
+    beats guessing a rotation constant, and the narrow end is flipped down so
+    the stem always points at the bottom.
+    """
     import xml.etree.ElementTree as ET
+    import numpy as np
 
     ns = {"svg": "http://www.w3.org/2000/svg"}
     root = ET.fromstring(OAK_SVG.read_text())
@@ -49,15 +81,33 @@ def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
     if not inner:
         group = root.find(".//svg:g", ns)
         inner = group.get("transform", "") if group is not None else ""
+    outline = paths[0].get("d")
 
     src_w, src_h = OAK_VIEWBOX
     scale = height / src_h
-    angle = 13  # the source drawing leans; straighten it so the midrib is vertical
-    transform = (
-        f"translate({cx:.2f} {cy:.2f}) rotate({angle}) scale({scale:.4f}) "
-        f"translate({-src_w / 2:.2f} {-src_h / 2:.2f}) {inner}"
-    )
-    return transform, paths[0].get("d")
+
+    def build(angle: float) -> str:
+        return (f"translate({cx:.2f} {cy:.2f}) rotate({angle:.2f}) scale({scale:.4f}) "
+                f"translate({-src_w / 2:.2f} {-src_h / 2:.2f}) {inner}")
+
+    flat = build(0)
+    mask = _mask_for(outline, flat)
+    angle = 90 - _principal_angle(mask)  # bring the long axis to vertical
+
+    upright = build(angle)
+    mask = _mask_for(outline, upright)
+    ys, xs = np.nonzero(np.array(mask) > 40)
+    if not len(xs):
+        return upright, outline
+    # width of the top vs bottom fifth tells us which end is the stem
+    span = ys.max() - ys.min()
+    top_band = xs[ys < ys.min() + span * 0.2]
+    bottom_band = xs[ys > ys.max() - span * 0.2]
+    top_w = top_band.max() - top_band.min() if len(top_band) else 0
+    bottom_w = bottom_band.max() - bottom_band.min() if len(bottom_band) else 0
+    if bottom_w > top_w:  # broad end at the bottom -> flip
+        upright = build(angle + 180)
+    return upright, outline
 
 
 def leaf_shapes(cx: float, cy: float, height: float) -> str:
