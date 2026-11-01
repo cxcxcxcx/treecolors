@@ -51,6 +51,7 @@ def _describe(name: str, kb: dict) -> dict | None:
         return None
     info = hit.info
     common = (info.get("common_names") or [name])[0]
+    deciduous = bool(info.get("deciduous"))
     has_fall = bool(info.get("fall_colors"))
     has_flowers = bool(info.get("beautiful_flowers"))
     season = (info.get("blooming_season") or "").strip()
@@ -60,6 +61,11 @@ def _describe(name: str, kb: dict) -> dict | None:
         parts.append(f"flowering branch{season_txt} with correct flower structure")
     if has_fall:
         parts.append("branch in peak autumn color plus a summer-leaf study with vein detail")
+    elif deciduous:
+        # Muted but real: plane, basswood, black locust and friends still turn
+        # yellow or bronze, so the plate must not show a midsummer green tree.
+        parts.append("branch in its true late-season autumn color (yellow, bronze "
+                     "or russet as this species actually turns) plus a summer-leaf study")
     else:
         parts.append("mature leaves, front and underside, with vein detail")
     parts.append("characteristic fruit and seed")

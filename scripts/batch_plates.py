@@ -33,7 +33,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "py"))
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
-from gen_plates import _describe, _kb  # noqa: E402
+from gen_plates import GUIDE_PROMPT, _describe, _kb  # noqa: E402
 from merge_duplicate_keys import slugify  # noqa: E402
 
 MODEL = "gemini-nano-banana-2.1"
@@ -119,7 +119,7 @@ def _species_counts() -> tuple[Counter, dict[str, str]]:
     return counts, display
 
 
-def _target_species(mode: str, top: int) -> list[dict]:
+def _target_species(mode: str, top: int, keys: set[str] | None = None) -> list[dict]:
     kb = _kb()
     counts, display = _species_counts()
     have = {path.stem for path in MODES[mode]["samples"].glob("*.png")}
@@ -129,7 +129,10 @@ def _target_species(mode: str, top: int) -> list[dict]:
         if " spp" in key:
             continue
         slug = slugify(key)
-        if slug in have:
+        if keys is not None:
+            if key not in keys:
+                continue
+        elif slug in have:
             continue
         spec = _describe(display[key], kb) or {"common": display[key], "features": ""}
         spec["key"] = key
@@ -152,16 +155,38 @@ def _listing(chunk: list[dict], mode: str) -> str:
     return "\n".join(lines)
 
 
+def _grid_plan(count: int) -> list[int]:
+    """Split N species into square grids: 9 (3x3), then 4 (2x2), then singles.
+
+    A rectangular split of a square image would squash every cell, so a tail of
+    two or three species is cheaper and cleaner as single-image requests.
+    """
+    sizes: list[int] = []
+    while count >= 9:
+        sizes.append(9)
+        count -= 9
+    if count >= 4:
+        sizes.append(4)
+        count -= 4
+    sizes.extend([1] * count)
+    return sizes
+
+
 def _build_requests(specs: list[dict], mode: str) -> tuple[list[dict], dict[str, list[str]]]:
     template = PLATE_PROMPT if mode == "plate" else LEAF_PROMPT
     requests, mapping = [], {}
-    for index in range(0, len(specs), COLUMNS * COLUMNS):
-        chunk = specs[index:index + COLUMNS * COLUMNS]
-        key = f"sheet-{index // (COLUMNS * COLUMNS) + 1:03d}"
+    cursor = 0
+    for sheet_index, size in enumerate(_grid_plan(len(specs)), 1):
+        chunk = specs[cursor:cursor + size]
+        cursor += size
+        key = f"sheet-{sheet_index:03d}"
         mapping[key] = [spec["slug"] for spec in chunk]
-        rows = math.ceil(len(chunk) / COLUMNS)
-        text = template.format(rows=rows, cols=COLUMNS, count=len(chunk),
-                              listing=_listing(chunk, mode))
+        if size == 1:
+            text = GUIDE_PROMPT.format(**chunk[0])
+        else:
+            rows = cols = int(math.sqrt(size))
+            text = template.format(rows=rows, cols=cols, count=len(chunk),
+                                   listing=_listing(chunk, mode))
         requests.append({
             "key": key,
             "request": {
@@ -202,9 +227,14 @@ def _upload(jsonl: bytes, display_name: str) -> str:
     return payload["file"]["name"]
 
 
+def _keys(args: argparse.Namespace) -> set[str] | None:
+    raw = getattr(args, "keys", "") or ""
+    return {part.strip().lower() for part in raw.split(",") if part.strip()} or None
+
+
 def cmd_plan(args: argparse.Namespace) -> int:
-    specs = _target_species(args.mode, args.top)
-    sheets = math.ceil(len(specs) / (COLUMNS * COLUMNS))
+    specs = _target_species(args.mode, args.top, _keys(args))
+    sheets = len(_grid_plan(len(specs)))
     print(f"mode={args.mode}  species={len(specs)}  sheets={sheets}  "
           f"batch cost=${sheets * BATCH_PRICE:.2f}")
     for spec in specs[:12]:
@@ -213,7 +243,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
 
 
 def cmd_submit(args: argparse.Namespace) -> int:
-    specs = _target_species(args.mode, args.top)
+    specs = _target_species(args.mode, args.top, _keys(args))
     if not specs:
         print("nothing to generate")
         return 0
@@ -281,6 +311,7 @@ def cmd_download(args: argparse.Namespace) -> int:
     with urllib.request.urlopen(request, timeout=300) as response:
         payload = response.read()
 
+    _load_slug_index()
     for directory in (config["samples"], config["web"]):
         directory.mkdir(parents=True, exist_ok=True)
     written = 0
@@ -299,9 +330,15 @@ def cmd_download(args: argparse.Namespace) -> int:
         if not image:
             print(f"  [skip] {key}: no image")
             continue
-        rows = math.ceil(len(slugs) / COLUMNS)
-        cells = _slice_grid(image, rows, COLUMNS)
+        side = max(1, int(round(math.sqrt(len(slugs)))))
+        cells = _slice_grid(image, side, side)
         for slug, cell in zip(slugs, cells):
+            if args.mode == "plate":
+                scientific = _scientific_for(slug)
+                if scientific:
+                    # Always caption on a padded band: the model sometimes puts
+                    # a tree silhouette exactly where the old band used to be.
+                    cell = _caption_grid_cell(cell, scientific)
             if config["resize"]:
                 cell = _resize(cell, config["resize"])
             (config["samples"] / f"{slug}.png").write_bytes(cell)
@@ -309,6 +346,59 @@ def cmd_download(args: argparse.Namespace) -> int:
             written += 1
     print(f"wrote {written} {args.mode} images")
     return 0
+
+
+def _bottom_is_empty(image_bytes: bytes, threshold: int = 18) -> bool:
+    from PIL import Image
+
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    background = image.getpixel((2, 2))
+    band = image.crop((0, int(image.height * 0.9), image.width, image.height))
+    pixels = list(band.getdata())
+    busy = sum(1 for pixel in pixels
+               if abs(pixel[0] - background[0]) + abs(pixel[1] - background[1])
+               + abs(pixel[2] - background[2]) > threshold)
+    return busy < len(pixels) * 0.02
+
+
+def _caption_grid_cell(image_bytes: bytes, scientific: str) -> bytes:
+    """Add the Latin caption below a sliced cell without covering the drawing."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    band = max(26, int(image.height * 0.085))
+    background = image.getpixel((2, 2))
+    canvas = Image.new("RGB", (image.width, image.height + band), background)
+    canvas.paste(image, (0, 0))
+    draw = ImageDraw.Draw(canvas)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/TTF/DejaVuSerifCondensed-Italic.ttf",
+                                  max(16, image.width // 22))
+    except OSError:
+        font = ImageFont.load_default()
+    box = draw.textbbox((0, 0), scientific, font=font)
+    draw.text(((canvas.width - (box[2] - box[0])) / 2, image.height + (band - (box[3] - box[1])) / 2 - box[1] / 2),
+              scientific, font=font, fill=(45, 45, 45))
+    buffer = io.BytesIO()
+    canvas.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def _scientific_for(slug: str) -> str:
+    key = _SLUG_TO_KEY.get(slug, "")
+    if not key:
+        return ""
+    words = key.split()
+    return words[0].capitalize() + (" " + " ".join(words[1:]) if len(words) > 1 else "")
+
+
+_SLUG_TO_KEY: dict[str, str] = {}
+
+
+def _load_slug_index() -> None:
+    if not _SLUG_TO_KEY:
+        for key in _kb():
+            _SLUG_TO_KEY[slugify(key)] = key
 
 
 def _resize(image_bytes: bytes, size: int) -> bytes:
@@ -353,6 +443,8 @@ def main() -> int:
         if name in {"plan", "submit"}:
             part.add_argument("--top", type=int, default=0,
                               help="Only the N most common species still missing artwork")
+            part.add_argument("--keys", default="",
+                              help="Comma-separated species keys to redraw, ignoring existing files")
         if name == "submit":
             part.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
