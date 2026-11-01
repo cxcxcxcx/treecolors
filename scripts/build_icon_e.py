@@ -34,8 +34,8 @@ LEAF_DARK = "#b87c1e"
 RING = "#e8dcc2"
 
 
-OAK_SVG = ROOT / "samples" / "icons" / "oak_leaf_cc0.svg"
-OAK_VIEWBOX = (68.185349, 112.6434)  # width, height of the source drawing
+OAK_SVG = ROOT / "assets" / "iconography" / "oak_leaf_source.svg"
+OAK_VIEWBOX = (117.355, 200.0)  # width, height of the source drawing
 
 
 def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
@@ -45,28 +45,29 @@ def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
     ns = {"svg": "http://www.w3.org/2000/svg"}
     root = ET.fromstring(OAK_SVG.read_text())
     paths = root.findall(".//svg:path", ns)
-    group = root.find(".//svg:g", ns)
-    inner = group.get("transform", "") if group is not None else ""
+    inner = paths[0].get("transform", "") if paths else ""
+    if not inner:
+        group = root.find(".//svg:g", ns)
+        inner = group.get("transform", "") if group is not None else ""
 
     src_w, src_h = OAK_VIEWBOX
     scale = height / src_h
-    width = src_w * scale
-    x = cx - width / 2
-    y = cy - height / 2
-    transform = f"translate({x:.2f} {y:.2f}) scale({scale:.4f}) {inner}"
+    angle = 13  # the source drawing leans; straighten it so the midrib is vertical
+    transform = (
+        f"translate({cx:.2f} {cy:.2f}) rotate({angle}) scale({scale:.4f}) "
+        f"translate({-src_w / 2:.2f} {-src_h / 2:.2f}) {inner}"
+    )
     return transform, paths[0].get("d")
 
 
 def leaf_shapes(cx: float, cy: float, height: float) -> str:
-    """Bur oak leaf (CC0) with veins drawn inside its own outline.
+    """Solid oak leaf silhouette with a clean stem and clipped veins.
 
-    The source drawing carries a second path for veins that sits on a different
-    scale, which is why copying it produced a drifting midrib. The outline is
-    kept and the veins are generated here, clipped to the leaf shape.
+    The source drawing has a thin, slightly detached stem, so the leaf body is
+    clipped just above it and a solid stem is drawn underneath.
     """
     transform, outline = _leaf_geometry(cx, cy, height)
 
-    # Rasterise the outline once to get its real bounds in icon coordinates.
     probe = (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">'
              f'<g transform="{transform}"><path d="{outline}" fill="#000"/></g></svg>')
     probe_path = OUT / "_probe.svg"
@@ -78,38 +79,38 @@ def leaf_shapes(cx: float, cy: float, height: float) -> str:
     probe_path.unlink(missing_ok=True)
     (OUT / "_probe.png").unlink(missing_ok=True)
 
-    left, right = x0, x1
-    top, bottom = y0, y1
+    left, right, top, bottom = x0, x1, y0, y1
     mid_x = (left + right) / 2
-    stem_top = bottom - (bottom - top) * 0.10
+    body_bottom = bottom - (bottom - top) * 0.07
+    stem_w = max(8.0, (right - left) * 0.06)
+    stem_top = body_bottom - (bottom - top) * 0.06
+    stem_bottom = bottom + (bottom - top) * 0.05
 
-    veins = [f'<path d="M {mid_x:.1f},{top + 6:.1f} L {mid_x:.1f},{stem_top:.1f}"/>']
-    for fraction in (0.12, 0.26, 0.40, 0.54, 0.68, 0.80):
-        y = top + (stem_top - top) * fraction
+    veins = [f'<path d="M {mid_x:.1f},{top + 6:.1f} L {mid_x:.1f},{body_bottom - 4:.1f}"/>']
+    for fraction in (0.16, 0.32, 0.48, 0.64, 0.78):
+        y = top + (body_bottom - top) * fraction
         for side in (-1, 1):
-            end_x = mid_x + side * (right - left) * 0.30
-            end_y = y - (stem_top - top) * 0.10
             veins.append(
                 f'<path d="M {mid_x:.1f},{y:.1f} Q {mid_x + side * (right - left) * 0.13:.1f},'
-                f'{y - (stem_top - top) * 0.05:.1f} {end_x:.1f},{end_y:.1f}"/>'
+                f'{y - (body_bottom - top) * 0.05:.1f} '
+                f'{mid_x + side * (right - left) * 0.30:.1f},{y - (body_bottom - top) * 0.10:.1f}"/>'
             )
 
     return (
-        f'<defs><clipPath id="leafClip">'
-        f'<path d="{outline}" transform="{transform}"/></clipPath></defs>'
+        f'<defs><clipPath id="leafClip"><path d="{outline}" transform="{transform}"/></clipPath></defs>'
         f'<g transform="{transform}">'
-        f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF_DARK}" stroke-width="0.9" stroke-linejoin="round"/>'
+        f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF}" stroke-width="5" stroke-linejoin="round"/>'
+        f'<path d="{outline}" fill="none" stroke="{LEAF_DARK}" stroke-width="1.2" stroke-linejoin="round"/>'
         f'</g>'
-        f'<g clip-path="url(#leafClip)" fill="none" stroke="{LEAF_DARK}" '
-        f'stroke-width="2.2" stroke-linecap="round" opacity="0.75">'
-        + "".join(veins)
-        + "</g>"
+        f'<g clip-path="url(#leafClip)" fill="none" stroke="{LEAF_DARK}" stroke-width="2.2" '
+        f'stroke-linecap="round" opacity="0.8">'
+        + "".join(veins) + "</g>"
     )
 
 
 def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str:
     flower = base64.b64encode(FLOWER.read_bytes()).decode()
-    leaf = leaf_shapes(256, 190, 176)
+    leaf = leaf_shapes(256, 188, 160)
     # midrib + side veins
     veins = ['<path d="M256 118 L256 268" stroke="%s" stroke-width="3.2" stroke-linecap="round"/>' % LEAF_DARK]
     for offset in (18, 40, 62):

@@ -47,3 +47,10 @@ output terms for your jurisdiction.
 The app uses MapLibre GL JS, PMTiles, Leaflet, OpenStreetMap tiles, Python
 `requests`, `pandas`, `geopandas`, `openai`, and `tippecanoe`/`pmtiles` CLIs.
 Their own licenses apply; see the dependency lockfiles and upstream projects.
+
+## Icon artwork
+
+The app icon's oak leaf silhouette is adapted from
+[Gold heraldic oak leaf](https://commons.wikimedia.org/wiki/File:Gold_heraldic_oak_leaf.svg)
+on Wikimedia Commons (CC BY 3.0), recoloured to the site palette. The
+BotaniSense bird-of-paradise mark is the project's own artwork.
