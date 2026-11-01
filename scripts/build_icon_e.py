@@ -34,8 +34,7 @@ LEAF_DARK = "#b87c1e"
 RING = "#e8dcc2"
 
 
-OAK_SVG = ROOT / "assets" / "iconography" / "oak_leaf_source.svg"
-OAK_VIEWBOX = (117.355, 200.0)  # width, height of the source drawing
+OAK_SVG = ROOT / "assets" / "iconography" / "oak_leaf_traced.svg"  # potrace of the Option E leaf
 
 
 def _mask_for(outline: str, transform: str) -> "Image.Image":
@@ -83,12 +82,18 @@ def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
         inner = group.get("transform", "") if group is not None else ""
     outline = paths[0].get("d")
 
-    src_w, src_h = OAK_VIEWBOX
+    box = (root.get("viewBox") or "").replace(",", " ").split()
+    if len(box) == 4:
+        src_w, src_h = float(box[2]), float(box[3])
+        vb_x, vb_y = float(box[0]), float(box[1])
+    else:
+        src_w, src_h = float(root.get("width", 512)), float(root.get("height", 512))
+        vb_x = vb_y = 0.0
     scale = height / src_h
 
     def build(angle: float) -> str:
         return (f"translate({cx:.2f} {cy:.2f}) rotate({angle:.2f}) scale({scale:.4f}) "
-                f"translate({-src_w / 2:.2f} {-src_h / 2:.2f}) {inner}")
+                f"translate({-(vb_x + src_w / 2):.2f} {-(vb_y + src_h / 2):.2f}) {inner}")
 
     flat = build(0)
     mask = _mask_for(outline, flat)
