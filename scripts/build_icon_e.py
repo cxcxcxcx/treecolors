@@ -34,27 +34,49 @@ LEAF_DARK = "#b87c1e"
 RING = "#e8dcc2"
 
 
-def leaf_path(cx: float, cy: float, height: float, width: float, lobes: int = 4) -> str:
-    """Symmetric lobed leaf: tip at the top, rounded lobes, pointed base."""
-    steps = 160
-    right, left = [], []
-    for i in range(steps + 1):
-        t = i / steps                      # 0 tip, 1 base
-        wave = 0.5 + 0.5 * math.cos(2 * math.pi * lobes * t - math.pi)
-        half = (width * 0.5) * (math.sin(math.pi * t) ** 0.6) * (0.62 + 0.38 * wave ** 0.7)
-        y = cy + height * (t - 0.5)
-        right.append((cx + max(half, 0), y))
-        left.append((cx - max(half, 0), y))
-    points = right + list(reversed(left))
-    d = f"M {points[0][0]:.1f},{points[0][1]:.1f} "
-    for x, y in points[1:]:
-        d += f"L {x:.1f},{y:.1f} "
-    return d + "Z"
+OAK_SVG = ROOT / "samples" / "icons" / "oak_leaf_cc0.svg"
+OAK_VIEWBOX = (68.185349, 112.6434)  # width, height of the source drawing
+
+
+def leaf_shapes(cx: float, cy: float, height: float) -> str:
+    """Bur oak leaf from Wikimedia Commons (CC0), recoloured to the icon palette.
+
+    The source drawing sits behind a translate() on its group, so that offset is
+    kept and the whole thing is then scaled into the icon's cream circle.
+    """
+    import xml.etree.ElementTree as ET
+
+    ns = {"svg": "http://www.w3.org/2000/svg"}
+    root = ET.fromstring(OAK_SVG.read_text())
+    paths = root.findall(".//svg:path", ns)
+    if len(paths) < 2:
+        raise SystemExit("oak leaf svg: expected an outline and a vein path")
+
+    group = root.find(".//svg:g", ns)
+    inner = group.get("transform", "") if group is not None else ""
+
+    src_w, src_h = OAK_VIEWBOX
+    scale = height / src_h
+    width = src_w * scale
+    x = cx - width / 2
+    y = cy - height / 2
+
+    outline = paths[0].get("d")
+    veins = paths[1].get("d")
+    return (
+        f'<g transform="translate({x:.2f} {y:.2f}) scale({scale:.4f})">'
+        f'<g transform="{inner}">'
+        f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF_DARK}" '
+        f'stroke-width="0.9" stroke-linejoin="round"/>'
+        f'<path d="{veins}" fill="none" stroke="{LEAF_DARK}" stroke-width="0.7" '
+        f'stroke-linecap="round" opacity="0.7"/>'
+        f"</g></g>"
+    )
 
 
 def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str:
     flower = base64.b64encode(FLOWER.read_bytes()).decode()
-    leaf = leaf_path(256, 194, 162, 138)
+    leaf = leaf_shapes(256, 190, 176)
     # midrib + side veins
     veins = ['<path d="M256 118 L256 268" stroke="%s" stroke-width="3.2" stroke-linecap="round"/>' % LEAF_DARK]
     for offset in (18, 40, 62):
@@ -96,9 +118,8 @@ def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str
           fill="{PIN_DARK}" clip-path="url(#rightHalf)"/>
     <circle cx="256" cy="196" r="112" fill="{CREAM}"/>
     <circle cx="256" cy="196" r="112" fill="none" stroke="{RING}" stroke-width="4"/>
-    <path d="{leaf}" fill="{LEAF}" stroke="{LEAF_DARK}" stroke-width="2.5" stroke-linejoin="round"/>
-    <path d="M256 268 L256 286" stroke="{LEAF_DARK}" stroke-width="5" stroke-linecap="round"/>
-    {''.join(veins)}
+    {leaf}
+
     {badge}
   </g>
 </svg>'''
