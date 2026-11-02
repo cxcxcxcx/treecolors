@@ -29,8 +29,8 @@ FLOWER = ROOT / "samples" / "icons" / "bs512.png"
 PIN_LIGHT = "#c8552a"
 PIN_DARK = "#a8401f"
 CREAM = "#f8f1de"
-LEAF = "#d99b2b"
-LEAF_DARK = "#b87c1e"
+LEAF = "#e6a639"
+LEAF_DARK = "#c0872c"
 RING = "#e8dcc2"
 
 
@@ -142,13 +142,13 @@ def leaf_shapes(cx: float, cy: float, height: float) -> str:
     stem_bottom = bottom + (bottom - top) * 0.05
 
     veins = [f'<path d="M {mid_x:.1f},{top + 6:.1f} L {mid_x:.1f},{body_bottom - 4:.1f}"/>']
-    for fraction in (0.16, 0.32, 0.48, 0.64, 0.78):
+    for fraction in (0.24, 0.44, 0.62, 0.78):
         y = top + (body_bottom - top) * fraction
         for side in (-1, 1):
             veins.append(
-                f'<path d="M {mid_x:.1f},{y:.1f} Q {mid_x + side * (right - left) * 0.13:.1f},'
-                f'{y - (body_bottom - top) * 0.05:.1f} '
-                f'{mid_x + side * (right - left) * 0.30:.1f},{y - (body_bottom - top) * 0.10:.1f}"/>'
+                f'<path d="M {mid_x:.1f},{y:.1f} Q {mid_x + side * (right - left) * 0.10:.1f},'
+                f'{y - (body_bottom - top) * 0.06:.1f} '
+                f'{mid_x + side * (right - left) * 0.25:.1f},{y - (body_bottom - top) * 0.14:.1f}"/>'
             )
 
     return (
@@ -157,8 +157,8 @@ def leaf_shapes(cx: float, cy: float, height: float) -> str:
         f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF}" stroke-width="5" stroke-linejoin="round"/>'
         f'<path d="{outline}" fill="none" stroke="{LEAF_DARK}" stroke-width="1.2" stroke-linejoin="round"/>'
         f'</g>'
-        f'<g clip-path="url(#leafClip)" fill="none" stroke="{LEAF_DARK}" stroke-width="2.2" '
-        f'stroke-linecap="round" opacity="0.8">'
+        f'<g clip-path="url(#leafClip)" fill="none" stroke="{LEAF_DARK}" stroke-width="1.7" '
+        f'stroke-linecap="round" opacity="0.9">'
         + "".join(veins) + "</g>"
     )
 
@@ -201,9 +201,9 @@ def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str
       <clipPath id="leftHalf"><rect x="0" y="0" width="256" height="512"/></clipPath>
       <clipPath id="rightHalf"><rect x="256" y="0" width="256" height="512"/></clipPath>
     </defs>
-    <path d="M106 196 A150 150 0 1 1 406 196 C406 300 300 380 256 470 C212 380 106 300 106 196 Z"
+    <path d="M100 196 A156 156 0 1 1 412 196 C412 302 306 384 256 472 C206 384 100 302 100 196 Z"
           fill="{PIN_LIGHT}" clip-path="url(#leftHalf)"/>
-    <path d="M106 196 A150 150 0 1 1 406 196 C406 300 300 380 256 470 C212 380 106 300 106 196 Z"
+    <path d="M100 196 A156 156 0 1 1 412 196 C412 302 306 384 256 472 C206 384 100 302 100 196 Z"
           fill="{PIN_DARK}" clip-path="url(#rightHalf)"/>
     <circle cx="256" cy="196" r="112" fill="{CREAM}"/>
     <circle cx="256" cy="196" r="112" fill="none" stroke="{RING}" stroke-width="4"/>
