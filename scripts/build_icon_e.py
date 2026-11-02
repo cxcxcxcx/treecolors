@@ -29,12 +29,13 @@ FLOWER = ROOT / "samples" / "icons" / "bs512.png"
 PIN_LIGHT = "#c8552a"
 PIN_DARK = "#a8401f"
 CREAM = "#f8f1de"
-LEAF = "#e6a639"
-LEAF_DARK = "#c0872c"
+LEAF = "#e9a132"        # left half of the leaf (sampled from the source)
+LEAF_SHADE = "#d28323"  # right half
+LEAF_VEIN = "#b8671a"
 RING = "#e8dcc2"
 
 
-OAK_SVG = ROOT / "assets" / "iconography" / "oak_leaf_traced.svg"  # potrace of the Option E leaf
+OAK_SVG = ROOT / "assets" / "iconography" / "oak_leaf_hi.svg"  # potrace of the 2752px Option E leaf
 
 
 def _mask_for(outline: str, transform: str) -> "Image.Image":
@@ -116,68 +117,51 @@ def _leaf_geometry(cx: float, cy: float, height: float) -> tuple[str, str]:
 
 
 def leaf_shapes(cx: float, cy: float, height: float) -> str:
-    """Solid oak leaf silhouette with a clean stem and clipped veins.
+    """Leaf traced from the full-resolution Option E artwork.
 
-    The source drawing has a thin, slightly detached stem, so the leaf body is
-    clipped just above it and a solid stem is drawn underneath.
+    Body and veins are separate potrace paths; the body keeps the source's
+    two-tone split (lighter left, darker right) and the veins use the sampled
+    vein colour. Nothing here is drawn by hand any more.
     """
-    transform, outline = _leaf_geometry(cx, cy, height)
+    import re
+    import xml.etree.ElementTree as ET
 
-    probe = (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">'
-             f'<g transform="{transform}"><path d="{outline}" fill="#000"/></g></svg>')
-    probe_path = OUT / "_probe.svg"
-    probe_path.write_text(probe)
-    subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", "-o",
-                    str(OUT / "_probe.png"), str(probe_path)], check=True)
-    mask = Image.open(OUT / "_probe.png").convert("RGBA").split()[-1]
-    x0, y0, x1, y1 = mask.getbbox()
-    probe_path.unlink(missing_ok=True)
-    (OUT / "_probe.png").unlink(missing_ok=True)
+    source = OAK_SVG.read_text()
+    root = ET.fromstring(source)
+    ns = {"svg": "http://www.w3.org/2000/svg"}
+    box = (root.get("viewBox") or "").split()
+    vx, vy, vw, vh = (float(box[0]), float(box[1]), float(box[2]), float(box[3])) if len(box) == 4 else (0, 0, 1, 1)
 
-    left, right, top, bottom = x0, x1, y0, y1
-    mid_x = (left + right) / 2
-    body_bottom = bottom - (bottom - top) * 0.07
-    stem_w = max(8.0, (right - left) * 0.06)
-    stem_top = body_bottom - (bottom - top) * 0.06
-    stem_bottom = bottom + (bottom - top) * 0.05
+    body = re.search(r'id="body"[^>]*d="([^"]+)"', source) or re.search(r'd="([^"]+)"[^>]*id="body"', source)
+    veins = re.search(r'id="veins"[^>]*d="([^"]+)"', source) or re.search(r'd="([^"]+)"[^>]*id="veins"', source)
+    groups = re.findall(r'<g transform="([^"]+)"', source)
+    inner = groups[0] if groups else ""
 
-    veins = [f'<path d="M {mid_x:.1f},{top + 6:.1f} L {mid_x:.1f},{body_bottom - 4:.1f}"/>']
-    for fraction in (0.24, 0.44, 0.62, 0.78):
-        y = top + (body_bottom - top) * fraction
-        for side in (-1, 1):
-            veins.append(
-                f'<path d="M {mid_x:.1f},{y:.1f} Q {mid_x + side * (right - left) * 0.10:.1f},'
-                f'{y - (body_bottom - top) * 0.06:.1f} '
-                f'{mid_x + side * (right - left) * 0.25:.1f},{y - (body_bottom - top) * 0.14:.1f}"/>'
-            )
+    scale = height / vh
+    x = cx - vw * scale / 2
+    y = cy - vh * scale / 2
+    place = f"translate({x:.2f} {y:.2f}) scale({scale:.4f}) translate({-vx:.2f} {-vy:.2f})"
+
+    body_d = body.group(1)
+    veins_d = veins.group(1) if veins else ""
 
     return (
-        f'<defs><clipPath id="leafClip"><path d="{outline}" transform="{transform}"/></clipPath></defs>'
-        f'<g transform="{transform}">'
-        f'<path d="{outline}" fill="{LEAF}" stroke="{LEAF}" stroke-width="5" stroke-linejoin="round"/>'
-        f'<path d="{outline}" fill="none" stroke="{LEAF_DARK}" stroke-width="1.2" stroke-linejoin="round"/>'
-        f'</g>'
-        f'<g clip-path="url(#leafClip)" fill="none" stroke="{LEAF_DARK}" stroke-width="1.7" '
-        f'stroke-linecap="round" opacity="0.9">'
-        + "".join(veins) + "</g>"
+        f'<defs>'
+        f'<clipPath id="halfLeft"><rect x="0" y="0" width="{cx:.1f}" height="512"/></clipPath>'
+        f'<clipPath id="halfRight"><rect x="{cx:.1f}" y="0" width="{512 - cx:.1f}" height="512"/></clipPath>'
+        f'</defs>'
+        f'<g clip-path="url(#halfLeft)"><g transform="{place}"><g transform="{inner}">'
+        f'<path d="{body_d}" fill="{LEAF}"/></g></g></g>'
+        f'<g clip-path="url(#halfRight)"><g transform="{place}"><g transform="{inner}">'
+        f'<path d="{body_d}" fill="{LEAF_SHADE}"/></g></g></g>'
+        f'<g transform="{place}"><g transform="{inner}">'
+        f'<path d="{veins_d}" fill="{LEAF_VEIN}"/></g></g>'
     )
 
 
 def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str:
     flower = base64.b64encode(FLOWER.read_bytes()).decode()
     leaf = leaf_shapes(256, 190, 202)
-    # midrib + side veins
-    veins = ['<path d="M256 118 L256 268" stroke="%s" stroke-width="3.2" stroke-linecap="round"/>' % LEAF_DARK]
-    for offset in (18, 40, 62):
-        veins.append(
-            f'<path d="M256 {128 + offset} Q {256 - 26} {136 + offset} {256 - 46} {150 + offset}" '
-            f'stroke="{LEAF_DARK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
-        )
-        veins.append(
-            f'<path d="M256 {128 + offset} Q {256 + 26} {136 + offset} {256 + 46} {150 + offset}" '
-            f'stroke="{LEAF_DARK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
-        )
-
     badge = ""
     if with_badge:
         badge = f'''
