@@ -165,7 +165,7 @@ def leaf_shapes(cx: float, cy: float, height: float) -> str:
 
 def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str:
     flower = base64.b64encode(FLOWER.read_bytes()).decode()
-    leaf = leaf_shapes(256, 188, 160)
+    leaf = leaf_shapes(256, 190, 202)
     # midrib + side veins
     veins = ['<path d="M256 118 L256 268" stroke="%s" stroke-width="3.2" stroke-linecap="round"/>' % LEAF_DARK]
     for offset in (18, 40, 62):
@@ -181,9 +181,9 @@ def build_svg(with_badge: bool, background: str | None, pad: float = 0.0) -> str
     badge = ""
     if with_badge:
         badge = f'''
-    <circle cx="392" cy="104" r="52" fill="{CREAM}" stroke="{PIN_LIGHT}" stroke-width="6"/>
-    <clipPath id="badgeClip"><circle cx="392" cy="104" r="45"/></clipPath>
-    <image x="352" y="58" width="82" height="92" preserveAspectRatio="xMidYMid meet"
+    <circle cx="394" cy="100" r="60" fill="{CREAM}" stroke="{PIN_LIGHT}" stroke-width="6"/>
+    <clipPath id="badgeClip"><circle cx="394" cy="100" r="52"/></clipPath>
+    <image x="350" y="46" width="88" height="104" preserveAspectRatio="xMidYMid meet"
            clip-path="url(#badgeClip)" xlink:href="data:image/png;base64,{flower}"/>'''
 
     bg = ""

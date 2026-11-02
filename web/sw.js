@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tree-map-v20261101-112322';
+const CACHE_NAME = 'tree-map-v20261101-184833';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
