@@ -2,11 +2,17 @@
 
 Map pin containing a small scene: a house, a flowering tree, an orange and a
 yellow autumn tree, grass and soil, plus the BotaniSense badge. In production
-from 2026-11-03.
+from 2026-11-04.
 
-- Source artwork: user-supplied Option C sheet (2752×1536 upload)
-- Vectorised with **vtracer** (colour mode, stacked, spline) from the cropped
-  974×1233 artwork; the page background was masked out and the badge flower was
-  replaced with the real brand PNG for crispness
-- Output master: `icon-1024.png` (cream background, 8% margin)
-- `traced.svg` is the raw vtracer output, kept for re-editing
+- Source artwork: user-supplied Option C sheet, 2752×1536 (`source.jpg`)
+- Built with `scripts/build_icon_flower.py` (vtracer colour trace + background
+  knockout + brand flower composited into the badge)
+- Large art → 1024/512/192/maskable/apple-touch
+- **Favicons come from the sheet's simplified small variant**, not a downscale
+  of the detailed art (see `favicon-32.png`)
+- Tooling: `tools/setup_icon_tools.sh` recreates the Python 3.12 + vtracer venv
+  (the cp314 wheel segfaults on some inputs)
+
+Rebuild:
+    bash tools/setup_icon_tools.sh
+    python3 scripts/build_icon_flower.py --source source.jpg --prefix f
