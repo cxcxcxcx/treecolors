@@ -45,11 +45,15 @@ class Cdp:
                 return message
 
     def eval(self, expression: str, await_promise: bool = False):
-        result = self.send("Runtime.evaluate", {
-            "expression": expression,
-            "returnByValue": True,
-            "awaitPromise": await_promise,
-        })
+        try:
+            result = self.send("Runtime.evaluate", {
+                "expression": expression,
+                "returnByValue": True,
+                "awaitPromise": await_promise,
+            })
+        except Exception as exc:  # noqa: BLE001 - a stuck page fails one check
+            print(f"  [warn] evaluation timed out: {exc}")
+            return None
         value = result.get("result", {}).get("result", {})
         if value.get("subtype") == "error":
             raise RuntimeError(value.get("description", "evaluation failed"))
@@ -103,7 +107,7 @@ def wait_for_map(cdp: Cdp, seconds: int = 45) -> None:
     raise SystemExit("map never finished loading (no species rows)")
 
 
-def checks(cdp: Cdp) -> list[tuple[str, bool, str]]:
+def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
     results: list[tuple[str, bool, str]] = []
 
     rows = cdp.eval("document.querySelectorAll('.species-row').length") or 0
@@ -207,6 +211,27 @@ def checks(cdp: Cdp) -> list[tuple[str, bool, str]]:
                     if attribution.get("links") else False,
                     str(attribution.get("links"))))
 
+    # Reset the view instead of reloading: a navigation can trip the service
+    # worker's controllerchange reload and kill the execution context mid-check.
+    cdp.eval("map.jumpTo({center: [-98.5, 39.8], zoom: 3}); userInteracted = false; 1")
+    time.sleep(2)
+    cdp.eval("map.jumpTo({center: [-77.4, 39.2], zoom: 13}); userInteracted = false; 1")
+    time.sleep(3)
+    cdp.eval("zoomOutUntilTrees([-77.4, 39.2]); 1")
+    locate = {}
+    for _ in range(30):
+        locate = cdp.eval("""JSON.stringify({
+            zoom: Number(map.getZoom().toFixed(1)),
+            cityTrees: visibleTreeCount()
+        })""")
+        locate = json.loads(locate) if locate else {}
+        if locate.get("zoom", 13) < 12.5:
+            break
+        time.sleep(0.6)
+    results.append(("locating in an empty area zooms back out",
+                    locate.get("zoom", 99) < 12.5 and locate.get("cityTrees", 0) > 0,
+                    f"zoom={locate.get('zoom')} trees={locate.get('cityTrees')} in view"))
+
     return results
 
 
@@ -226,7 +251,7 @@ def main() -> int:
         cdp = Cdp(open_tab(port, args.url))
         cdp.send("Runtime.enable")
         wait_for_map(cdp, args.wait)
-        for name, ok, detail in checks(cdp):
+        for name, ok, detail in checks(cdp, args.url):
             print(f"{'PASS' if ok else 'FAIL'}  {name}" + (f"  ({detail})" if detail else ""))
             failures += 0 if ok else 1
     finally:

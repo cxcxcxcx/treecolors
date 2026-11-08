@@ -548,6 +548,23 @@
             background: transparent;
         }
 
+        .map-toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+            transform: translateX(-50%);
+            max-width: min(420px, calc(100% - 32px));
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(33, 45, 56, 0.94);
+            color: #fff;
+            font-size: 13px;
+            line-height: 1.35;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            z-index: 40;
+            text-align: center;
+        }
+
         .species-sheet {
             position: fixed;
             left: 50%;
@@ -904,6 +921,8 @@
             <a href="https://botanisense.app/" target="_blank" rel="noopener">BotaniSense</a>
         </div>
     </div>
+
+    <div class="map-toast hidden" id="map-toast" role="status" aria-live="polite"></div>
 
     <div class="species-sheet hidden" id="species-sheet" role="dialog" aria-label="Species details">
         <button type="button" class="sheet-close" id="species-sheet-close" aria-label="Close species details">&times;</button>
@@ -1723,6 +1742,78 @@
             updateSpeciesPanel();
         }
 
+        const LOCATE_MIN_TREES = 4000;  // trees we want inside the viewport
+        const LOCATE_MIN_ZOOM = 7;      // never end up wider than this
+
+        // Counting rendered features at low zoom means querying every tile in
+        // view, which is slow enough to freeze the page. City totals come from
+        // species_stats.json instead, so this stays cheap.
+        function visibleCityTrees() {
+            const bounds = map.getBounds();
+            const view = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+            let total = 0;
+            speciesStats.forEach((city) => {
+                if (city.bbox && boundsIntersect(view, city.bbox)) {
+                    total += city.total || 0;
+                }
+            });
+            return total;
+        }
+
+        // Accurate near the ground, cheap when zoomed out: counting rendered
+        // features at low zoom means walking every tile in view.
+        function visibleTreeCount() {
+            if (map.getZoom() >= 10 && map.getLayer('trees-points')) {
+                try {
+                    return map.queryRenderedFeatures({ layers: ['trees-points'] }).length;
+                } catch (error) {
+                    return 0;
+                }
+            }
+            return visibleCityTrees() > 0 ? LOCATE_MIN_TREES : 0;
+        }
+
+        function waitForMapIdle(ms = 1200) {
+            return new Promise((resolve) => {
+                let settled = false;
+                const finish = () => {
+                    if (settled) return;
+                    settled = true;
+                    map.off('idle', finish);
+                    resolve();
+                };
+                map.once('idle', finish);
+                setTimeout(finish, ms);
+            });
+        }
+
+        function showToast(message, ms = 6000) {
+            const toast = document.getElementById('map-toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            clearTimeout(showToast.timer);
+            showToast.timer = setTimeout(() => toast.classList.add('hidden'), ms);
+        }
+
+        async function zoomOutUntilTrees(center) {
+            // A city view at z13 shows plenty; empty suburbs and countryside do
+            // not, so step back until enough mapped trees are in the viewport.
+            for (let step = 0; step < 6; step += 1) {
+                await waitForMapIdle();
+                if (userInteracted) return true;
+                if (visibleTreeCount() >= LOCATE_MIN_TREES) return true;
+                const next = Math.max(LOCATE_MIN_ZOOM, Math.round(map.getZoom()) - 1);
+                if (next >= Math.round(map.getZoom())) break;
+                map.easeTo({ center, zoom: next, duration: 450 });
+            }
+            await waitForMapIdle();
+            if (visibleCityTrees() === 0) {
+                showToast('No tree data mapped near here yet — pan to a covered city.', 7000);
+            }
+            return false;
+        }
+
         function locateUser(auto = false) {
             if (!navigator.geolocation) {
                 if (!auto) alert('Geolocation is not supported by your browser');
@@ -1733,12 +1824,14 @@
                 const { latitude, longitude } = position.coords;
                 userLocated = true;
                 userLocationMarker.setLngLat([longitude, latitude]).addTo(map);
+                const target = [longitude, latitude];
                 map.flyTo({
-                    center: [longitude, latitude],
+                    center: target,
                     zoom: Math.max(13, map.getZoom()),
                     essential: true
                 });
                 legendLocateButton.classList.remove('loading');
+                zoomOutUntilTrees(target);
             }, (error) => {
                 console.error('Error getting location:', error);
                 if (!auto) {
@@ -2095,9 +2188,13 @@
     </script>
     <script>
         if ('serviceWorker' in navigator) {
+            // Only reload when an *existing* controller is replaced. Reloading
+            // on the very first install makes a fresh visit refresh itself for
+            // no reason (and interrupts whatever the user is doing).
+            const hadController = Boolean(navigator.serviceWorker.controller);
             let refreshingForNewWorker = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshingForNewWorker) {
+                if (hadController && !refreshingForNewWorker) {
                     refreshingForNewWorker = true;
                     window.location.reload();
                 }
@@ -2105,7 +2202,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261104-132425';
+                const SW_QUERY = 'tree-map-v20261108-080522';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
