@@ -80,20 +80,25 @@ def vectorise(image: Image.Image, target: Path) -> Path:
     return target
 
 
-def knockout_background(svg: Path, panel: Image.Image, size: int) -> Image.Image:
-    """Render the trace, then punch out everything outside the pin silhouette."""
-    png = WORK / "render.png"
-    subprocess.run(["rsvg-convert", "-w", str(size), str(svg), "-o", str(png)], check=True)
-    icon = Image.open(png).convert("RGB")
-
+def silhouette(panel: Image.Image, erode: int = 2) -> Image.Image:
+    """Binary alpha mask of the artwork, eroded so no background fringe survives."""
     a = np.asarray(panel.convert("RGB")).astype(int)
     mask = np.abs(a - np.array(BACKGROUND)).sum(axis=2) > 24
     mask = ndimage.binary_fill_holes(ndimage.binary_closing(mask, structure=np.ones((7, 7)), iterations=2))
     labels, count = ndimage.label(mask)
     sizes = ndimage.sum(mask, labels, range(1, count + 1))
     mask = labels == (int(np.argmax(sizes)) + 1)
-    alpha = Image.fromarray((mask * 255).astype(np.uint8)).resize(icon.size, Image.LANCZOS)
-    alpha = alpha.filter(ImageFilter.GaussianBlur(1.2))
+    if erode:
+        mask = ndimage.binary_erosion(mask, iterations=erode)
+    return Image.fromarray((mask * 255).astype(np.uint8))
+
+
+def knockout_background(svg: Path, panel: Image.Image, size: int) -> Image.Image:
+    """Render the trace, then punch out everything outside the pin silhouette."""
+    png = WORK / "render.png"
+    subprocess.run(["rsvg-convert", "-w", str(size), str(svg), "-o", str(png)], check=True)
+    icon = Image.open(png).convert("RGB")
+    alpha = silhouette(panel).resize(icon.size, Image.LANCZOS).filter(ImageFilter.GaussianBlur(0.6))
     rgba = icon.convert("RGBA")
     rgba.putalpha(alpha)
     return rgba
@@ -119,29 +124,39 @@ def replace_badge(icon: Image.Image) -> Image.Image:
     return icon
 
 
-def square_master(icon: Image.Image, size: int = 1024, margin: float = 0.07) -> Image.Image:
+def square_master(icon: Image.Image, size: int = 1024, margin: float = 0.07,
+                  opaque: bool = False) -> Image.Image:
     content = icon.crop(icon.getbbox())
     inner = int(size * (1 - 2 * margin))
     ratio = min(inner / content.width, inner / content.height)
     resized = content.resize((int(content.width * ratio), int(content.height * ratio)), Image.LANCZOS)
-    canvas = Image.new("RGB", (size, size), BACKGROUND)
-    canvas.paste(resized, ((size - resized.width) // 2, (size - resized.height) // 2), resized)
-    return canvas
+    canvas = Image.new("RGBA", (size, size), BACKGROUND + (255,) if opaque else (0, 0, 0, 0))
+    canvas.alpha_composite(resized, ((size - resized.width) // 2, (size - resized.height) // 2))
+    return canvas if opaque else canvas
 
 
 def write_outputs(master: Image.Image, small: Image.Image, prefix: str) -> list[Path]:
+    """Transparent where the platform allows it, opaque where it does not.
+
+    1024/512/192 and the favicons keep alpha; maskable and apple-touch need a
+    solid background or iOS/Android paint transparency black.
+    """
     written = []
     for size, name in ((1024, f"icon-{prefix}-1024.png"), (512, f"icon-{prefix}-512.png"),
                        (192, f"icon-{prefix}-192.png")):
         master.resize((size, size), Image.LANCZOS).save(WEB / name)
         written.append(WEB / name)
 
-    safe = Image.new("RGB", (512, 512), BACKGROUND)
-    safe.paste(master.resize((410, 410), Image.LANCZOS), (51, 51))
-    safe.save(WEB / f"icon-{prefix}-maskable-512.png")
+    opaque = Image.new("RGB", (512, 512), BACKGROUND)
+    safe = master.resize((410, 410), Image.LANCZOS)
+    opaque.paste(safe, (51, 51), safe)
+    opaque.save(WEB / f"icon-{prefix}-maskable-512.png")
     written.append(WEB / f"icon-{prefix}-maskable-512.png")
 
-    master.resize((180, 180), Image.LANCZOS).save(WEB / f"apple-touch-{prefix}-180.png")
+    apple = Image.new("RGB", (180, 180), BACKGROUND)
+    icon180 = master.resize((180, 180), Image.LANCZOS)
+    apple.paste(icon180, (0, 0), icon180)
+    apple.save(WEB / f"apple-touch-{prefix}-180.png")
     written.append(WEB / f"apple-touch-{prefix}-180.png")
 
     favicons = []
@@ -175,9 +190,9 @@ def main() -> int:
     master = square_master(traced)
 
     # favicons come from the simplified small panel, not a downscale
-    small_canvas = Image.new("RGB", (small_panel.width, small_panel.height), BACKGROUND)
-    small_canvas.paste(small_panel, (0, 0))
-    small = square_master(small_panel.convert("RGBA"), size=192, margin=0.04).resize((192, 192), Image.LANCZOS)
+    small_rgba = small_panel.convert("RGBA")
+    small_rgba.putalpha(silhouette(small_panel, erode=1).filter(ImageFilter.GaussianBlur(0.5)))
+    small = square_master(small_rgba, size=192, margin=0.04).resize((192, 192), Image.LANCZOS)
 
     written = write_outputs(master, small, args.prefix)
     for path in written:
