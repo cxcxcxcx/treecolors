@@ -991,19 +991,19 @@
         </div>
         <div class="legend-body">
             <div class="legend-item">
-                <span class="legend-color" style="background: linear-gradient(135deg, #2d5016 0%, #4caf50 100%);"></span>
+                <span class="legend-color" style="background: linear-gradient(90deg, #2d5016 0%, #2d5016 50%, #4caf50 50%, #4caf50 100%);"></span>
                 <span class="legend-label">Evergreen Trees</span>
             </div>
             <div class="legend-item">
-                <span class="legend-color" style="background: linear-gradient(135deg, #ffa500 0%, #ffcc66 100%);"></span>
+                <span class="legend-color" style="background: linear-gradient(90deg, #ffa500 0%, #ffa500 50%, #ffcc66 50%, #ffcc66 100%);"></span>
                 <span class="legend-label">Ginkgo Trees</span>
             </div>
             <div class="legend-item">
-                <span class="legend-color" style="background: linear-gradient(135deg, #cc0000 0%, #800080 100%);"></span>
+                <span class="legend-color" style="background: linear-gradient(90deg, #cc0000 0%, #cc0000 50%, #800080 50%, #800080 100%);"></span>
                 <span class="legend-label">Trees with Fall Colors</span>
             </div>
             <div class="legend-item">
-                <span class="legend-color" style="background: linear-gradient(135deg, #8b4513 0%, #2b2b2b 100%);"></span>
+                <span class="legend-color" style="background: linear-gradient(90deg, #8b4513 0%, #8b4513 50%, #2b2b2b 50%, #2b2b2b 100%);"></span>
                 <span class="legend-label">Other Deciduous Trees
                     <span class="legend-sublabel">less known for fall colors</span>
                 </span>
@@ -2352,7 +2352,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261109-204535';
+                const SW_QUERY = 'tree-map-v20261109-210010';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
