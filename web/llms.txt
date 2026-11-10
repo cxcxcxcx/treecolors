@@ -1,0 +1,37 @@
+# Tree Species Map (treecolors.botanisense.app)
+
+Interactive map of street and park trees across North America, run by BotaniSense.
+Each mapped point is one real tree; clicking it shows the species, a botanical
+illustration, Wikipedia photos and the original inventory record.
+
+## What the map contains
+
+- 6,491,722 individual trees in 31 cities across the United States and Canada
+- 1,757 distinct species keys; 298 have an AI-generated botanical plate
+- One PMTiles vector tileset (`/trees.pmtiles`), no per-city selector
+
+Cities: Arlington County VA, Austin TX, Baltimore MD, Berkeley CA, Boston MA,
+Calgary AB, Concord CA, Cupertino CA, Denver CO, Edmonton AB, Fremont CA,
+Hamilton ON, Los Angeles CA, Mississauga ON, Montgomery County MD, Montreal QC,
+New York City NY, Ottawa ON, Palo Alto CA, Philadelphia PA, Portland OR,
+Richmond VA, San Diego CA, San Francisco CA, San Jose CA, San Leandro CA,
+Seattle WA, Toronto ON, Vancouver BC, Washington DC, Winnipeg MB.
+
+## Colour legend
+
+- Evergreen trees: green
+- Ginkgo: a single orange (every ginkgo marker is `orange`)
+- Trees with fall colour: red to purple
+- Other deciduous trees (less known for fall colour): brown to near-black
+
+## Data
+
+Tree records come from each municipality's open data portal and stay under that
+publisher's terms; see /DATA_LICENSES.md. Species annotations are AI-assisted and
+are not a botanical authority. Basemap © OpenStreetMap contributors.
+
+## Pages
+
+- / — the map
+- /DATA_LICENSES.md — per-city sources and licences
+- /sitemap.xml — URL list
