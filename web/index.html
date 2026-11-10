@@ -92,77 +92,73 @@
             position: absolute;
             top: calc(10px + env(safe-area-inset-top, 0px));
             left: calc(10px + env(safe-area-inset-left, 0px));
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            width: 330px;
+            max-width: calc(100vw - 20px);
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(20, 40, 60, 0.16);
             z-index: 1;
-            max-width: 300px;
-        }
-
-        .legend-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .legend-logo {
-            width: 22px;
-            height: 22px;
-            flex: 0 0 22px;
-            display: block;
-        }
-
-        .map-overlay.collapsed .legend-logo {
-            width: 18px;
-            height: 18px;
-            flex-basis: 18px;
-        }
-
-        .map-overlay h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
+            overflow: hidden;
         }
 
         .legend-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 10px;
+            padding: 14px 14px 10px 16px;
         }
 
-        .map-overlay.collapsed .legend-item,
-        .map-overlay.collapsed .legend-link,
-        .map-overlay.collapsed .legend-install-button,
-        .map-overlay.collapsed .legend-locate-button,
-        .map-overlay.collapsed .legend-info-button {
-            display: none;
+        .legend-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
         }
 
-        .map-overlay.collapsed h3 {
-            font-size: 15px;
-            margin-bottom: 0;
-            white-space: nowrap;
+        .legend-logo-tile {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            border-radius: 12px;
+            background: #eef3fb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .map-overlay.collapsed .legend-toggle-button svg {
-            transform: rotate(-90deg);
+        .legend-logo {
+            width: 26px;
+            height: 26px;
+            display: block;
+        }
+
+        .legend-heading {
+            min-width: 0;
+        }
+
+        .legend-heading h3 {
+            margin: 0;
+            font-size: 17px;
+            line-height: 1.2;
+            color: #1f2d3a;
+        }
+
+        .legend-sub {
+            margin: 2px 0 0;
+            font-size: 12px;
+            line-height: 1.2;
+            color: #8b949e;
         }
 
         .legend-toggle-button {
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
-            border: 1px solid #ccd8e0;
-            background: #fff;
-            color: #2d4f64;
+            width: 34px;
+            height: 34px;
+            flex: 0 0 34px;
+            border: 0;
+            border-radius: 50%;
+            background: #f3f4f6;
+            color: #46535f;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -172,62 +168,41 @@
 
         .legend-toggle-button:hover,
         .legend-toggle-button:focus {
-            background: #eef4f8;
+            background: #e9edf2;
         }
 
-        .legend-buttons {
+        .map-overlay.collapsed .legend-toggle-button svg {
+            transform: rotate(-90deg);
+        }
+
+        .legend-body {
+            padding: 0 16px 12px;
+        }
+
+        .legend-item {
             display: flex;
-            gap: 6px;
             align-items: center;
-        }
-
-        .legend-info-button,
-        .legend-locate-button,
-        .legend-install-button {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: none;
-            background: #2d4f64;
-            color: #fff;
-            cursor: pointer;
-            font-size: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-
-        .legend-info-button:hover,
-        .legend-info-button:focus,
-        .legend-locate-button:hover,
-        .legend-locate-button:focus,
-        .legend-install-button:hover,
-        .legend-install-button:focus {
-            background: #396a85;
-            outline: none;
-        }
-
-        .hidden {
-            display: none !important;
+            gap: 12px;
+            padding: 7px 0;
         }
 
         .legend-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            display: flex;
-            overflow: hidden;
-            border-radius: 4px;
+            width: 22px;
+            height: 22px;
+            flex: 0 0 22px;
+            border-radius: 50%;
         }
 
-        .legend-link {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e2e2e2;
-            font-size: 13px;
+        .legend-label {
+            font-size: 14px;
+            line-height: 1.25;
+            color: #2b3742;
+        }
+
+        .legend-sublabel {
+            display: block;
+            font-size: 12px;
+            color: #98a1a9;
         }
 
         .legend-about-button {
@@ -249,31 +224,140 @@
             margin: 0 6px;
         }
 
-        .legend-link a {
+        .legend-links a {
             color: #1a5dab;
             text-decoration: none;
         }
 
-        .legend-link a:hover {
+        .legend-links a:hover,
+        .legend-links a:focus {
             text-decoration: underline;
         }
 
-        .legend-info-popup,
+        .legend-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 12px;
+            border-top: 1px solid #eceff2;
+        }
 
-        .legend-info-popup.hidden,
+        .legend-links {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
 
-        .legend-info-popup h4,
+        .legend-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-        .legend-info-popup p,
+        .legend-icon-button {
+            width: 32px;
+            height: 32px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #2d4f64;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
 
+        .legend-icon-button:hover,
+        .legend-icon-button:focus {
+            background: #eef3f7;
+        }
 
+        .map-overlay.collapsed .legend-body {
+            display: none;
+        }
 
+        .map-overlay.collapsed .legend-header {
+            padding-bottom: 12px;
+        }
 
+        .map-overlay.collapsed .legend-logo-tile {
+            width: 32px;
+            height: 32px;
+            flex-basis: 32px;
+            border-radius: 10px;
+        }
 
-        .legend-info-close,
+        .map-overlay.collapsed .legend-logo {
+            width: 22px;
+            height: 22px;
+        }
+
+        .map-overlay.collapsed .legend-heading h3 {
+            font-size: 15px;
+        }
+
+        .legend-info-popup {
+            position: absolute;
+            top: 84px;
+            left: 12px;
+            right: 12px;
+            max-height: 66vh;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 40, 60, 0.24);
+            padding: 16px 18px 18px;
+            z-index: 5;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .legend-info-popup.hidden {
+            display: none !important;
+        }
+
+        .legend-info-popup h4 {
+            margin: 0 0 8px;
+            font-size: 15px;
+            color: #1f2d3a;
+        }
+
+        .legend-info-popup p {
+            margin: 0 0 10px;
+            color: #4a5560;
+        }
+
+        .legend-info-popup ul {
+            margin: 0 0 10px;
+            padding-left: 18px;
+        }
+
+        .legend-info-popup a {
+            color: #1a5dab;
+        }
+
+        .legend-info-close {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border: 0;
+            border-radius: 50%;
+            background: #f2f4f6;
+            color: #46535f;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
 
         .legend-info-close:hover,
-        .legend-info-close:focus,
+        .legend-info-close:focus {
+            background: #e7ebef;
+        }
 
         .info-popup {
             background: white;
@@ -818,33 +902,21 @@
     <div class="map-overlay">
         <div class="legend-header">
             <div class="legend-title">
-                <img class="legend-logo" src="./icon-f-192.png?v=20261108a" alt="" width="22" height="22">
-                <h3>Tree Species Color Map</h3>
+                <span class="legend-logo-tile">
+                    <img class="legend-logo" src="./icon-f-192.png?v=20261108a" alt="" width="26" height="26">
+                </span>
+                <div class="legend-heading">
+                    <h3>Tree Species Map</h3>
+                    <p class="legend-sub">Color guide</p>
+                </div>
             </div>
-            <div class="legend-buttons">
-                <button type="button" class="legend-toggle-button" id="legend-toggle-button"
-                    aria-label="Collapse legend" aria-expanded="true" title="Collapse legend">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2"
-                        fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m6 9 6 6 6-6"></path>
-                    </svg>
-                </button>
-                <button type="button" class="legend-install-button hidden" id="legend-install-button"
-                    aria-label="Install this map as an app" title="Install app">
-                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2"
-                        fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 3v12"></path>
-                        <path d="m7 10 5 5 5-5"></path>
-                        <path d="M5 21h14"></path>
-                    </svg>
-                </button>
-                <button type="button" class="legend-locate-button" id="legend-locate-button" aria-label="Locate me">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-                    </svg>
-                </button>
-            </div>
+            <button type="button" class="legend-toggle-button" id="legend-toggle-button"
+                aria-label="Collapse legend" aria-expanded="true" title="Collapse legend">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6"></path>
+                </svg>
+            </button>
         </div>
         <div class="legend-info-popup hidden" id="legend-info-popup" role="dialog" aria-modal="false"
             aria-labelledby="legend-info-title">
@@ -917,31 +989,51 @@
                 Concord, Gaithersburg, Bethesda, Arlington, and Montgomery County.</p>
             </div>
         </div>
-        <div class="legend-item">
-            <div class="legend-color"
-                style="background: linear-gradient(90deg, #2d5016 0%, #2d5016 50%, #4caf50 50%, #4caf50 100%);"></div>
-            <span>Evergreen Trees</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color"
-                style="background: linear-gradient(90deg, #ffa500 0%, #ffa500 50%, #ffcc66 50%, #ffcc66 100%);"></div>
-            <span>Ginkgo Trees</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color"
-                style="background: linear-gradient(90deg, #cc0000 0%, #cc0000 50%, #800080 50%, #800080 100%);"></div>
-            <span>Trees with Fall Colors</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color"
-                style="background: linear-gradient(90deg, #8b4513 0%, #8b4513 50%, #2b2b2b 50%, #2b2b2b 100%);"></div>
-            <span>Other Deciduous Trees (less known for fall colors)</span>
-        </div>
-        <div class="legend-link">
-            <button type="button" class="legend-about-button" id="legend-info-button"
-                aria-expanded="false">About this map</button>
-            <span class="legend-link-sep">·</span>
-            <a href="https://botanisense.app/" target="_blank" rel="noopener">BotaniSense</a>
+        <div class="legend-body">
+            <div class="legend-item">
+                <span class="legend-color" style="background: linear-gradient(135deg, #2d5016 0%, #4caf50 100%);"></span>
+                <span class="legend-label">Evergreen Trees</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: linear-gradient(135deg, #ffa500 0%, #ffcc66 100%);"></span>
+                <span class="legend-label">Ginkgo Trees</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: linear-gradient(135deg, #cc0000 0%, #800080 100%);"></span>
+                <span class="legend-label">Trees with Fall Colors</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: linear-gradient(135deg, #8b4513 0%, #2b2b2b 100%);"></span>
+                <span class="legend-label">Other Deciduous Trees
+                    <span class="legend-sublabel">less known for fall colors</span>
+                </span>
+            </div>
+            <div class="legend-footer">
+                <div class="legend-links">
+                    <button type="button" class="legend-about-button" id="legend-info-button"
+                        aria-expanded="false">About</button>
+                    <span class="legend-link-sep">·</span>
+                    <a href="https://botanisense.app/" target="_blank" rel="noopener">BotaniSense</a>
+                </div>
+                <div class="legend-actions">
+                    <button type="button" class="legend-icon-button hidden" id="legend-install-button"
+                        aria-label="Install this map as an app" title="Install app">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v12"></path>
+                            <path d="m7 10 5 5 5-5"></path>
+                            <path d="M5 21h14"></path>
+                        </svg>
+                    </button>
+                    <button type="button" class="legend-icon-button" id="legend-locate-button" aria-label="Locate me"
+                        title="Locate me">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2260,7 +2352,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261108-082309';
+                const SW_QUERY = 'tree-map-v20261109-204535';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
