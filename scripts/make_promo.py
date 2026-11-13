@@ -193,33 +193,38 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, width: int) -> list[str]:
     return lines
 
 
-def brand_footer(canvas: Image.Image, t: dict, y: int = 1176, compact: bool = False) -> None:
-    """TreeColors mark + name, then BotaniSense flower + byline, then the domain."""
+def brand_footer(canvas: Image.Image, t: dict, y: int = 1170, compact: bool = False) -> None:
+    """Bottom bar: TreeColors on the left (highlighted), attribution on the right.
+
+    The product gets the emphasis; "by BotaniSense" is a quiet byline at the
+    same baseline, right-aligned to the slide margin — no white card of its own.
+    """
     draw = ImageDraw.Draw(canvas)
-    size = 52 if compact else 58
-    logo = Image.open(ICON).convert("RGBA").resize((size, size), Image.LANCZOS)
+    icon_size = 50 if compact else 56
+
+    # soft plate behind the product name only, sized to the text it holds
+    name_font = font(t["bold"], 27)
+    domain_font = font(t["bold"], 21)
+    text_x = 72 + icon_size + 12
+    plate_right = text_x + max(canvas.width and draw.textlength("TreeColors", font=name_font),
+                               draw.textlength(DOMAIN, font=domain_font)) + 18
+    plate = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    ImageDraw.Draw(plate).rounded_rectangle(
+        [58, y - 12, plate_right, y + icon_size + 4], radius=16, fill=(255, 252, 245, 235))
+    canvas.alpha_composite(plate.filter(ImageFilter.GaussianBlur(0.4)))
+
+    logo = Image.open(ICON).convert("RGBA").resize((icon_size, icon_size), Image.LANCZOS)
     canvas.alpha_composite(logo, (72, y))
-    draw.text((72 + size + 14, y + 2), "TreeColors", font=font(t["bold"], 30), fill=INK)
+    draw.text((text_x, y - 2), "TreeColors", font=name_font, fill=INK)
+    draw.text((text_x, y + 32), DOMAIN, font=domain_font, fill=ACCENT)
 
     flower = Image.open(FLOWER).convert("RGBA")
-    flower.thumbnail((26, 26), Image.LANCZOS)
-    canvas.alpha_composite(flower, (72 + size + 16, y + 40))
-    draw.text((72 + size + 16 + flower.width + 8, y + 38), t["by_bs"],
-              font=font(t["reg"], 21), fill=MUTED)
-
-    draw.text((72, y + 74), DOMAIN, font=font(t["bold"], 24), fill=ACCENT)
-
-
-def botanisense_card(canvas: Image.Image, t: dict, x: int, y: int, width: int = 320) -> None:
-    """Full BotaniSense lockup + one-line purpose, for the empty side of a slide."""
-    draw = ImageDraw.Draw(canvas)
-    card(canvas, (x, y, x + width, y + 150), radius=22)
-    flower = Image.open(FLOWER).convert("RGBA")
-    flower.thumbnail((62, 62), Image.LANCZOS)
-    canvas.alpha_composite(flower, (x + 20, y + 20))
-    draw.text((x + 96, y + 24), "BotaniSense", font=font(t["bold"], 26), fill=INK)
-    for i, line in enumerate(wrap(draw, t["bs_tagline"], font(t["reg"], 19), width - 116)):
-        draw.text((x + 96, y + 62 + i * 26), line, font=font(t["reg"], 19), fill=MUTED)
+    flower.thumbnail((22, 22), Image.LANCZOS)
+    byline = f"by BotaniSense"
+    text_w = draw.textlength(byline, font=font(t["reg"], 20))
+    x = 1008 - (flower.width + 8 + text_w)
+    canvas.alpha_composite(flower, (int(x), y + 10))
+    draw.text((x + flower.width + 8, y + 8), byline, font=font(t["reg"], 20), fill=MUTED)
 
 
 def build_contrast(info: dict, t: dict, out: Path) -> None:
@@ -257,7 +262,6 @@ def build_contrast(info: dict, t: dict, out: Path) -> None:
         for line in wrap(draw, note, font(t["reg"], 21), 540):
             draw.text((72, note_y), line, font=font(t["reg"], 21), fill=MUTED)
             note_y += 28
-    botanisense_card(canvas, t, 640, 1078, width=368)
     brand_footer(canvas, t, y=1186, compact=True)
     canvas.convert("RGB").save(out / "01-contrast.png")
 
@@ -322,7 +326,6 @@ def build_region(info: dict, t: dict, out: Path) -> None:
               font=font(t["bold"], 24), fill=INK)
     draw.text((72, 1118), f"{t['s4_mv']} — {mv['fall']:,} / {mv['total']:,}",
               font=font(t["bold"], 24), fill=INK)
-    botanisense_card(canvas, t, 640, 1074, width=368)
     brand_footer(canvas, t, y=1178, compact=True)
     canvas.convert("RGB").save(out / "04-region.png")
 
@@ -340,7 +343,6 @@ def build_city(info: dict, t: dict, out: Path) -> None:
     photo = rounded_photo(SHOTS / "mv-close.png", (936, 780), radius=26)
     canvas.alpha_composite(photo, (72, 262))
     draw.text((72, 1058), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
-    botanisense_card(canvas, t, 640, 1048, width=368)
     brand_footer(canvas, t, y=1150, compact=True)
     canvas.convert("RGB").save(out / "05-mountainview.png")
 
@@ -356,8 +358,7 @@ def build_backcover(info: dict, t: dict, out: Path) -> None:
     draw.text((72, 810), t["s5_h1"][1], font=fit_text(draw, t["s5_h1"][1], t["bold"], 66, 540), fill=ACCENT)
     draw.text((72, 900), t["s5_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 27), fill=MUTED)
     draw.text((72, 940), t["s5_free"], font=font(t["reg"], 25), fill=MUTED)
-    botanisense_card(canvas, t, 640, 700, width=368)
-    brand_footer(canvas, t, y=1060)
+    brand_footer(canvas, t, y=1176)
     canvas.convert("RGB").save(out / "06-backcover.png")
 
 
@@ -382,7 +383,6 @@ def build_story(info: dict, t: dict, out: Path) -> None:
     draw.text((72, 1536), DOMAIN, font=font(t["bold"], 34), fill=ACCENT)
     draw.rounded_rectangle([72, 1636, 600, 1726], radius=45, fill=ACCENT)
     draw.text((116, 1662), t["story_cta"], font=font(t["bold"], 34), fill=(255, 255, 255))
-    botanisense_card(canvas, t, 72, 1760, width=420)
     canvas.convert("RGB").save(out / "story.png")
 
 

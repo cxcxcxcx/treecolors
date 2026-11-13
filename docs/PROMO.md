@@ -28,16 +28,14 @@ Carousel order: 01 → 02 → 03 → 04 → 05, back cover last (or as the share
 
 ## Branding rules
 
-- Bottom-left block: TreeColors mark + **TreeColors**, then the BotaniSense
-  flower + **by BotaniSense**, then the **full domain** in accent colour —
-  小红书 cannot carry links, so the domain has to be readable in the image.
-- Bottom-right on slides 01/04/05: a BotaniSense card — flower in a tile, the
-  name, and one line: *AI that is actually useful for plant lovers* (中文：让 AI
-  对植物爱好者真正有用). Keep it to one sentence; it fills the empty corner
-  rather than competing with the headline.
-- Never write "map" in headlines — it's obviously a map.
-- Never claim a city count as a selling point ("8 cities" is small). Name a few
-  places instead.
+- One consistent bottom bar on **every** slide.
+- Left: a soft cream plate holding the TreeColors mark, **TreeColors** and the
+  **full domain** in accent colour. This is the only highlighted element —
+  小红书 cannot carry links, so the domain has to be readable.
+- Right: a quiet, right-aligned byline — small BotaniSense flower +
+  **by BotaniSense**. No card, no box; the product should stay the loudest thing
+  on the slide.
+- No "map" in headlines, no city-count selling points.
 
 ## Regenerating the screenshots
 
