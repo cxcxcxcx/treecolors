@@ -166,6 +166,13 @@ def card(canvas: Image.Image, box: tuple[int, int, int, int], radius: int = 28) 
     ImageDraw.Draw(canvas).rounded_rectangle(box, radius=radius, fill=CARD)
 
 
+def fit_text(draw: ImageDraw.ImageDraw, text: str, path: str, size: int, width: int) -> ImageFont.FreeTypeFont:
+    """Shrink until the line fits; keeps headlines from running under cards."""
+    while size > 24 and draw.textlength(text, font=font(path, size)) > width:
+        size -= 2
+    return font(path, size)
+
+
 def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, width: int) -> list[str]:
     words = text.split()
     if not words:
@@ -216,8 +223,8 @@ def build_contrast(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 80), t["s1_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
-    draw.text((72, 122), t["s1_h1"][0], font=font(t["bold"], 72), fill=INK)
-    draw.text((72, 200), t["s1_h1"][1], font=font(t["bold"], 72), fill=INK)
+    draw.text((72, 122), t["s1_h1"][0], font=fit_text(draw, t["s1_h1"][0], t["bold"], 72, 540), fill=INK)
+    draw.text((72, 200), t["s1_h1"][1], font=fit_text(draw, t["s1_h1"][1], t["bold"], 72, 540), fill=INK)
     draw.text((72, 274), t["s1_sub"], font=font(t["reg"], 25), fill=MUTED)
 
     botanisense_card(canvas, t, 636, 88, width=372)
@@ -250,7 +257,7 @@ def build_species(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 80), t["s2_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
-    draw.text((72, 122), t["s2_h1"], font=font(t["bold"], 56), fill=INK)
+    draw.text((72, 122), t["s2_h1"], font=fit_text(draw, t["s2_h1"], t["bold"], 56, 700), fill=INK)
 
     x0, y0, size, gap, row_h = 72, 232, 372, 72, 462
     for index, (file, name, colour) in enumerate(t["s2_items"]):
@@ -294,7 +301,7 @@ def build_region(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 80), t["s4_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
-    draw.text((72, 122), t["s4_h1"], font=font(t["bold"], 58), fill=INK)
+    draw.text((72, 122), t["s4_h1"], font=fit_text(draw, t["s4_h1"], t["bold"], 58, 540), fill=INK)
     draw.text((72, 196), t["s4_sub"], font=font(t["reg"], 25), fill=MUTED)
 
     botanisense_card(canvas, t, 636, 88, width=372)
@@ -315,7 +322,7 @@ def build_city(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 80), t["s6_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
-    draw.text((72, 122), t["s6_h1"], font=font(t["bold"], 70), fill=INK)
+    draw.text((72, 122), t["s6_h1"], font=fit_text(draw, t["s6_h1"], t["bold"], 70, 540), fill=INK)
     mv = info["city"]["mountain_view_ca"]
     draw.text((72, 206), f"{mv['total']:,} trees · {mv['fall']:,} turn ({mv['fall'] / mv['total'] * 100:.0f}%)",
               font=font(t["reg"], 26), fill=MUTED)
@@ -334,8 +341,8 @@ def build_backcover(info: dict, t: dict, out: Path) -> None:
     draw.text((72, 76), DOMAIN.upper(), font=font(t["bold"], 26), fill=ACCENT)
     photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 560), radius=28)
     canvas.alpha_composite(photo, (72, 132))
-    draw.text((72, 736), t["s5_h1"][0], font=font(t["bold"], 66), fill=INK)
-    draw.text((72, 810), t["s5_h1"][1], font=font(t["bold"], 66), fill=ACCENT)
+    draw.text((72, 736), t["s5_h1"][0], font=fit_text(draw, t["s5_h1"][0], t["bold"], 66, 540), fill=INK)
+    draw.text((72, 810), t["s5_h1"][1], font=fit_text(draw, t["s5_h1"][1], t["bold"], 66, 540), fill=ACCENT)
     draw.text((72, 900), t["s5_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 27), fill=MUTED)
     draw.text((72, 940), t["s5_free"], font=font(t["reg"], 25), fill=MUTED)
     botanisense_card(canvas, t, 640, 700, width=368)
