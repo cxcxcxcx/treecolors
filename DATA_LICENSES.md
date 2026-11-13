@@ -34,6 +34,9 @@ shown in the app and check the terms of every source you redistribute.
 | Hamilton, ON | [Public Tree Inventory](https://open.hamilton.ca/) | City of Hamilton open data terms |
 | Mountain View, CA | [City Tree Inventory](https://maps.mountainview.gov/arcgis/rest/services/Public/Trees/MapServer/0) (ArcGIS; vacant planting pits excluded) | City of Mountain View GIS terms |
 | Milpitas, CA | [Street Tree Inventory](https://services8.arcgis.com/OPmRdssd8jj0bT5H/arcgis/rest/services/Trees/FeatureServer/0) (ArcGIS) | City of Milpitas GIS terms |
+| Los Gatos, CA | [Tree Inventory](https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/Los_Gatos_Tree_Inventory/FeatureServer/0) (ArcGIS; 2018 inventory, published by Santa Clara County) | Town of Los Gatos / Santa Clara County GIS terms |
+| San Mateo, CA | [Street Tree Inventory](https://services2.arcgis.com/g26Y0m7OCdjU0ObA/arcgis/rest/services/Street_Trees/FeatureServer/0) (ArcGIS) | City of San Mateo Public Works GIS terms |
+| Burlingame, CA | [Tree Inventory](https://services2.arcgis.com/yrktbS5Xw87hJQvs/arcgis/rest/services/WebMap_Burlingame_AllLayers_WFL1/FeatureServer/0) (ArcGIS; rows without a botanical name excluded) | City of Burlingame GIS terms |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` sources | see individual portal terms |
 
 ## Species annotations

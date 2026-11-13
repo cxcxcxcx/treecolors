@@ -667,6 +667,90 @@ MILPITAS_CA = CitySpec(
 )
 
 
+LOS_GATOS_CA = CitySpec(
+    slug="los_gatos_ca",
+    name="Los Gatos, CA",
+    state="CA",
+    bbox=(-122.00, 37.21, -121.91, 37.27),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="Town of Los Gatos Tree Inventory",
+            url=(
+                "https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/"
+                "Los_Gatos_Tree_Inventory/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("Botanical", "Common", "Height", "DBH", "OBJECTID"),
+            # ~2k rows (vacant sites, stumps) have no Botanical value; fall back
+            # to the common name so the resolver can still classify them.
+            species_fields=("Botanical", "Common"),
+            common_fields=("Common",),
+            fixed_city="Los Gatos, CA",
+            homepage="https://www.losgatosca.gov/",
+        ),
+    ),
+    attribution="Town of Los Gatos / Santa Clara County GIS",
+)
+
+
+SAN_MATEO_CA = CitySpec(
+    slug="san_mateo_ca",
+    name="San Mateo, CA",
+    state="CA",
+    bbox=(-122.36, 37.51, -122.27, 37.59),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="City of San Mateo Street Tree Inventory",
+            url=(
+                "https://services2.arcgis.com/g26Y0m7OCdjU0ObA/arcgis/rest/services/"
+                "Street_Trees/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("SPP", "ADDRESS", "STREET", "DBH", "OBJECTID"),
+            species_fields=("SPP",),
+            fixed_city="San Mateo, CA",
+            homepage="https://www.cityofsanmateo.org/",
+        ),
+    ),
+    attribution="City of San Mateo Public Works GIS",
+)
+
+
+BURLINGAME_CA = CitySpec(
+    slug="burlingame_ca",
+    name="Burlingame, CA",
+    state="CA",
+    bbox=(-122.41, 37.56, -122.33, 37.61),
+    sources=(
+        SourceSpec(
+            slug="tree_sites",
+            name="City of Burlingame Tree Inventory",
+            url=(
+                "https://services2.arcgis.com/yrktbS5Xw87hJQvs/arcgis/rest/services/"
+                "WebMap_Burlingame_AllLayers_WFL1/FeatureServer/0"
+            ),
+            where="BotanicalName IS NOT NULL AND BotanicalName <> ''",
+            out_fields=(
+                "BotanicalName",
+                "CommonName",
+                "DBH",
+                "Address",
+                "Street",
+                "OBJECTID_1",
+            ),
+            species_fields=("BotanicalName",),
+            common_fields=("CommonName",),
+            id_field="OBJECTID_1",
+            fixed_city="Burlingame, CA",
+            homepage="https://www.burlingame.org/",
+        ),
+    ),
+    attribution="City of Burlingame GIS",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -690,6 +774,9 @@ CITIES: tuple[CitySpec, ...] = (
     HAMILTON_ON,
     MOUNTAIN_VIEW_CA,
     MILPITAS_CA,
+    LOS_GATOS_CA,
+    SAN_MATEO_CA,
+    BURLINGAME_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}
