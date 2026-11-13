@@ -751,6 +751,44 @@ BURLINGAME_CA = CitySpec(
 )
 
 
+SANTA_CLARA_COUNTY_CA = CitySpec(
+    slug="santa_clara_county_ca",
+    name="Santa Clara County, CA",
+    state="CA",
+    # Unincorporated county plus the smaller foothill towns; the big cities
+    # in this layer are already covered by their own inventories and are
+    # filtered out in ``where`` so nothing is counted twice.
+    bbox=(-122.15, 37.00, -121.51, 37.44),
+    sources=(
+        SourceSpec(
+            slug="county_trees",
+            name="Santa Clara County Tree Inventories",
+            url=(
+                "https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/"
+                "Tree_Inventories_in_Santa_Clara_County_WFL1/FeatureServer/0"
+            ),
+            where=(
+                "City IN ('Saratoga','Campbell','Gilroy','Morgan Hill',"
+                "'San Martin','Unincorporated','Unassigned')"
+            ),
+            out_fields=(
+                "Scientific",
+                "CommonName",
+                "City",
+                "DBH",
+                "FID",
+            ),
+            species_fields=("Scientific", "CommonName"),
+            common_fields=("CommonName",),
+            id_field="FID",
+            fixed_city="Santa Clara County, CA",
+            homepage="https://www.sccgov.org/",
+        ),
+    ),
+    attribution="County of Santa Clara Parks and Recreation GIS",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -777,6 +815,7 @@ CITIES: tuple[CitySpec, ...] = (
     LOS_GATOS_CA,
     SAN_MATEO_CA,
     BURLINGAME_CA,
+    SANTA_CLARA_COUNTY_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}

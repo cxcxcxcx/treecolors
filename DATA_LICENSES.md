@@ -37,6 +37,7 @@ shown in the app and check the terms of every source you redistribute.
 | Los Gatos, CA | [Tree Inventory](https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/Los_Gatos_Tree_Inventory/FeatureServer/0) (ArcGIS; 2018 inventory, published by Santa Clara County) | Town of Los Gatos / Santa Clara County GIS terms |
 | San Mateo, CA | [Street Tree Inventory](https://services2.arcgis.com/g26Y0m7OCdjU0ObA/arcgis/rest/services/Street_Trees/FeatureServer/0) (ArcGIS) | City of San Mateo Public Works GIS terms |
 | Burlingame, CA | [Tree Inventory](https://services2.arcgis.com/yrktbS5Xw87hJQvs/arcgis/rest/services/WebMap_Burlingame_AllLayers_WFL1/FeatureServer/0) (ArcGIS; rows without a botanical name excluded) | City of Burlingame GIS terms |
+| Santa Clara County, CA | [County tree inventories](https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/Tree_Inventories_in_Santa_Clara_County_WFL1/FeatureServer/0) (ArcGIS; Saratoga, Campbell, Gilroy, Morgan Hill, San Martin and unincorporated county only — the county service also republishes Palo Alto, San Jose, Sunnyvale, Milpitas and Los Gatos, which come from their own inventories and are filtered out here) | County of Santa Clara GIS terms |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` sources | see individual portal terms |
 
 ## Species annotations
