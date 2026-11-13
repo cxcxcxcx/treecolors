@@ -85,40 +85,16 @@ Cupertino: 50%. Twenty minutes apart.
 The map shows every tree, species by species, so you can follow the purple dots
 and skip the green ones.
 
-Tap any tree for its species, a botanical plate and Wikipedia photos.
+Tap any tree for its species, a botanical plate, photos and the city's own
+record.
 
-Free, no account → link in bio.
+Nine Bay Area cities so far, including San Francisco, Berkeley, Concord,
+Fremont, San Leandro, Palo Alto, Mountain View, Cupertino and San Jose.
+
+Free, no account → treecolors.botanisense.app
 
 #bayarea #fallfoliage #autumn #cupertino #mountainview #sanfrancisco
 #urbanforestry #citywalk #treelovers #dataviz
-```
-
-### 中文（小红书）
-
-```
-湾区的行道树，现在能在地图上一棵一棵看
-
-颜色代表树种类型：
-紫红 / 红 = 秋天会变色、颜色好看的
-橙 = 银杏，一整条街一起变黄
-绿 = 常绿，冬天也绿，可以跳过
-褐 = 其他落叶树，颜色没那么出挑
-
-点开任意一棵树，能看到树种、叶片图示、实拍照片，还有市政府自己的记录。
-常见树种基本都配了图示，出门可以对照着认。
-
-今年比去年：
-· 城市更多了——San Francisco、Berkeley、Concord、Fremont、San Leandro、
-  Palo Alto、Mountain View、Cupertino、San Jose，一共 9 个
-· 树种展示更完整，界面也重做过
-
-明年春天会再加一个「去哪看花」。
-
-免费，不用注册：treecolors.botanisense.app
-
-BotaniSense 的 App 也上线了，可以帮植物爱好者整理自己的植物照片，应用商店可下载。
-
-#湾区 #MountainView #SanFrancisco #Cupertino #SanJose #湾区周末 #赏秋 #秋色 #城市漫步 #行道树
 ```
 
 ## Numbers used by the art (from `web/species_stats.json`)
