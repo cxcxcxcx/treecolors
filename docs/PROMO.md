@@ -41,6 +41,24 @@ Carousel order: 01 → 02 → 03 → 04, back cover last (or as the share card).
   the product stays the loudest thing on the slide.
 - No "map" in headlines, no city-count selling points.
 
+## Short video (reel)
+
+```bash
+python3 scripts/make_reel.py        # promo/instagram/reel.mp4, 1080×1920, ~14 s
+```
+
+Five beats built from the same assets — hook, SF vs Cupertino contrast, Mountain
+View close-up, species plates, end card — each a still that ffmpeg slowly zooms
+(Ken Burns, 1.0→1.06) with 0.5 s cross-fades. 30 fps, H.264, ~5 MB, no audio.
+
+Why stills rather than a screen recording: it renders in seconds, re-runs after
+any copy change, and has no cursor or loading states to hide. If a "live
+product" cut is wanted later, capture the map with CDP `Page.startScreencast`
+while scripting `map.jumpTo` and a tap on a tree, then mux those frames with the
+same ffmpeg settings.
+
+Music/voice is added in the app afterwards; the file ships silent.
+
 ## Regenerating the screenshots
 
 `promo/shots/*.png` are headless Chrome captures of the live site with the UI
