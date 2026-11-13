@@ -20,7 +20,7 @@ this document are tracked.
 | `02-species` | 1080×1350 | Four species that carry the season, with botanical plates. |
 | `03-legend` | 1080×1350 | What each colour on the map means. |
 | `04-region` | 1080×1350 | Palo Alto + Mountain View side by side — same peninsula, different planting. Replaces the old "some cities, some gaps". |
-| `05-mountainview` | 1080×1350 | City close-up: what one neighbourhood looks like. |
+| `05-mountainview` | 1080×1350 | "City close-up" — what one neighbourhood looks like (Mountain View). |
 | `06-backcover` | 1080×1350 | Share card: full domain, one line of promise. |
 | `story` | 1080×1920 | Story / reel cover. |
 
@@ -31,9 +31,10 @@ Carousel order: 01 → 02 → 03 → 04 → 05, back cover last (or as the share
 - Bottom-left block: TreeColors mark + **TreeColors**, then the BotaniSense
   flower + **by BotaniSense**, then the **full domain** in accent colour —
   小红书 cannot carry links, so the domain has to be readable in the image.
-- Top-right on slides 01/04/05: a BotaniSense card — flower in a tile, the name,
-  and one line: *AI that is actually useful for plant lovers* (中文：让 AI 对植物
-  爱好者真正有用). Keep it to one sentence.
+- Bottom-right on slides 01/04/05: a BotaniSense card — flower in a tile, the
+  name, and one line: *AI that is actually useful for plant lovers* (中文：让 AI
+  对植物爱好者真正有用). Keep it to one sentence; it fills the empty corner
+  rather than competing with the headline.
 - Never write "map" in headlines — it's obviously a map.
 - Never claim a city count as a selling point ("8 cities" is small). Name a few
   places instead.

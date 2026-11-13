@@ -47,7 +47,7 @@ COPY = {
         "s1_left": "San Francisco", "s1_right": "Cupertino",
         "s1_turn": "{share:.0f}% turn", "s1_count": "{fall:,} of {total:,} trees",
         "s1_note1": "A tree “turns” when its leaves go red, purple or yellow before falling.",
-        "s1_note2": "Green trees stay green all winter — the map lets you skip them.",
+        "s1_note2": "Green ones stay green all winter — skip them.",
         "s2_eyebrow": "WHAT YOU WILL SEE",
         "s2_h1": "Four that carry the season",
         "s2_items": [("pistacia_chinensis.png", "Chinese pistache", "scarlet to orange"),
@@ -66,9 +66,11 @@ COPY = {
         "s5_h1": ["Find the colour.", "Walk to it."],
         "s5_sub": "{fall:,} Bay Area trees that turn, each one mapped",
         "s5_free": "Free · no account · works on your phone",
-        "s6_eyebrow": "CITY CLOSE-UP",
-        "s6_h1": "Mountain View",
+        "s6_eyebrow": "ONE NEIGHBOURHOOD",
+        "s6_h1": "City close-up",
         "s6_note": "Purple dots change colour. Green ones stay green.",
+        "s6_stats": "{total:,} trees · {fall:,} turn ({pct:.0f}%)",
+        "s4_pa": "Palo Alto", "s4_mv": "Mountain View",
         "story_h1": ["Find the colour.", "Walk to it."],
         "story_sub": "Bay Area · {fall:,} trees that turn",
         "story_cta": "Link in bio",
@@ -102,9 +104,11 @@ COPY = {
         "s5_h1": ["找秋色。", "走过去。"],
         "s5_sub": "湾区 {fall:,} 棵会变色的树，每一棵都有位置",
         "s5_free": "免费 · 不用注册 · 手机直接打开",
-        "s6_eyebrow": "城市特写",
-        "s6_h1": "山景城",
+        "s6_eyebrow": "一个街区",
+        "s6_h1": "城市特写",
         "s6_note": "紫点会变色，绿点是常绿。",
+        "s6_stats": "共 {total:,} 棵，{fall:,} 棵会变色（{pct:.0f}%）",
+        "s4_pa": "帕洛阿尔托", "s4_mv": "山景城",
         "story_h1": ["找秋色。", "走过去。"],
         "story_sub": "湾区 · {fall:,} 棵会变色",
         "story_cta": "主页链接",
@@ -223,32 +227,38 @@ def build_contrast(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 80), t["s1_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
-    draw.text((72, 122), t["s1_h1"][0], font=fit_text(draw, t["s1_h1"][0], t["bold"], 72, 540), fill=INK)
-    draw.text((72, 200), t["s1_h1"][1], font=fit_text(draw, t["s1_h1"][1], t["bold"], 72, 540), fill=INK)
-    draw.text((72, 274), t["s1_sub"], font=font(t["reg"], 25), fill=MUTED)
 
-    botanisense_card(canvas, t, 636, 88, width=372)
+    y = 122
+    for line in t["s1_h1"]:
+        f = fit_text(draw, line, t["bold"], 72, 900)
+        draw.text((72, y), line, font=f, fill=INK)
+        y += int(f.size * 1.12)
+    draw.text((72, y + 6), t["s1_sub"], font=font(t["reg"], 25), fill=MUTED)
 
     panels = [("map-all-sf.png", t["s1_left"], info["city"]["sf"]),
               ("cmp-cupertino.png", t["s1_right"], info["city"]["cupertino"])]
-    y = 318
+    y = y + 56
     for file, label, city in panels:
-        photo = rounded_photo(SHOTS / file, (936, 250), radius=22)
+        photo = rounded_photo(SHOTS / file, (936, 236), radius=22)
         canvas.alpha_composite(photo, (72, y))
         share = city["fall"] / city["total"]
-        draw.text((72, y + 262), f"{label} — {t['s1_turn'].format(share=share * 100)}",
+        draw.text((72, y + 248), f"{label} — {t['s1_turn'].format(share=share * 100)}",
                   font=font(t["bold"], 30), fill=INK)
-        draw.text((72, y + 300), t["s1_count"].format(fall=city["fall"], total=city["total"]),
+        draw.text((72, y + 286), t["s1_count"].format(fall=city["fall"], total=city["total"]),
                   font=font(t["reg"], 23), fill=MUTED)
-        bar_y, bar_w = y + 336, 936
+        bar_y, bar_w = y + 322, 936
         draw.rounded_rectangle([72, bar_y, 72 + bar_w, bar_y + 22], radius=11, fill=(228, 220, 203))
         draw.rounded_rectangle([72, bar_y, 72 + max(22, int(bar_w * share)), bar_y + 22],
                                radius=11, fill=(153, 28, 106))
-        y += 404
+        y += 392
 
-    draw.text((72, 1096), t["s1_note1"], font=font(t["reg"], 21), fill=MUTED)
-    draw.text((72, 1126), t["s1_note2"], font=font(t["reg"], 21), fill=MUTED)
-    brand_footer(canvas, t, y=1162, compact=True)
+    note_y = 1085
+    for note in (t["s1_note1"], t["s1_note2"]):
+        for line in wrap(draw, note, font(t["reg"], 21), 540):
+            draw.text((72, note_y), line, font=font(t["reg"], 21), fill=MUTED)
+            note_y += 28
+    botanisense_card(canvas, t, 640, 1078, width=368)
+    brand_footer(canvas, t, y=1186, compact=True)
     canvas.convert("RGB").save(out / "01-contrast.png")
 
 
@@ -304,16 +314,16 @@ def build_region(info: dict, t: dict, out: Path) -> None:
     draw.text((72, 122), t["s4_h1"], font=fit_text(draw, t["s4_h1"], t["bold"], 58, 540), fill=INK)
     draw.text((72, 196), t["s4_sub"], font=font(t["reg"], 25), fill=MUTED)
 
-    botanisense_card(canvas, t, 636, 88, width=372)
-    photo = rounded_photo(SHOTS / "pamv-area.png", (936, 720), radius=24)
-    canvas.alpha_composite(photo, (72, 254))
+    photo = rounded_photo(SHOTS / "pamv-area.png", (936, 820), radius=24)
+    canvas.alpha_composite(photo, (72, 246))
     pa = info["city"]["palo_alto"]
     mv = info["city"]["mountain_view_ca"]
-    draw.text((72, 992), f"Palo Alto — {pa['fall']:,} / {pa['total']:,}",
+    draw.text((72, 1082), f"{t['s4_pa']} — {pa['fall']:,} / {pa['total']:,}",
               font=font(t["bold"], 24), fill=INK)
-    draw.text((560, 992), f"Mountain View — {mv['fall']:,} / {mv['total']:,}",
+    draw.text((72, 1118), f"{t['s4_mv']} — {mv['fall']:,} / {mv['total']:,}",
               font=font(t["bold"], 24), fill=INK)
-    brand_footer(canvas, t, y=1120, compact=True)
+    botanisense_card(canvas, t, 640, 1074, width=368)
+    brand_footer(canvas, t, y=1178, compact=True)
     canvas.convert("RGB").save(out / "04-region.png")
 
 
@@ -322,15 +332,16 @@ def build_city(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 80), t["s6_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
-    draw.text((72, 122), t["s6_h1"], font=fit_text(draw, t["s6_h1"], t["bold"], 70, 540), fill=INK)
+    draw.text((72, 122), t["s6_h1"], font=fit_text(draw, t["s6_h1"], t["bold"], 70, 900), fill=INK)
     mv = info["city"]["mountain_view_ca"]
-    draw.text((72, 206), f"{mv['total']:,} trees · {mv['fall']:,} turn ({mv['fall'] / mv['total'] * 100:.0f}%)",
+    draw.text((72, 206), t["s6_stats"].format(total=mv["total"], fall=mv["fall"],
+                                              pct=mv["fall"] / mv["total"] * 100),
               font=font(t["reg"], 26), fill=MUTED)
-    botanisense_card(canvas, t, 636, 88, width=372)
-    photo = rounded_photo(SHOTS / "mv-close.png", (936, 720), radius=26)
-    canvas.alpha_composite(photo, (72, 268))
-    draw.text((72, 1004), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
-    brand_footer(canvas, t, y=1124, compact=True)
+    photo = rounded_photo(SHOTS / "mv-close.png", (936, 780), radius=26)
+    canvas.alpha_composite(photo, (72, 262))
+    draw.text((72, 1058), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
+    botanisense_card(canvas, t, 640, 1048, width=368)
+    brand_footer(canvas, t, y=1150, compact=True)
     canvas.convert("RGB").save(out / "05-mountainview.png")
 
 
