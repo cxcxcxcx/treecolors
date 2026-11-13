@@ -50,7 +50,8 @@ COPY = {
         "s1_note1": "A tree “turns” when its leaves go red, purple or yellow before falling.",
         "s1_note2": "Green ones stay green all winter — skip them.",
         "s2_eyebrow": "WHAT YOU WILL SEE",
-        "s2_h1": "Four that carry the season",
+        "s2_h1": "Common trees, illustrated",
+        "s2_note": "{plates} plates in the app — the trees you are most likely to meet.",
         "s2_items": [("pistacia_chinensis.png", "Chinese pistache", "scarlet to orange"),
                      ("liquidambar_styraciflua.png", "Sweetgum", "wine red, purple"),
                      ("ginkgo_biloba.png", "Ginkgo", "one clean yellow"),
@@ -59,7 +60,7 @@ COPY = {
         "s3_h1": "What to look for",
         "s3_items": [("#cc0000", "#800080", "These turn", "Red through purple: worth a walk"),
                      ("#ffa500", None, "Ginkgo", "Every ginkgo turns one orange"),
-                     ("#8b4513", "#2b2b2b", "Turns, muted", "Browns, later in the season"),
+                     ("#8b4513", "#2b2b2b", "Other deciduous", "Some colour, but nothing showy"),
                      ("#2d5016", "#4caf50", "Skip these", "Evergreens stay green all winter")],
         "s4_eyebrow": "PALO ALTO + MOUNTAIN VIEW",
         "s4_h1": "Two cities, side by side",
@@ -89,7 +90,8 @@ COPY = {
         "s1_note1": "「会变色」指叶子在落叶前变红、变紫或变黄。",
         "s1_note2": "绿色是常绿树，整个冬天都是绿的，可以直接跳过。",
         "s2_eyebrow": "会看到什么",
-        "s2_h1": "撑起秋天的四种树",
+        "s2_h1": "常见树种，都有图示",
+        "s2_note": "图库里 {plates} 张图示，覆盖最常见的树种。",
         "s2_items": [("pistacia_chinensis.png", "中国黄连木", "猩红到橙"),
                      ("liquidambar_styraciflua.png", "枫香", "酒红、紫"),
                      ("ginkgo_biloba.png", "银杏", "一整条街同时变黄"),
@@ -98,7 +100,7 @@ COPY = {
         "s3_h1": "四种颜色",
         "s3_items": [("#cc0000", "#800080", "会变色", "红到紫，值得专门走一趟"),
                      ("#ffa500", None, "银杏", "所有银杏都是同一种橙黄"),
-                     ("#8b4513", "#2b2b2b", "变得晚、偏暗", "褐色系，季节靠后"),
+                     ("#8b4513", "#2b2b2b", "其他落叶树", "也会变，但颜色不显眼"),
                      ("#2d5016", "#4caf50", "常绿，跳过", "整个冬天都是绿的")],
         "s4_eyebrow": "帕洛阿尔托 + 山景城",
         "s4_h1": "相邻两城，同框对比",
@@ -295,6 +297,8 @@ def build_species(info: dict, t: dict, out: Path) -> None:
         canvas.alpha_composite(plate, (x, y))
         draw.text((x, y + size + 12), name, font=font(t["bold"], 28), fill=INK)
         draw.text((x, y + size + 48), colour, font=font(t["reg"], 22), fill=MUTED)
+    draw.text((72, 1150), t["s2_note"].format(plates=info["plates"]),
+              font=font(t["reg"], 23), fill=MUTED)
     brand_footer(canvas, t)
     canvas.convert("RGB").save(out / "02-species.png")
 
@@ -443,6 +447,35 @@ def build_xhs_cover(info: dict, t: dict, out: Path, variant: str) -> None:
     canvas.convert("RGB").save(out / f"xhs-cover-{variant}.png")
 
 
+def build_xhs_cover_c(info: dict, t: dict, out: Path) -> None:
+    """The "how long did it take you to notice" cover — big type, centre-safe.
+
+    小红书 crops the thumbnail toward the middle, so everything that matters
+    sits inside the central band, and the type is deliberately huge.
+    """
+    W, H = 1080, 1440
+    canvas = Image.new("RGBA", (W, H), CREAM + (255,))
+    draw = ImageDraw.Draw(canvas)
+
+    draw.text((84, 150), "湾区 · 秋色", font=font(t["bold"], 28), fill=ACCENT)
+    draw.text((540, 296), "在湾区住了六七年", font=font(t["bold"], 108), fill=INK, anchor="ma")
+    draw.text((540, 424), "才知道树会变色", font=font(t["bold"], 116), fill=ACCENT, anchor="ma")
+    draw.text((540, 580), "不是我迟钝，是住的那片树本来就不变色",
+              font=font(t["reg"], 31), fill=MUTED, anchor="ma")
+
+    left = rounded_photo(SHOTS / "map-all-sf.png", (440, 450), radius=22)
+    right = rounded_photo(SHOTS / "cmp-cupertino.png", (440, 450), radius=22)
+    canvas.alpha_composite(left, (84, 660))
+    canvas.alpha_composite(right, (556, 660))
+    draw.text((84, 1126), "San Francisco · 15%", font=font(t["latin_bold"], 26), fill=INK)
+    draw.text((556, 1126), "Cupertino · 50%", font=font(t["latin_bold"], 26), fill=INK)
+    draw.text((84, 1162), "大部分树是绿的", font=font(t["reg"], 24), fill=MUTED)
+    draw.text((556, 1162), "一半的树会变色", font=font(t["reg"], 24), fill=MUTED)
+
+    brand_footer(canvas, t, y=1300)
+    canvas.convert("RGB").save(out / "xhs-cover-c.png")
+
+
 def build(lang: str) -> Path:
     t = COPY[lang]
     info = stats()
@@ -457,6 +490,7 @@ def build(lang: str) -> Path:
     if lang == "zh":
         build_xhs_cover(info, t, out, "a")
         build_xhs_cover(info, t, out, "b")
+        build_xhs_cover_c(info, t, out)
     return out
 
 
