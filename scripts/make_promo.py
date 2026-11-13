@@ -355,7 +355,7 @@ def build_city(info: dict, t: dict, out: Path) -> None:
     canvas.alpha_composite(photo, (72, 258))
     draw.text((72, 1116), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
     brand_footer(canvas, t)
-    canvas.convert("RGB").save(out / "05-mountainview.png")
+    canvas.convert("RGB").save(out / "04-city.png")
 
 
 def build_backcover(info: dict, t: dict, out: Path) -> None:
@@ -370,7 +370,7 @@ def build_backcover(info: dict, t: dict, out: Path) -> None:
     draw.text((72, 1036), t["s5_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 27), fill=MUTED)
     draw.text((72, 1076), t["s5_free"], font=font(t["reg"], 25), fill=MUTED)
     brand_footer(canvas, t, y=1176)
-    canvas.convert("RGB").save(out / "06-backcover.png")
+    canvas.convert("RGB").save(out / "05-backcover.png")
 
 
 def build_story(info: dict, t: dict, out: Path) -> None:
@@ -397,6 +397,56 @@ def build_story(info: dict, t: dict, out: Path) -> None:
     canvas.convert("RGB").save(out / "story.png")
 
 
+def build_xhs_cover(info: dict, t: dict, out: Path, variant: str) -> None:
+    """3:4 cover for 小红书 — big Chinese type, one idea, readable at thumbnail."""
+    W, H = 1080, 1440
+    canvas = Image.new("RGBA", (W, H), CREAM + (255,))
+    draw = ImageDraw.Draw(canvas)
+    sf = info["city"]["sf"]
+    cp = info["city"]["cupertino"]
+    sf_share = sf["fall"] / sf["total"] * 100
+    cp_share = cp["fall"] / cp["total"] * 100
+
+    # brand strip
+    logo = Image.open(ICON).convert("RGBA").resize((56, 56), Image.LANCZOS)
+    canvas.alpha_composite(logo, (72, 64))
+    draw.text((140, 70), "湾区秋色地图", font=font(t["bold"], 28), fill=INK)
+    draw.text((140, 104), DOMAIN, font=font(t["reg"], 18), fill=MUTED)
+
+    if variant == "a":
+        draw.text((72, 210), "湾区看秋色", font=font(t["bold"], 96), fill=INK)
+        draw.text((72, 320), "别整条街白走", font=font(t["bold"], 96), fill=ACCENT)
+        draw.text((72, 470), "同样 20 分钟车程，会变色的树差三倍", font=font(t["reg"], 34), fill=MUTED)
+        photo = rounded_photo(SHOTS / "map-all-sf.png", (936, 420), radius=26)
+        canvas.alpha_composite(photo, (72, 550))
+        # two big numbers
+        draw.rounded_rectangle([72, 1010, 500, 1210], radius=24, fill=(255, 252, 245))
+        draw.text((100, 1032), "旧金山", font=font(t["bold"], 34), fill=INK)
+        draw.text((100, 1082), f"{sf_share:.0f}%", font=font(t["bold"], 96), fill=(153, 28, 106))
+        draw.text((300, 1128), "的树会变色", font=font(t["reg"], 26), fill=MUTED)
+        draw.rounded_rectangle([540, 1010, 1008, 1210], radius=24, fill=(255, 252, 245))
+        draw.text((568, 1032), "库比蒂诺", font=font(t["bold"], 34), fill=INK)
+        draw.text((568, 1082), f"{cp_share:.0f}%", font=font(t["bold"], 96), fill=ACCENT)
+        draw.text((768, 1128), "的树会变色", font=font(t["reg"], 26), fill=MUTED)
+    else:
+        draw.text((72, 210), "湾区哪条街", font=font(t["bold"], 96), fill=INK)
+        draw.text((72, 320), "秋色最浓？", font=font(t["bold"], 96), fill=ACCENT)
+        draw.text((72, 470), "54 万棵行道树，按树种上了颜色", font=font(t["reg"], 34), fill=MUTED)
+        photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 560), radius=26)
+        canvas.alpha_composite(photo, (72, 560))
+        draw.text((72, 1160), "缩到你那条街，紫红色的就是会变的", font=font(t["bold"], 34), fill=INK)
+
+    # footer: domain + byline
+    draw.text((72, 1290), DOMAIN, font=font(t["bold"], 30), fill=ACCENT)
+    flower = Image.open(FLOWER).convert("RGBA")
+    flower.thumbnail((26, 26), Image.LANCZOS)
+    byline = t["by_bs"]
+    w = draw.textlength(byline, font=font(t["reg"], 22))
+    canvas.alpha_composite(flower, (int(1008 - w - 34), 1294))
+    draw.text((1008 - w, 1292), byline, font=font(t["reg"], 22), fill=MUTED)
+    canvas.convert("RGB").save(out / f"xhs-cover-{variant}.png")
+
+
 def build(lang: str) -> Path:
     t = COPY[lang]
     info = stats()
@@ -405,10 +455,12 @@ def build(lang: str) -> Path:
     build_contrast(info, t, out)
     build_species(info, t, out)
     build_legend(info, t, out)
-    build_region(info, t, out)
     build_city(info, t, out)
     build_backcover(info, t, out)
     build_story(info, t, out)
+    if lang == "zh":
+        build_xhs_cover(info, t, out, "a")
+        build_xhs_cover(info, t, out, "b")
     return out
 
 

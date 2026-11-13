@@ -19,12 +19,15 @@ this document are tracked.
 | `01-contrast` | 1080×1350 | Same bay, different streets: SF 15% vs Cupertino 50% of trees turn, with bars and green dots visible. |
 | `02-species` | 1080×1350 | Four species that carry the season, with botanical plates. |
 | `03-legend` | 1080×1350 | What each colour on the map means. |
-| `04-region` | 1080×1350 | Palo Alto + Mountain View side by side — same peninsula, different planting. Replaces the old "some cities, some gaps". |
-| `05-mountainview` | 1080×1350 | "City close-up" — what one neighbourhood looks like (Mountain View). |
-| `06-backcover` | 1080×1350 | Share card: full domain, one line of promise. |
+| `04-city` | 1080×1350 | "City close-up" — what one neighbourhood looks like (Mountain View). |
+| `05-backcover` | 1080×1350 | Share card: full domain, one line of promise. |
+| `xhs-cover-a` | 1080×1440 | 小红书 cover, numbers hook: 旧金山 15% vs 库比蒂诺 50%. |
+| `xhs-cover-b` | 1080×1440 | 小红书 cover, question hook: 湾区哪条街秋色最浓？ |
 | `story` | 1080×1920 | Story / reel cover. |
 
-Carousel order: 01 → 02 → 03 → 04 → 05, back cover last (or as the share card).
+Carousel order: 01 → 02 → 03 → 04, back cover last (or as the share card).
+小红书 posts a 3:4 cover instead: use `xhs-cover-a` (numbers) as the default and
+`xhs-cover-b` as the A/B alternative.
 
 ## Branding rules
 
