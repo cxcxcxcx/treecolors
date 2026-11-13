@@ -789,6 +789,85 @@ SANTA_CLARA_COUNTY_CA = CitySpec(
 )
 
 
+BRISBANE_CA = CitySpec(
+    slug="brisbane_ca",
+    name="Brisbane, CA",
+    state="CA",
+    bbox=(-122.43, 37.67, -122.38, 37.71),
+    sources=(
+        SourceSpec(
+            slug="city_trees",
+            name="City of Brisbane Tree Inventory",
+            url=(
+                "https://services9.arcgis.com/UGpGSV1ugL0pHSgX/arcgis/rest/services/"
+                "Trees_PlanITGeo/FeatureServer/0"
+            ),
+            where="Scientific <> ' '",
+            out_fields=(
+                "Scientific",
+                "CommonName",
+                "DBH",
+                "Address",
+                "Status",
+                "FID",
+            ),
+            species_fields=("Scientific",),
+            common_fields=("CommonName",),
+            id_field="FID",
+            fixed_city="Brisbane, CA",
+            homepage="https://www.brisbaneca.org/",
+        ),
+    ),
+    attribution="City of Brisbane GIS (PlanITGeo inventory)",
+)
+
+
+SANTA_CLARA_CA = CitySpec(
+    slug="santa_clara_ca",
+    name="Santa Clara, CA",
+    state="CA",
+    bbox=(-122.03, 37.31, -121.92, 37.42),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="City of Santa Clara Street Trees",
+            url=(
+                "https://map.santaclaraca.gov/maps/rest/services/Lucity/"
+                "StreetTrees/FeatureServer/0"
+            ),
+            # StatusCode 2 = "In Inventory"; 999 is removed, 5 is a private
+            # tree, 3 is transferred to the property owner.  Rows with no
+            # species are planting sites rather than trees.
+            where="StatusCode = 2 AND SpeciesName IS NOT NULL AND SpeciesName <> ''",
+            out_fields=(
+                "SpeciesName",
+                "DBH",
+                "Height",
+                "AddressID",
+                "OBJECTID",
+            ),
+            species_fields=("SpeciesName",),
+            fixed_city="Santa Clara, CA",
+            homepage="https://www.santaclaraca.gov/",
+        ),
+        SourceSpec(
+            slug="parkway_trees",
+            name="City of Santa Clara Parkway Trees",
+            url=(
+                "https://map.santaclaraca.gov/maps/rest/services/Lucity/"
+                "ParkwayTrees/FeatureServer/0"
+            ),
+            where="StatusCode = 2 AND SpeciesName IS NOT NULL AND SpeciesName <> ''",
+            out_fields=("SpeciesName", "DBH", "Height", "OBJECTID"),
+            species_fields=("SpeciesName",),
+            fixed_city="Santa Clara, CA",
+            homepage="https://www.santaclaraca.gov/",
+        ),
+    ),
+    attribution="City of Santa Clara GIS (Lucity inventory)",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -816,6 +895,8 @@ CITIES: tuple[CitySpec, ...] = (
     SAN_MATEO_CA,
     BURLINGAME_CA,
     SANTA_CLARA_COUNTY_CA,
+    BRISBANE_CA,
+    SANTA_CLARA_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}
