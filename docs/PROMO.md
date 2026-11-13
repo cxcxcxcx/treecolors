@@ -44,19 +44,33 @@ Carousel order: 01 → 02 → 03 → 04, back cover last (or as the share card).
 ## Short video (reel)
 
 ```bash
-python3 scripts/record_reel.py --seconds 16   # promo/instagram/reel.mp4
+python3 scripts/record_reel.py                    # promo/instagram/zh/reel.mp4 + reel.mp4 (en)
+python3 scripts/record_reel.py --lang zh --peek 1,6,13   # a few stills in data/work/reel/
+python3 scripts/record_reel.py --data-only        # refresh numbers, then open the HTML for a live preview
 ```
 
-The animation lives in **`assets/promo/reel.html`** (CSS keyframes over the real
-promo PNGs), and `record_reel.py` records it from headless Chrome with the
-DevTools screencast. That way what ships in the video is exactly the artwork we
-deploy — no second implementation of the layout or the branding, which is what
-went wrong in the first, ffmpeg-only version.
+The animation lives in **`assets/promo/reel.html`** — a motion piece, not a
+slideshow of the stills. Open it in Chrome (`?lang=en` for English) to watch a
+looping preview. Every motion is a CSS animation on one clock; the recorder
+seeks that clock frame by frame (`window.render(t)`) and screenshots each
+frame, so the file is perfectly smooth on a slow machine.
 
-- Stage 1080×1920, five scenes, ~14 s, 30 fps, H.264 ~2 MB, silent.
-- Frames are re-timed with their own screencast timestamps, so a slow machine
-  produces a smooth file rather than a fast one.
-- Music/voice is added in the app afterwards.
+Storyboard (1080×1920, 18 s, 30 fps, silent — add music in the app):
+
+| Time | Scene | Motion |
+|---|---|---|
+| 0–3.3 s | Hook: 在湾区住了六七年 / 才知道树会变色 | characters pop in, line 2 slams; grey map below turns colour with a circular wipe |
+| 3.3–7.9 s | SF vs Cupertino | maps slide in, % counters and bars run, “×3” stamp |
+| 7.9–11.4 s | The app | phone rises, map pushes in, tree count runs, legend chips pop out |
+| 11.4–14.8 s | Tap any tree | finger tap + ripple, species sheet slides up, three plates fly out |
+| 14.8–18 s | End card | icon, 找秋色。走过去。, domain, falling leaves |
+
+- Numbers (percentages, ×N, tree count, plate count) come from
+  `promo/instagram/reel-data.js`, which the recorder writes from
+  `web/species_stats.json` via `make_promo.stats()`.
+- Keep text out of the platform overlays: top ~150 px, bottom ~400 px, right
+  ~130 px below mid-height.
+- Copy for both languages is the `COPY` object in the HTML.
 
 ## Regenerating the screenshots
 
@@ -73,6 +87,18 @@ Keep the OSM basemap on — dots without a basemap are unreadable. Do **not**
 filter out green trees: the contrast depends on both colours being visible.
 
 ## Copy
+
+### 小红书标题（≤20 字，feed 会截断，前 8 字要能立住）
+
+| 用途 | 标题 | 字数 |
+|---|---|---|
+| 主推（配封面 C） | 在湾区住了七年，才知道树会变色 | 17 |
+| 备选·利益点 | 湾区看秋色，别整条街白走 | 12 |
+| 备选·疑问 | 湾区哪条街的秋色最浓？ | 11 |
+| 备选·对比 | 同一片湾区，秋色差三倍 | 11 |
+
+封面 C 上的字是同一句的变体（"在湾区住了六七年 / 才知道树会变色"），标题
+不要逐字重复，换个语序即可。
 
 ### 中文（小红书）
 
