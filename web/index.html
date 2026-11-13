@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Tree Species Map — 6.5M street trees in 31 North American cities</title>
+    <title>Tree Species Map — 6.5M street trees in 32 North American cities</title>
     <link rel="canonical" href="https://treecolors.botanisense.app/">
     <link rel="icon" href="favicon-f.ico?v=20261108a" sizes="any">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-f-192.png?v=20261108a">
@@ -16,14 +16,14 @@
     <meta name="apple-mobile-web-app-title" content="Fall Color Map">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Interactive map of 6.5 million street and park trees in 31 US and Canadian cities. Click any tree for its species, a botanical illustration, Wikipedia photos and the original inventory record. Filter by fall colour, evergreen or ginkgo.">
+        content="Interactive map of 6.5 million street and park trees in 32 US and Canadian cities. Click any tree for its species, a botanical illustration, Wikipedia photos and the original inventory record. Filter by fall colour, evergreen or ginkgo.">
     <meta name="keywords"
         content="fall color map, street tree map, urban forestry, tree species map, ginkgo, evergreen trees, deciduous trees, New York City trees, Toronto trees, Montreal trees, Boston trees, Seattle trees, Washington DC trees, Vancouver trees">
     <meta name="author" content="Fall Color Map Project">
     <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Tree Species Map — 6.5M street trees in 31 cities">
+    <meta property="og:title" content="Tree Species Map — 6.5M street trees in 32 cities">
     <meta property="og:description"
-        content="Every street tree in 31 North American cities on one map: species, fall colour, a botanical plate and the original inventory record.">
+        content="Every street tree in 32 North American cities on one map: species, fall colour, a botanical plate and the original inventory record.">
     <meta property="og:image" content="https://treecolors.botanisense.app/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -34,7 +34,7 @@
     <meta property="og:site_name" content="Fall Color Map">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="https://treecolors.botanisense.app/og-image.png">
-    <meta name="twitter:title" content="Tree Species Map — 6.5M street trees in 31 cities">
+    <meta name="twitter:title" content="Tree Species Map — 6.5M street trees in 32 cities">
     <meta name="twitter:description"
         content="Browse North American neighborhoods for fall color hotspots and learn about local tree species with curated photos from Wikipedia.">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
@@ -54,7 +54,7 @@
                 "operatingSystem": "Web",
                 "browserRequirements": "Requires JavaScript and WebGL",
                 "isAccessibleForFree": true,
-                "description": "Interactive map of 6.5 million street and park trees in 31 US and Canadian cities, coloured by species group, with species details, botanical illustrations and Wikipedia photos.",
+                "description": "Interactive map of 6.5 million street and park trees in 32 US and Canadian cities, coloured by species group, with species details, botanical illustrations and Wikipedia photos.",
                 "image": "https://treecolors.botanisense.app/og-image.png",
                 "creator": {
                     "@type": "Organization",
@@ -66,7 +66,7 @@
                 "@type": "Dataset",
                 "@id": "https://treecolors.botanisense.app/#dataset",
                 "name": "North American street tree inventory map",
-                "description": "Point locations of 6,491,722 street and park trees across 31 North American cities, each with species, colour group and a link to the publishing municipality's inventory record.",
+                "description": "Point locations of 6,520,240 street and park trees across 32 North American cities, each with species, colour group and a link to the publishing municipality's inventory record.",
                 "url": "https://treecolors.botanisense.app/",
                 "isAccessibleForFree": true,
                 "creator": { "@type": "Organization", "name": "BotaniSense", "url": "https://botanisense.app/" },
@@ -105,6 +105,11 @@
             clip: rect(0 0 0 0);
             white-space: nowrap;
             border: 0;
+        }
+
+        /* Used by the install button, map toast and species bottom sheet. */
+        .hidden {
+            display: none !important;
         }
 
         .map-overlay {
@@ -864,13 +869,36 @@
 
         @media (max-width: 600px) {
             .map-overlay {
-                max-width: 220px;
+                max-width: 240px;
                 padding: 10px;
                 font-size: 12px;
             }
 
             .map-overlay h3 {
                 font-size: 16px;
+            }
+
+            /* Reclaim room for the heading: at 220px the h3 box is only 88px
+               wide, so "Tree Species" broke across two lines. */
+            .legend-header {
+                padding: 12px 10px 8px 12px;
+                gap: 8px;
+            }
+
+            .legend-title {
+                gap: 8px;
+            }
+
+            .legend-logo-tile {
+                width: 32px;
+                height: 32px;
+                flex-basis: 32px;
+                border-radius: 10px;
+            }
+
+            .legend-logo {
+                width: 22px;
+                height: 22px;
             }
 
             .legend-item {
@@ -918,7 +946,7 @@
 
 <body>
     <div id="map"></div>
-    <h1 class="sr-only">Tree Species Map — street trees, fall colour and ginkgo across 31 North American cities</h1>
+    <h1 class="sr-only">Tree Species Map — street trees, fall colour and ginkgo across 32 North American cities</h1>
 
     <div class="map-overlay">
         <div class="legend-header">
@@ -927,8 +955,8 @@
                     <img class="legend-logo" src="./icon-f-192.png?v=20261108a" alt="" width="26" height="26">
                 </span>
                 <div class="legend-heading">
-                    <h3>Tree Species Map</h3>
-                    <p class="legend-sub">Color guide</p>
+                    <h3>Tree Species</h3>
+                    <p class="legend-sub">Fall color map</p>
                 </div>
             </div>
             <button type="button" class="legend-toggle-button" id="legend-toggle-button"
@@ -944,7 +972,7 @@
             <button type="button" class="legend-info-close" id="legend-info-close"
                 aria-label="Close introduction">&times;</button>
             <h4 id="legend-info-title">About this map</h4>
-            <p><strong>6,491,722 trees</strong> from <strong>31 municipal inventories</strong> across the United States
+            <p><strong>6,520,240 trees</strong> from <strong>32 municipal inventories</strong> across the United States
                 and Canada, drawn from each city's open data portal.</p>
             <p>Colours follow the legend: green for evergreens, a single orange for ginkgo, red-to-purple for species
                 with striking autumn colour, and brown tones for other deciduous trees.</p>
@@ -1007,7 +1035,7 @@
                         target="_blank" rel="noopener">Hamilton</a> - Public Tree Inventory</li>
             </ul>
             <p><strong>Also Included:</strong> Cupertino, Fremont, Los Angeles, San Diego, San Francisco, San Leandro,
-                Concord, Gaithersburg, Bethesda, Arlington, and Montgomery County.</p>
+                Concord, Mountain View, Gaithersburg, Bethesda, Arlington, and Montgomery County.</p>
             </div>
         </div>
         <div class="legend-body">
@@ -2373,7 +2401,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261109-211416';
+                const SW_QUERY = 'tree-map-v20261112-231627';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

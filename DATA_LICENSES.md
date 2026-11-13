@@ -32,6 +32,7 @@ shown in the app and check the terms of every source you redistribute.
 | Winnipeg, MB | [Tree Inventory](https://data.winnipeg.ca/) | City of Winnipeg open data terms |
 | Mississauga, ON | [City Owned Tree Inventory](https://data.mississauga.ca/) | City of Mississauga open data terms |
 | Hamilton, ON | [Public Tree Inventory](https://open.hamilton.ca/) | City of Hamilton open data terms |
+| Mountain View, CA | [City Tree Inventory](https://maps.mountainview.gov/arcgis/rest/services/Public/Trees/MapServer/0) (ArcGIS; vacant planting pits excluded) | City of Mountain View GIS terms |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` sources | see individual portal terms |
 
 ## Species annotations

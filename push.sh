@@ -19,4 +19,5 @@ sed -i "s/const CACHE_NAME = .*/const CACHE_NAME = '$NEW_VERSION';/" web/sw.js
 sed -i "s/const SW_QUERY = '[^']*';/const SW_QUERY = '$NEW_VERSION';/" web/index.html
 echo "Updated sw.js cache to $NEW_VERSION"
 
-rsync -avz --delete web/ "$DEPLOY_HOST:$DEPLOY_PATH"
+# web/preview is scratch space for reviews; it must never reach production.
+rsync -avz --delete --exclude 'preview/' web/ "$DEPLOY_HOST:$DEPLOY_PATH"

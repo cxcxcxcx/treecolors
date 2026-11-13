@@ -619,6 +619,28 @@ HAMILTON_ON = CitySpec(
     attribution="City of Hamilton Open Data",
 )
 
+MOUNTAIN_VIEW_CA = CitySpec(
+    slug="mountain_view_ca",
+    name="Mountain View, CA",
+    state="CA",
+    bbox=(-122.13, 37.34, -121.99, 37.45),
+    sources=(
+        SourceSpec(
+            slug="city_trees",
+            name="City of Mountain View Tree Inventory",
+            url="https://maps.mountainview.gov/arcgis/rest/services/Public/Trees/MapServer/0",
+            # ~5.1k rows are empty planting pits with no species; they are not trees.
+            where="TREEGROUP <> 'Vacant'",
+            out_fields=("SPECIES", "NAME", "TREEGROUP", "HERITAGE", "OBJECTID"),
+            species_fields=("SPECIES",),
+            common_fields=("NAME",),
+            fixed_city="Mountain View, CA",
+            homepage="https://www.mountainview.gov/",
+        ),
+    ),
+    attribution="City of Mountain View GIS",
+)
+
 
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
@@ -641,6 +663,7 @@ CITIES: tuple[CitySpec, ...] = (
     WINNIPEG_MB,
     MISSISSAUGA_ON,
     HAMILTON_ON,
+    MOUNTAIN_VIEW_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}
