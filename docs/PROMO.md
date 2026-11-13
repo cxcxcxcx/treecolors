@@ -83,7 +83,7 @@ Free, no account → link in bio.
 
 同样是湾区，树的颜色差别特别大。
 
-旧金山：9.5 万棵行道树，只有 15% 会变色
+San Francisco：9.5 万棵行道树，只有 15% 会变色
 Cupertino：1.6 万棵里，50% 会变色，三倍还多
 
 （绿点是常绿，紫红点是会变色，一眼就知道哪片值得走）
@@ -101,7 +101,7 @@ Cupertino：1.6 万棵里，50% 会变色，三倍还多
 
 免费，不用注册：treecolors.botanisense.app
 
-#湾区 #Cupertino #MountainView #旧金山 #湾区周末 #赏秋 #秋色 #城市漫步 #行道树
+#湾区 #Cupertino #MountainView #SanFrancisco #湾区周末 #赏秋 #秋色 #城市漫步 #行道树
 ```
 
 ## Numbers used by the art (from `web/species_stats.json`)

@@ -68,8 +68,8 @@ COPY = {
         "s5_free": "Free · no account · works on your phone",
         "s6_eyebrow": "ONE NEIGHBOURHOOD",
         "s6_h1": "City close-up",
-        "s6_note": "Purple dots change colour. Green ones stay green.",
-        "s6_stats": "{total:,} trees · {fall:,} turn ({pct:.0f}%)",
+        "s6_note": "Purple dots change colour, orange is ginkgo, green stays green.",
+        "s6_stats": "Mountain View · {total:,} trees · {fall:,} turn ({pct:.0f}%)",
         "s4_pa": "Palo Alto", "s4_mv": "Mountain View",
         "story_h1": ["Find the colour.", "Walk to it."],
         "story_sub": "Bay Area · {fall:,} trees that turn",
@@ -82,7 +82,7 @@ COPY = {
         "s1_eyebrow": "湾区 · 秋色",
         "s1_h1": ["同一个湾区，", "三倍的秋色。"],
         "s1_sub": "行道树里，秋天会变色的比例。",
-        "s1_left": "旧金山", "s1_right": "库比蒂诺",
+        "s1_left": "San Francisco", "s1_right": "Cupertino",
         "s1_turn": "{share:.0f}% 会变色", "s1_count": "共 {total:,} 棵，其中 {fall:,} 棵会变",
         "s1_note1": "「会变色」指叶子在落叶前变红、变紫或变黄。",
         "s1_note2": "绿色是常绿树，整个冬天都是绿的，可以直接跳过。",
@@ -106,9 +106,9 @@ COPY = {
         "s5_free": "免费 · 不用注册 · 手机直接打开",
         "s6_eyebrow": "一个街区",
         "s6_h1": "城市特写",
-        "s6_note": "紫点会变色，绿点是常绿。",
-        "s6_stats": "共 {total:,} 棵，{fall:,} 棵会变色（{pct:.0f}%）",
-        "s4_pa": "帕洛阿尔托", "s4_mv": "山景城",
+        "s6_note": "紫点会变色，橙点是银杏，绿点是常绿。",
+        "s6_stats": "Mountain View · 共 {total:,} 棵，{fall:,} 棵会变色（{pct:.0f}%）",
+        "s4_pa": "Palo Alto", "s4_mv": "Mountain View",
         "story_h1": ["找秋色。", "走过去。"],
         "story_sub": "湾区 · {fall:,} 棵会变色",
         "story_cta": "主页链接",
@@ -421,20 +421,20 @@ def build_xhs_cover(info: dict, t: dict, out: Path, variant: str) -> None:
         canvas.alpha_composite(photo, (72, 550))
         # two big numbers
         draw.rounded_rectangle([72, 1010, 500, 1210], radius=24, fill=(255, 252, 245))
-        draw.text((100, 1032), "旧金山", font=font(t["bold"], 34), fill=INK)
+        draw.text((100, 1032), "San Francisco", font=font(t["bold"], 30), fill=INK)
         draw.text((100, 1082), f"{sf_share:.0f}%", font=font(t["bold"], 96), fill=(153, 28, 106))
         draw.text((300, 1128), "的树会变色", font=font(t["reg"], 26), fill=MUTED)
         draw.rounded_rectangle([540, 1010, 1008, 1210], radius=24, fill=(255, 252, 245))
-        draw.text((568, 1032), "库比蒂诺", font=font(t["bold"], 34), fill=INK)
+        draw.text((568, 1032), "Cupertino", font=font(t["bold"], 30), fill=INK)
         draw.text((568, 1082), f"{cp_share:.0f}%", font=font(t["bold"], 96), fill=ACCENT)
         draw.text((768, 1128), "的树会变色", font=font(t["reg"], 26), fill=MUTED)
     else:
         draw.text((72, 210), "湾区哪条街", font=font(t["bold"], 96), fill=INK)
         draw.text((72, 320), "秋色最浓？", font=font(t["bold"], 96), fill=ACCENT)
-        draw.text((72, 470), "54 万棵行道树，按树种上了颜色", font=font(t["reg"], 34), fill=MUTED)
+        draw.text((72, 470), "54 万棵行道树：会变色的标紫红，银杏标橙", font=font(t["reg"], 32), fill=MUTED)
         photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 560), radius=26)
         canvas.alpha_composite(photo, (72, 560))
-        draw.text((72, 1160), "缩到你那条街，紫红色的就是会变的", font=font(t["bold"], 34), fill=INK)
+        draw.text((72, 1150), "紫红 = 会变色 · 橙 = 银杏 · 绿 = 常绿", font=font(t["bold"], 32), fill=INK)
 
     # footer: domain + byline
     draw.text((72, 1290), DOMAIN, font=font(t["bold"], 30), fill=ACCENT)
