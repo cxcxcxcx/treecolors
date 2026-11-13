@@ -79,12 +79,9 @@ Free, no account → link in bio.
 ### 中文（小红书）
 
 ```
-湾区这些城市的行道树，都标在一张图上
+湾区的行道树，现在能在地图上一棵一棵看
 
-San Francisco、Berkeley、Concord、Fremont、San Leandro、Palo Alto、
-Mountain View、Cupertino、San Jose——9 个城市，57 万棵树，每条街都能查到。
-
-颜色这样读：
+颜色代表树种类型：
 紫红 / 红 = 秋天会变色、颜色好看的
 橙 = 银杏，一整条街一起变黄
 绿 = 常绿，冬天也绿，可以跳过
@@ -93,8 +90,12 @@ Mountain View、Cupertino、San Jose——9 个城市，57 万棵树，每条街
 点开任意一棵树，能看到树种、叶片图示、实拍照片，还有市政府自己的记录。
 常见树种基本都配了图示，出门可以对照着认。
 
-今年比去年：城市更多了（比如 Mountain View），树种展示更完整，界面也重做过。
-明年春天会再加「去哪看花」。
+今年比去年：
+· 城市更多了——San Francisco、Berkeley、Concord、Fremont、San Leandro、
+  Palo Alto、Mountain View、Cupertino、San Jose，一共 9 个
+· 树种展示更完整，界面也重做过
+
+明年春天会再加一个「去哪看花」。
 
 免费，不用注册：treecolors.botanisense.app
 

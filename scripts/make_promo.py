@@ -377,8 +377,8 @@ def build_backcover(info: dict, t: dict, out: Path) -> None:
 def build_story(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1920
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
-    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 860), radius=36)
-    canvas.alpha_composite(photo, (72, 360))
+    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 920), radius=36)
+    canvas.alpha_composite(photo, (72, 268))
     draw = ImageDraw.Draw(canvas)
 
     logo = Image.open(ICON).convert("RGBA").resize((100, 100), Image.LANCZOS)
@@ -389,12 +389,12 @@ def build_story(info: dict, t: dict, out: Path) -> None:
     canvas.alpha_composite(flower, (192, 186))
     draw.text((192 + flower.width + 10, 190), t["by_bs"], font=font(t["reg"], 26), fill=MUTED)
 
-    draw.text((72, 1290), t["story_h1"][0], font=font(t["bold"], 70), fill=INK)
-    draw.text((72, 1372), t["story_h1"][1], font=font(t["bold"], 70), fill=ACCENT)
-    draw.text((72, 1476), t["story_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 32), fill=MUTED)
-    draw.text((72, 1536), DOMAIN, font=font(t["bold"], 34), fill=ACCENT)
-    draw.rounded_rectangle([72, 1636, 600, 1726], radius=45, fill=ACCENT)
-    draw.text((116, 1662), t["story_cta"], font=font(t["bold"], 34), fill=(255, 255, 255))
+    draw.text((72, 1240), t["story_h1"][0], font=fit_text(draw, t["story_h1"][0], t["bold"], 70, 900), fill=INK)
+    draw.text((72, 1322), t["story_h1"][1], font=fit_text(draw, t["story_h1"][1], t["bold"], 70, 900), fill=ACCENT)
+    draw.text((72, 1424), t["story_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 30), fill=MUTED)
+    draw.rounded_rectangle([72, 1500, 600, 1590], radius=45, fill=ACCENT)
+    draw.text((116, 1526), t["story_cta"], font=font(t["bold"], 34), fill=(255, 255, 255))
+    brand_footer(canvas, t, y=1740)
     canvas.convert("RGB").save(out / "story.png")
 
 
@@ -420,12 +420,17 @@ def build_xhs_cover(info: dict, t: dict, out: Path, variant: str) -> None:
         # two big numbers
         draw.rounded_rectangle([72, 1010, 500, 1210], radius=24, fill=(255, 252, 245))
         draw.text((100, 1032), "San Francisco", font=font(t["bold"], 30), fill=INK)
-        draw.text((100, 1082), f"{sf_share:.0f}%", font=font(t["bold"], 96), fill=(153, 28, 106))
-        draw.text((300, 1128), "的树会变色", font=font(t["reg"], 26), fill=MUTED)
+        num_font = font(t["latin_bold"], 92)
+        num_text = f"{sf_share:.0f}%"
+        draw.text((100, 1082), num_text, font=num_font, fill=(153, 28, 106))
+        draw.text((100 + draw.textlength(num_text, font=num_font) + 18, 1126),
+                  "的树会变色", font=font(t["reg"], 26), fill=MUTED)
         draw.rounded_rectangle([540, 1010, 1008, 1210], radius=24, fill=(255, 252, 245))
         draw.text((568, 1032), "Cupertino", font=font(t["bold"], 30), fill=INK)
-        draw.text((568, 1082), f"{cp_share:.0f}%", font=font(t["bold"], 96), fill=ACCENT)
-        draw.text((768, 1128), "的树会变色", font=font(t["reg"], 26), fill=MUTED)
+        num_text2 = f"{cp_share:.0f}%"
+        draw.text((568, 1082), num_text2, font=num_font, fill=ACCENT)
+        draw.text((568 + draw.textlength(num_text2, font=num_font) + 18, 1126),
+                  "的树会变色", font=font(t["reg"], 26), fill=MUTED)
     else:
         draw.text((72, 210), "湾区哪条街", font=font(t["bold"], 96), fill=INK)
         draw.text((72, 320), "秋色最浓？", font=font(t["bold"], 96), fill=ACCENT)
