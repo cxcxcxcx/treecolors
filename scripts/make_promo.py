@@ -194,32 +194,32 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, width: int) -> list[str]:
 
 
 def brand_footer(canvas: Image.Image, t: dict, y: int = 1192) -> None:
-    """Bottom bar: TreeColors plate on the left, BotaniSense slogan + byline right.
-
-    The product keeps the highlight; the attribution carries the one-line
-    positioning ("AI that is actually useful for plant lovers") but stays quiet.
-    """
+    """Bottom bar: TreeColors plate on the left, BotaniSense slogan + byline right."""
     draw = ImageDraw.Draw(canvas)
-    icon = 54
-    pad = 18
-    name_font = font(t["bold"], 26)
-    domain_font = font(t["bold"], 20)
+    icon = 52
+    pad = 16
+    name_font = font(t["bold"], 25)
+    domain_font = font(t["bold"], 19)
 
-    # left plate, sized to its own contents with even padding
-    text_x = 72 + pad + icon + 14
+    text_x = 72 + pad + icon + 13
+    name_y = y + pad - 1
+    domain_y = name_y + 30
+    text_bottom = domain_y + 23
+    plate_bottom = max(y + pad + icon, text_bottom) + pad
     plate_right = text_x + max(draw.textlength("TreeColors", font=name_font),
                                draw.textlength(DOMAIN, font=domain_font)) + pad
+
     plate = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     ImageDraw.Draw(plate).rounded_rectangle(
-        [72, y, plate_right, y + pad * 2 + icon], radius=16, fill=(255, 252, 245, 235))
+        [72, y, plate_right, plate_bottom], radius=16, fill=(255, 252, 245, 235))
     canvas.alpha_composite(plate.filter(ImageFilter.GaussianBlur(0.4)))
 
     logo = Image.open(ICON).convert("RGBA").resize((icon, icon), Image.LANCZOS)
     canvas.alpha_composite(logo, (72 + pad, y + pad))
-    draw.text((text_x, y + pad + 1), "TreeColors", font=name_font, fill=INK)
-    draw.text((text_x, y + pad + 34), DOMAIN, font=domain_font, fill=ACCENT)
+    draw.text((text_x, name_y), "TreeColors", font=name_font, fill=INK)
+    draw.text((text_x, domain_y), DOMAIN, font=domain_font, fill=ACCENT)
 
-    # right block: slogan above, byline below, both right-aligned
+    # right block: slogan right-aligned, byline underneath
     tag_font = font(t["reg"], 18)
     right = 1008
     ty = y + pad - 6
@@ -230,12 +230,11 @@ def brand_footer(canvas: Image.Image, t: dict, y: int = 1192) -> None:
 
     flower = Image.open(FLOWER).convert("RGBA")
     flower.thumbnail((22, 22), Image.LANCZOS)
-    byline = t["by_bs"]
     by_font = font(t["reg"], 20)
-    w = draw.textlength(byline, font=by_font)
+    w = draw.textlength(t["by_bs"], font=by_font)
     bx = right - (flower.width + 8 + w)
     canvas.alpha_composite(flower, (int(bx), ty + 2))
-    draw.text((bx + flower.width + 8, ty), byline, font=by_font, fill=INK)
+    draw.text((bx + flower.width + 8, ty), t["by_bs"], font=by_font, fill=INK)
 
 
 def build_contrast(info: dict, t: dict, out: Path) -> None:
@@ -407,11 +406,8 @@ def build_xhs_cover(info: dict, t: dict, out: Path, variant: str) -> None:
     sf_share = sf["fall"] / sf["total"] * 100
     cp_share = cp["fall"] / cp["total"] * 100
 
-    # brand strip
-    logo = Image.open(ICON).convert("RGBA").resize((56, 56), Image.LANCZOS)
-    canvas.alpha_composite(logo, (72, 64))
-    draw.text((140, 70), "湾区秋色地图", font=font(t["bold"], 28), fill=INK)
-    draw.text((140, 104), DOMAIN, font=font(t["reg"], 18), fill=MUTED)
+    draw.text((72, 72), "湾区秋色", font=font(t["bold"], 26), fill=ACCENT)
+    draw.text((72, 112), "湾区 · 行道树地图", font=font(t["reg"], 22), fill=MUTED)
 
     if variant == "a":
         draw.text((72, 210), "湾区看秋色", font=font(t["bold"], 96), fill=INK)
@@ -436,14 +432,7 @@ def build_xhs_cover(info: dict, t: dict, out: Path, variant: str) -> None:
         canvas.alpha_composite(photo, (72, 560))
         draw.text((72, 1150), "紫红 = 会变色 · 橙 = 银杏 · 绿 = 常绿", font=font(t["bold"], 32), fill=INK)
 
-    # footer: domain + byline
-    draw.text((72, 1290), DOMAIN, font=font(t["bold"], 30), fill=ACCENT)
-    flower = Image.open(FLOWER).convert("RGBA")
-    flower.thumbnail((26, 26), Image.LANCZOS)
-    byline = t["by_bs"]
-    w = draw.textlength(byline, font=font(t["reg"], 22))
-    canvas.alpha_composite(flower, (int(1008 - w - 34), 1294))
-    draw.text((1008 - w, 1292), byline, font=font(t["reg"], 22), fill=MUTED)
+    brand_footer(canvas, t, y=1300)
     canvas.convert("RGB").save(out / f"xhs-cover-{variant}.png")
 
 
