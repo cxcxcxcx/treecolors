@@ -4,30 +4,36 @@ Everything here is generated from the live site, so numbers never drift from the
 app. One command rebuilds the whole set.
 
 ```bash
-python3 scripts/make_promo.py
+python3 scripts/make_promo.py            # both languages
+python3 scripts/make_promo.py --lang zh  # Chinese only
 ```
 
-Outputs land in `promo/instagram/` (git-ignored, like the rest of `promo/`).
-The generator is tracked; the pixels are not.
+Outputs land in `promo/instagram/` (English) and `promo/instagram/zh/`
+(Chinese). Both are git-ignored, like the rest of `promo/`; the generator and
+this document are tracked.
 
 ## The set
 
 | File | Size | Purpose |
 |---|---|---|
-| `01-contrast.png` | 1080×1350 | Same bay, different streets: SF 15% vs Cupertino 50% of trees turn. Bars show the share, green dots are visible so the contrast reads. |
-| `02-species.png` | 1080×1350 | Four species that carry the season, with their botanical plates. |
-| `03-legend.png` | 1080×1350 | What each colour on the map means. |
-| `04-coverage.png` | 1080×1350 | "Some cities, some gaps" — one wide Bay Area map, examples listed underneath. |
-| `05-backcover.png` | 1080×1350 | Colour-dense close-up + "Find the colour. Walk to it." |
-| `06-mountainview.png` | 1080×1350 | City close-up (Mountain View) to show what a neighbourhood looks like. |
-| `story.png` | 1080×1920 | Story / reel cover. |
+| `01-contrast` | 1080×1350 | Same bay, different streets: SF 15% vs Cupertino 50% of trees turn, with bars and green dots visible. |
+| `02-species` | 1080×1350 | Four species that carry the season, with botanical plates. |
+| `03-legend` | 1080×1350 | What each colour on the map means. |
+| `04-region` | 1080×1350 | Palo Alto + Mountain View side by side — same peninsula, different planting. Replaces the old "some cities, some gaps". |
+| `05-mountainview` | 1080×1350 | City close-up: what one neighbourhood looks like. |
+| `06-backcover` | 1080×1350 | Share card: full domain, one line of promise. |
+| `story` | 1080×1920 | Story / reel cover. |
 
-Order for a carousel: 01 → 02 → 03 → 04 → 06 (05 last, or use it as the share card).
+Carousel order: 01 → 02 → 03 → 04 → 05, back cover last (or as the share card).
 
 ## Branding rules
 
 - Bottom-left block: TreeColors mark + **TreeColors**, then the BotaniSense
-  flower + **by BotaniSense**, then `treecolors.botanisense.app`.
+  flower + **by BotaniSense**, then the **full domain** in accent colour —
+  小红书 cannot carry links, so the domain has to be readable in the image.
+- Top-right on slides 01/04/05: a BotaniSense card — flower in a tile, the name,
+  and one line: *AI that is actually useful for plant lovers* (中文：让 AI 对植物
+  爱好者真正有用). Keep it to one sentence.
 - Never write "map" in headlines — it's obviously a map.
 - Never claim a city count as a selling point ("8 cities" is small). Name a few
   places instead.

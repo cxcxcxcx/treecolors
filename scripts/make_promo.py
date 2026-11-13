@@ -1,76 +1,139 @@
 #!/usr/bin/env python3
-"""Build an Instagram promo set from the assets already in the repo.
+"""Build the Instagram / 小红书 promo set in English and Chinese.
 
-Every image is generated from real project material: the map screenshots in
-promo/shots, the botanical plates in web/plates, the app icon and the live
-counts in web/species_stats.json.
+    python3 scripts/make_promo.py            # both languages
+    python3 scripts/make_promo.py --lang en  # English only
+    python3 scripts/make_promo.py --lang zh  # Chinese only
 
-    python3 promo/make_instagram.py
-
-Outputs (promo/instagram/):
-    01-hero.png      1080x1350  feed
-    02-colours.png   1080x1350  feed
-    03-ginkgo.png    1080x1350  feed
-    04-tap.png       1080x1350  feed
-    05-cities.png    1080x1350  feed
-    story.png        1080x1920  story / reel cover
+Output: promo/instagram/ (en) and promo/instagram/zh/ (zh).
+All numbers come from web/species_stats.json, so they never drift from the app.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "promo" / "instagram"
 SHOTS = ROOT / "promo" / "shots"
 PLATES = ROOT / "web" / "plates"
 ICON = ROOT / "web" / "icon-f-512.png"
-BOTANISENSE = ROOT / "promo" / "brand" / "botanisense-flower.png"
+FLOWER = ROOT / "promo" / "brand" / "botanisense-flower.png"
 
 CREAM = (247, 240, 225)
 INK = (31, 45, 58)
 MUTED = (108, 120, 131)
 ACCENT = (184, 64, 22)
 CARD = (255, 252, 245)
+DOMAIN = "treecolors.botanisense.app"
 
-FONT_DIR = "/usr/share/fonts/truetype/dejavu"
-BOLD = f"{FONT_DIR}/DejaVuSans-Bold.ttf"
-REG = f"{FONT_DIR}/DejaVuSans.ttf"
-SERIF_IT = "/usr/share/fonts/TTF/DejaVuSerifCondensed-Italic.ttf"
+FONT_EN_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_EN = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_ZH_BOLD = "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc"
+FONT_ZH = "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc"
+
+BAY_AREA = {"berkeley", "concordca", "cupertino", "fremontca", "palo_alto",
+            "sf", "san_jose", "sanleandroca", "mountain_view_ca"}
+
+COPY = {
+    "en": {
+        "bold": FONT_EN_BOLD, "reg": FONT_EN,
+        "s1_eyebrow": "BAY AREA · AUTUMN COLOUR",
+        "s1_h1": ["Same bay.", "Three times the colour."],
+        "s1_sub": "Share of street trees that change colour in autumn.",
+        "s1_left": "San Francisco", "s1_right": "Cupertino",
+        "s1_turn": "{share:.0f}% turn", "s1_count": "{fall:,} of {total:,} trees",
+        "s1_note1": "A tree “turns” when its leaves go red, purple or yellow before falling.",
+        "s1_note2": "Green trees stay green all winter — the map lets you skip them.",
+        "s2_eyebrow": "WHAT YOU WILL SEE",
+        "s2_h1": "Four that carry the season",
+        "s2_items": [("pistacia_chinensis.png", "Chinese pistache", "scarlet to orange"),
+                     ("liquidambar_styraciflua.png", "Sweetgum", "wine red, purple"),
+                     ("ginkgo_biloba.png", "Ginkgo", "one clean yellow"),
+                     ("lagerstroemia_indica.png", "Crape myrtle", "late, deep red")],
+        "s3_eyebrow": "READ IT LIKE A COLOUR MAP",
+        "s3_h1": "What to look for",
+        "s3_items": [("#cc0000", "#800080", "These turn", "Red through purple: worth a walk"),
+                     ("#ffa500", None, "Ginkgo", "Every ginkgo turns one orange"),
+                     ("#8b4513", "#2b2b2b", "Turns, muted", "Browns, later in the season"),
+                     ("#2d5016", "#4caf50", "Skip these", "Evergreens stay green all winter")],
+        "s4_eyebrow": "PALO ALTO + MOUNTAIN VIEW",
+        "s4_h1": "Two cities, side by side",
+        "s4_sub": "Same peninsula, different planting.",
+        "s5_h1": ["Find the colour.", "Walk to it."],
+        "s5_sub": "{fall:,} Bay Area trees that turn, each one mapped",
+        "s5_free": "Free · no account · works on your phone",
+        "s6_eyebrow": "CITY CLOSE-UP",
+        "s6_h1": "Mountain View",
+        "s6_note": "Purple dots change colour. Green ones stay green.",
+        "story_h1": ["Find the colour.", "Walk to it."],
+        "story_sub": "Bay Area · {fall:,} trees that turn",
+        "story_cta": "Link in bio",
+        "bs_tagline": "AI that is actually useful for plant lovers.",
+        "by_bs": "by BotaniSense",
+    },
+    "zh": {
+        "bold": FONT_ZH_BOLD, "reg": FONT_ZH,
+        "s1_eyebrow": "湾区 · 秋色",
+        "s1_h1": ["同一个湾区，", "三倍的秋色。"],
+        "s1_sub": "行道树里，秋天会变色的比例。",
+        "s1_left": "旧金山", "s1_right": "库比蒂诺",
+        "s1_turn": "{share:.0f}% 会变色", "s1_count": "共 {total:,} 棵，其中 {fall:,} 棵会变",
+        "s1_note1": "「会变色」指叶子在落叶前变红、变紫或变黄。",
+        "s1_note2": "绿色是常绿树，整个冬天都是绿的，可以直接跳过。",
+        "s2_eyebrow": "会看到什么",
+        "s2_h1": "撑起秋天的四种树",
+        "s2_items": [("pistacia_chinensis.png", "中国黄连木", "猩红到橙"),
+                     ("liquidambar_styraciflua.png", "枫香", "酒红、紫"),
+                     ("ginkgo_biloba.png", "银杏", "一整条街同时变黄"),
+                     ("lagerstroemia_indica.png", "紫薇", "最晚，深红")],
+        "s3_eyebrow": "怎么看这张图",
+        "s3_h1": "四种颜色",
+        "s3_items": [("#cc0000", "#800080", "会变色", "红到紫，值得专门走一趟"),
+                     ("#ffa500", None, "银杏", "所有银杏都是同一种橙黄"),
+                     ("#8b4513", "#2b2b2b", "变得晚、偏暗", "褐色系，季节靠后"),
+                     ("#2d5016", "#4caf50", "常绿，跳过", "整个冬天都是绿的")],
+        "s4_eyebrow": "帕洛阿尔托 + 山景城",
+        "s4_h1": "相邻两城，同框对比",
+        "s4_sub": "同一个半岛，种的东西不一样。",
+        "s5_h1": ["找秋色。", "走过去。"],
+        "s5_sub": "湾区 {fall:,} 棵会变色的树，每一棵都有位置",
+        "s5_free": "免费 · 不用注册 · 手机直接打开",
+        "s6_eyebrow": "城市特写",
+        "s6_h1": "山景城",
+        "s6_note": "紫点会变色，绿点是常绿。",
+        "story_h1": ["找秋色。", "走过去。"],
+        "story_sub": "湾区 · {fall:,} 棵会变色",
+        "story_cta": "主页链接",
+        "bs_tagline": "让 AI 对植物爱好者真正有用。",
+        "by_bs": "由 BotaniSense 出品",
+    },
+}
 
 
 def font(path: str, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(path, size)
 
 
-BAY_AREA = {"berkeley", "concordca", "cupertino", "fremontca",
-            "palo_alto", "sf", "san_jose", "sanleandroca", "mountain_view_ca"}
-
-
 def stats() -> dict:
     data = json.loads((ROOT / "web" / "species_stats.json").read_text())
     cities = data["cities"]
     bay = [c for c in cities if c["slug"] in BAY_AREA]
-    vancouver = next((c for c in cities if c["slug"] == "vancouver"), None)
+
+    def fall_of(city):
+        return sum(e["count"] for e in city["species"] if e.get("color_range") in ("red", "orange"))
+
     return {
         "trees": sum(c["total"] for c in cities),
         "cities": len(cities),
         "plates": len(list(PLATES.glob("*.png"))),
         "bay_cities": len(bay),
         "bay_trees": sum(c["total"] for c in bay),
-        "bay_fall": sum(entry["count"] for c in bay for entry in c["species"]
-                        if entry.get("color_range") in ("red", "orange")),
-        "city": {c["slug"]: {
-            "name": c["name"],
-            "total": c["total"],
-            "fall": sum(entry["count"] for entry in c["species"]
-                        if entry.get("color_range") in ("red", "orange")),
-        } for c in bay},
-        "bay_names": sorted(c["name"].replace(" County", "").replace(" City", "") for c in bay),
-        "vancouver_trees": vancouver["total"] if vancouver else 0,
+        "bay_fall": sum(fall_of(c) for c in bay),
+        "city": {c["slug"]: {"name": c["name"], "total": c["total"], "fall": fall_of(c)} for c in bay},
     }
 
 
@@ -79,7 +142,6 @@ def rounded_photo(path: Path, size: tuple[int, int], radius: int = 28,
     image = Image.open(path).convert("RGB")
     if crop_bottom:
         image = image.crop((0, 0, image.width, int(image.height * (1 - crop_bottom))))
-    # cover-crop to the target aspect
     target = size[0] / size[1]
     source = image.width / image.height
     if source > target:
@@ -96,113 +158,123 @@ def rounded_photo(path: Path, size: tuple[int, int], radius: int = 28,
     return out
 
 
-def card(canvas: Image.Image, box: tuple[int, int, int, int], radius: int = 28, fill=CARD) -> None:
+def card(canvas: Image.Image, box: tuple[int, int, int, int], radius: int = 28) -> None:
     shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     ImageDraw.Draw(shadow).rounded_rectangle(
         [box[0] + 4, box[1] + 10, box[2] + 4, box[3] + 10], radius=radius, fill=(60, 40, 20, 45))
     canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(12)))
-    ImageDraw.Draw(canvas).rounded_rectangle(box, radius=radius, fill=fill)
+    ImageDraw.Draw(canvas).rounded_rectangle(box, radius=radius, fill=CARD)
 
 
 def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, width: int) -> list[str]:
     words = text.split()
-    lines, line = [], ""
-    for word in words:
-        probe = f"{line} {word}".strip()
+    if not words:
+        return []
+    lines, line = [], words[0]
+    for word in words[1:]:
+        probe = f"{line} {word}"
         if draw.textlength(probe, font=fnt) <= width:
             line = probe
         else:
             lines.append(line)
             line = word
-    if line:
-        lines.append(line)
+    lines.append(line)
     return lines
 
 
-def brand_block(canvas: Image.Image, x: int, y: int, compact: bool = False) -> None:
-    """TreeColors mark, then the BotaniSense flower with “by BotaniSense”."""
+def brand_footer(canvas: Image.Image, t: dict, y: int = 1176, compact: bool = False) -> None:
+    """TreeColors mark + name, then BotaniSense flower + byline, then the domain."""
     draw = ImageDraw.Draw(canvas)
-    size = 56 if not compact else 44
+    size = 52 if compact else 58
     logo = Image.open(ICON).convert("RGBA").resize((size, size), Image.LANCZOS)
-    canvas.alpha_composite(logo, (x, y))
-    draw.text((x + size + 14, y + (2 if compact else 4)), "TreeColors",
-              font=font(BOLD, 28 if compact else 32), fill=INK)
+    canvas.alpha_composite(logo, (72, y))
+    draw.text((72 + size + 14, y + 2), "TreeColors", font=font(t["bold"], 30), fill=INK)
 
-    flower_size = 26 if not compact else 22
-    flower = Image.open(BOTANISENSE).convert("RGBA")
-    flower.thumbnail((flower_size, flower_size), Image.LANCZOS)
-    line_y = y + (size - 12 if compact else size - 8)
-    canvas.alpha_composite(flower, (x + size + 14, line_y))
-    draw.text((x + size + 14 + flower.width + 8, line_y - 2), "by BotaniSense",
-              font=font(REG, 21 if compact else 23), fill=MUTED)
+    flower = Image.open(FLOWER).convert("RGBA")
+    flower.thumbnail((26, 26), Image.LANCZOS)
+    canvas.alpha_composite(flower, (72 + size + 16, y + 40))
+    draw.text((72 + size + 16 + flower.width + 8, y + 38), t["by_bs"],
+              font=font(t["reg"], 21), fill=MUTED)
+
+    draw.text((72, y + 74), DOMAIN, font=font(t["bold"], 24), fill=ACCENT)
 
 
-def chrome(canvas: Image.Image, handle: bool = True) -> None:
+def botanisense_card(canvas: Image.Image, t: dict, x: int, y: int, width: int = 320) -> None:
+    """Full BotaniSense lockup + one-line purpose, for the empty side of a slide."""
     draw = ImageDraw.Draw(canvas)
-    brand_block(canvas, 72, 1176)
-    if handle:
-        draw.text((72, 1256), "treecolors.botanisense.app", font=font(REG, 22), fill=MUTED)
+    card(canvas, (x, y, x + width, y + 150), radius=22)
+    flower = Image.open(FLOWER).convert("RGBA")
+    flower.thumbnail((62, 62), Image.LANCZOS)
+    canvas.alpha_composite(flower, (x + 20, y + 20))
+    draw.text((x + 96, y + 24), "BotaniSense", font=font(t["bold"], 26), fill=INK)
+    for i, line in enumerate(wrap(draw, t["bs_tagline"], font(t["reg"], 19), width - 116)):
+        draw.text((x + 96, y + 62 + i * 26), line, font=font(t["reg"], 19), fill=MUTED)
 
 
-def _share_bar(canvas, x, y, width, height, share, label):
-    draw = ImageDraw.Draw(canvas)
-    draw.rounded_rectangle([x, y, x + width, y + height], radius=height // 2, fill=(228, 220, 203))
-    turned = int(width * share)
-    if turned > height:
-        draw.rounded_rectangle([x, y, x + turned, y + height], radius=height // 2, fill=(153, 28, 106))
-    if label:
-        draw.text((x, y - 34), label, font=font(BOLD, 24), fill=INK)
-
-
-def build_hero(info: dict) -> None:
-    """The contrast that makes a map necessary, with the numbers drawn."""
+def build_contrast(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1350
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
-    draw.text((72, 80), "BAY AREA · AUTUMN COLOUR", font=font(BOLD, 24), fill=ACCENT)
-    draw.text((72, 122), "Same bay.", font=font(BOLD, 76), fill=INK)
-    draw.text((72, 202), "Three times the colour.", font=font(BOLD, 74), fill=INK)
-    draw.text((72, 296), "Share of street trees that change colour in autumn.",
-              font=font(REG, 27), fill=MUTED)
+    draw.text((72, 80), t["s1_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
+    draw.text((72, 122), t["s1_h1"][0], font=font(t["bold"], 72), fill=INK)
+    draw.text((72, 200), t["s1_h1"][1], font=font(t["bold"], 72), fill=INK)
+    draw.text((72, 274), t["s1_sub"], font=font(t["reg"], 25), fill=MUTED)
 
-    panels = [
-        ("map-all-sf.png", "San Francisco", info["city"]["sf"]),
-        ("cmp-cupertino.png", "Cupertino", info["city"]["cupertino"]),
-    ]
-    y = 356
+    botanisense_card(canvas, t, 636, 88, width=372)
+
+    panels = [("map-all-sf.png", t["s1_left"], info["city"]["sf"]),
+              ("cmp-cupertino.png", t["s1_right"], info["city"]["cupertino"])]
+    y = 318
     for file, label, city in panels:
-        photo = rounded_photo(SHOTS / file, (936, 300), radius=22)
+        photo = rounded_photo(SHOTS / file, (936, 250), radius=22)
         canvas.alpha_composite(photo, (72, y))
         share = city["fall"] / city["total"]
-        draw.text((72, y + 316), f"{label} — {share * 100:.0f}% turn",
-                  font=font(BOLD, 30), fill=INK)
-        draw.text((560, y + 320), f"{city['fall']:,} of {city['total']:,} trees",
-                  font=font(REG, 23), fill=MUTED)
-        _share_bar(canvas, 72, y + 372, 936, 26, share, "")
-        y += 452
+        draw.text((72, y + 262), f"{label} — {t['s1_turn'].format(share=share * 100)}",
+                  font=font(t["bold"], 30), fill=INK)
+        draw.text((72, y + 300), t["s1_count"].format(fall=city["fall"], total=city["total"]),
+                  font=font(t["reg"], 23), fill=MUTED)
+        bar_y, bar_w = y + 336, 936
+        draw.rounded_rectangle([72, bar_y, 72 + bar_w, bar_y + 22], radius=11, fill=(228, 220, 203))
+        draw.rounded_rectangle([72, bar_y, 72 + max(22, int(bar_w * share)), bar_y + 22],
+                               radius=11, fill=(153, 28, 106))
+        y += 404
 
-    draw.text((72, 1240), "A tree “turns” when its leaves go red, purple or yellow before falling.",
-              font=font(REG, 22), fill=MUTED)
-    draw.text((72, 1270), "Green trees stay green all winter — the map lets you skip them.",
-              font=font(REG, 22), fill=MUTED)
-    canvas.convert("RGB").save(OUT / "01-contrast.png")
+    draw.text((72, 1096), t["s1_note1"], font=font(t["reg"], 21), fill=MUTED)
+    draw.text((72, 1126), t["s1_note2"], font=font(t["reg"], 21), fill=MUTED)
+    brand_footer(canvas, t, y=1162, compact=True)
+    canvas.convert("RGB").save(out / "01-contrast.png")
 
 
-def build_colours() -> None:
+def build_species(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1350
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
-    draw.text((72, 96), "READ IT LIKE A COLOUR MAP", font=font(BOLD, 26), fill=ACCENT)
-    draw.text((72, 146), "What to look for", font=font(BOLD, 66), fill=INK)
+    draw.text((72, 80), t["s2_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
+    draw.text((72, 122), t["s2_h1"], font=font(t["bold"], 56), fill=INK)
 
-    rows = [
-        ("#cc0000", "#800080", "These turn", "Red through purple: the trees worth a walk"),
-        ("#ffa500", None, "Ginkgo", "Every ginkgo turns the same yellow"),
-        ("#8b4513", "#2b2b2b", "Turns, but muted", "Browns and dark tones, later in the season"),
-        ("#2d5016", "#4caf50", "Skip these", "Evergreens stay green all winter"),
-    ]
-    y = 330
-    for left, right, title, note in rows:
+    x0, y0, size, gap, row_h = 72, 232, 372, 72, 462
+    for index, (file, name, colour) in enumerate(t["s2_items"]):
+        col, row = index % 2, index // 2
+        x = x0 + col * (size + gap)
+        y = y0 + row * row_h
+        card(canvas, (x - 8, y - 8, x + size + 8, y + size + 8), radius=26)
+        plate = rounded_photo(PLATES / file, (size, size), radius=20, crop_bottom=0.11)
+        canvas.alpha_composite(plate, (x, y))
+        draw.text((x, y + size + 12), name, font=font(t["bold"], 28), fill=INK)
+        draw.text((x, y + size + 48), colour, font=font(t["reg"], 22), fill=MUTED)
+    brand_footer(canvas, t, y=1180, compact=True)
+    canvas.convert("RGB").save(out / "02-species.png")
+
+
+def build_legend(info: dict, t: dict, out: Path) -> None:
+    W, H = 1080, 1350
+    canvas = Image.new("RGBA", (W, H), CREAM + (255,))
+    draw = ImageDraw.Draw(canvas)
+    draw.text((72, 88), t["s3_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
+    draw.text((72, 136), t["s3_h1"], font=font(t["bold"], 62), fill=INK)
+
+    y = 300
+    for left, right, title, note in t["s3_items"]:
         card(canvas, (72, y, 1008, y + 190), radius=24)
         swatch = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
         sd = ImageDraw.Draw(swatch)
@@ -210,173 +282,118 @@ def build_colours() -> None:
         if right:
             sd.pieslice([0, 0, 96, 96], start=270, end=90, fill=right)
         canvas.alpha_composite(swatch, (116, y + 47))
-        draw.text((252, y + 44), title, font=font(BOLD, 40), fill=INK)
-        draw.text((252, y + 100), note, font=font(REG, 27), fill=MUTED)
-        y += 214
-    chrome(canvas)
-    canvas.convert("RGB").save(OUT / "03-legend.png")
+        draw.text((252, y + 44), title, font=font(t["bold"], 38), fill=INK)
+        draw.text((252, y + 100), note, font=font(t["reg"], 26), fill=MUTED)
+        y += 210
+    brand_footer(canvas, t, y=1176, compact=True)
+    canvas.convert("RGB").save(out / "03-legend.png")
 
 
-def build_species(info: dict) -> None:
+def build_region(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1350
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
-    draw.text((72, 96), "WHAT YOU WILL SEE", font=font(BOLD, 26), fill=ACCENT)
-    draw.text((72, 146), "Four that carry the season", font=font(BOLD, 54), fill=INK)
+    draw.text((72, 80), t["s4_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
+    draw.text((72, 122), t["s4_h1"], font=font(t["bold"], 58), fill=INK)
+    draw.text((72, 196), t["s4_sub"], font=font(t["reg"], 25), fill=MUTED)
 
-    picks = [
-        ("pistacia_chinensis.png", "Chinese pistache", "scarlet to orange"),
-        ("liquidambar_styraciflua.png", "Sweetgum", "wine red, purple"),
-        ("ginkgo_biloba.png", "Ginkgo", "one clean yellow"),
-        ("lagerstroemia_indica.png", "Crape myrtle", "late, deep red"),
-    ]
-    x0, y0, size, gap, row_h = 72, 232, 400, 64, 508
-    for index, (file, name, colour) in enumerate(picks):
-        col, row = index % 2, index // 2
-        x = x0 + col * (size + gap)
-        y = y0 + row * row_h
-        card(canvas, (x - 8, y - 8, x + size + 8, y + size + 8), radius=26)
-        plate = rounded_photo(PLATES / file, (size, size), radius=20, crop_bottom=0.11)
-        canvas.alpha_composite(plate, (x, y))
-        draw.text((x, y + size + 12), name, font=font(BOLD, 28), fill=INK)
-        draw.text((x, y + size + 46), colour, font=font(REG, 22), fill=MUTED)
-    logo = Image.open(ICON).convert("RGBA").resize((52, 52), Image.LANCZOS)
-    canvas.alpha_composite(logo, (72, 1252))
-    draw.text((136, 1262), "Tree Species Map", font=font(BOLD, 26), fill=INK)
-    draw.text((136, 1296), "treecolors.botanisense.app", font=font(REG, 21), fill=MUTED)
-    canvas.convert("RGB").save(OUT / "02-species.png")
+    botanisense_card(canvas, t, 636, 88, width=372)
+    photo = rounded_photo(SHOTS / "pamv-area.png", (936, 720), radius=24)
+    canvas.alpha_composite(photo, (72, 254))
+    pa = info["city"]["palo_alto"]
+    mv = info["city"]["mountain_view_ca"]
+    draw.text((72, 992), f"Palo Alto — {pa['fall']:,} / {pa['total']:,}",
+              font=font(t["bold"], 24), fill=INK)
+    draw.text((560, 992), f"Mountain View — {mv['fall']:,} / {mv['total']:,}",
+              font=font(t["bold"], 24), fill=INK)
+    brand_footer(canvas, t, y=1120, compact=True)
+    canvas.convert("RGB").save(out / "04-region.png")
 
 
-def build_tap() -> None:
+def build_city(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1350
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
-    draw.text((72, 96), "HOW TO USE IT", font=font(BOLD, 26), fill=ACCENT)
-    draw.text((72, 146), "Three steps to a colour walk", font=font(BOLD, 52), fill=INK)
-
-    shot = Image.open(SHOTS / "ui-sheet-mobile.png").convert("RGB")
-    shot = shot.crop((0, 560, shot.width, 1420))
-    shot = shot.resize((560, int(560 * shot.height / shot.width)), Image.LANCZOS).convert("RGBA")
-    card(canvas, (72, 280, 72 + shot.width + 36, 280 + shot.height + 36), radius=28)
-    canvas.alpha_composite(shot, (90, 298))
-
-    x = 690
-    items = [
-        ("1", "Open the map", "no account, no app"),
-        ("2", "Zoom to your block", "purple dots turn; green ones stay"),
-        ("3", "Tap a tree", "species, plate, photos"),
-    ]
-    y = 330
-    for num, title, note in items:
-        draw.ellipse([x, y + 2, x + 36, y + 38], outline=ACCENT, width=3)
-        draw.text((x + 18, y + 20), num, font=font(BOLD, 21), fill=ACCENT, anchor="mm")
-        yy = y
-        for line in wrap(draw, title, font(BOLD, 25), 300):
-            draw.text((x + 50, yy), line, font=font(BOLD, 25), fill=INK)
-            yy += 30
-        for line in wrap(draw, note, font(REG, 21), 290):
-            draw.text((x + 50, yy + 4), line, font=font(REG, 21), fill=MUTED)
-            yy += 27
-        y = max(y + 110, yy + 60)
-    chrome(canvas)
-    
+    draw.text((72, 80), t["s6_eyebrow"], font=font(t["bold"], 24), fill=ACCENT)
+    draw.text((72, 122), t["s6_h1"], font=font(t["bold"], 70), fill=INK)
+    mv = info["city"]["mountain_view_ca"]
+    draw.text((72, 206), f"{mv['total']:,} trees · {mv['fall']:,} turn ({mv['fall'] / mv['total'] * 100:.0f}%)",
+              font=font(t["reg"], 26), fill=MUTED)
+    botanisense_card(canvas, t, 636, 88, width=372)
+    photo = rounded_photo(SHOTS / "mv-close.png", (936, 720), radius=26)
+    canvas.alpha_composite(photo, (72, 268))
+    draw.text((72, 1004), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
+    brand_footer(canvas, t, y=1124, compact=True)
+    canvas.convert("RGB").save(out / "05-mountainview.png")
 
 
-def build_cities(info: dict) -> None:
-    """Coverage as one wide map plus a few example neighbourhoods."""
+def build_backcover(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1350
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
-    draw.text((72, 80), "AROUND THE BAY", font=font(BOLD, 24), fill=ACCENT)
-    draw.text((72, 122), "Some cities, some gaps", font=font(BOLD, 60), fill=INK)
-    draw.text((72, 196), "Every city inventory we could find, drawn where the trees actually stand.",
-              font=font(REG, 25), fill=MUTED)
-    photo = rounded_photo(SHOTS / "bay-new.png", (936, 800), radius=24)
-    canvas.alpha_composite(photo, (72, 262))
-    draw.text((72, 1086), "San Francisco · Oakland · Palo Alto · Mountain View · Cupertino · San Jose · Fremont",
-              font=font(REG, 22), fill=INK)
-    draw.text((72, 1122), f"{info['bay_trees']:,} trees in the Bay Area · {info['bay_fall']:,} of them change colour",
-              font=font(REG, 22), fill=MUTED)
-    brand_block(canvas, 72, 1180, compact=True)
-    draw.text((72, 1258), "treecolors.botanisense.app", font=font(REG, 21), fill=MUTED)
-    canvas.convert("RGB").save(OUT / "04-coverage.png")
+    draw.text((72, 76), DOMAIN.upper(), font=font(t["bold"], 26), fill=ACCENT)
+    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 560), radius=28)
+    canvas.alpha_composite(photo, (72, 132))
+    draw.text((72, 736), t["s5_h1"][0], font=font(t["bold"], 66), fill=INK)
+    draw.text((72, 810), t["s5_h1"][1], font=font(t["bold"], 66), fill=ACCENT)
+    draw.text((72, 900), t["s5_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 27), fill=MUTED)
+    draw.text((72, 940), t["s5_free"], font=font(t["reg"], 25), fill=MUTED)
+    botanisense_card(canvas, t, 640, 700, width=368)
+    brand_footer(canvas, t, y=1060)
+    canvas.convert("RGB").save(out / "06-backcover.png")
 
 
-def build_mountainview(info: dict) -> None:
-    """A city close-up: what a neighbourhood actually looks like on the map."""
-    W, H = 1080, 1350
-    canvas = Image.new("RGBA", (W, H), CREAM + (255,))
-    draw = ImageDraw.Draw(canvas)
-    draw.text((72, 80), "CITY CLOSE-UP", font=font(BOLD, 24), fill=ACCENT)
-    draw.text((72, 122), "Mountain View", font=font(BOLD, 72), fill=INK)
-    mv = info["city"].get("mountain_view_ca")
-    if mv:
-        share = mv["fall"] / mv["total"] * 100
-        draw.text((72, 208), f"{mv['total']:,} street trees · {mv['fall']:,} of them turn ({share:.0f}%)",
-                  font=font(REG, 26), fill=MUTED)
-    photo = rounded_photo(SHOTS / "mv-close.png", (936, 780), radius=26)
-    canvas.alpha_composite(photo, (72, 276))
-    draw.text((72, 1076), "Purple dots change colour. Green ones stay green.",
-              font=font(REG, 24), fill=MUTED)
-    chrome(canvas)
-    canvas.convert("RGB").save(OUT / "06-mountainview.png")
-
-
-def build_backcover(info: dict) -> None:
-    """Last slide / share card: a real map, the promise, the address."""
-    W, H = 1080, 1350
-    canvas = Image.new("RGBA", (W, H), CREAM + (255,))
-    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 620), radius=30)
-    canvas.alpha_composite(photo, (72, 190))
-    draw = ImageDraw.Draw(canvas)
-    draw.text((72, 92), "TREECOLORS.BOTANISENSE.APP", font=font(BOLD, 22), fill=ACCENT)
-    draw.text((72, 878), "Find the colour.", font=font(BOLD, 72), fill=INK)
-    draw.text((72, 960), "Walk to it.", font=font(BOLD, 72), fill=ACCENT)
-    draw.text((72, 1064), f"{info['bay_fall']:,} Bay Area trees that turn, each one mapped",
-              font=font(REG, 28), fill=MUTED)
-    draw.text((72, 1112), "Free · no account · works on your phone",
-              font=font(REG, 26), fill=MUTED)
-    brand_block(canvas, 72, 1178)
-    canvas.convert("RGB").save(OUT / "05-backcover.png")
-
-
-def build_story(info: dict) -> None:
-    """9:16 story / reel cover."""
+def build_story(info: dict, t: dict, out: Path) -> None:
     W, H = 1080, 1920
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
-    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 900), radius=36)
-    canvas.alpha_composite(photo, (72, 380))
+    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 860), radius=36)
+    canvas.alpha_composite(photo, (72, 360))
     draw = ImageDraw.Draw(canvas)
-    logo = Image.open(ICON).convert("RGBA").resize((110, 110), Image.LANCZOS)
-    canvas.alpha_composite(logo, (72, 120))
-    draw.text((206, 130), "TreeColors", font=font(BOLD, 46), fill=INK)
-    flower = Image.open(BOTANISENSE).convert("RGBA")
-    flower.thumbnail((44, 44), Image.LANCZOS)
-    canvas.alpha_composite(flower, (206, 190))
-    draw.text((206 + flower.width + 12, 196), "by BotaniSense", font=font(REG, 28), fill=MUTED)
 
-    draw.text((72, 1330), "Find the colour.", font=font(BOLD, 74), fill=INK)
-    draw.text((72, 1418), "Walk to it.", font=font(BOLD, 74), fill=ACCENT)
-    draw.text((72, 1530), f"Bay Area · {info['bay_fall']:,} trees that turn",
-              font=font(REG, 34), fill=MUTED)
-    draw.rounded_rectangle([72, 1650, 600, 1740], radius=45, fill=ACCENT)
-    draw.text((116, 1676), "Link in bio", font=font(BOLD, 36), fill=(255, 255, 255))
-    canvas.convert("RGB").save(OUT / "story.png")
+    logo = Image.open(ICON).convert("RGBA").resize((100, 100), Image.LANCZOS)
+    canvas.alpha_composite(logo, (72, 120))
+    draw.text((192, 132), "TreeColors", font=font(t["bold"], 44), fill=INK)
+    flower = Image.open(FLOWER).convert("RGBA")
+    flower.thumbnail((40, 40), Image.LANCZOS)
+    canvas.alpha_composite(flower, (192, 186))
+    draw.text((192 + flower.width + 10, 190), t["by_bs"], font=font(t["reg"], 26), fill=MUTED)
+
+    draw.text((72, 1290), t["story_h1"][0], font=font(t["bold"], 70), fill=INK)
+    draw.text((72, 1372), t["story_h1"][1], font=font(t["bold"], 70), fill=ACCENT)
+    draw.text((72, 1476), t["story_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 32), fill=MUTED)
+    draw.text((72, 1536), DOMAIN, font=font(t["bold"], 34), fill=ACCENT)
+    draw.rounded_rectangle([72, 1636, 600, 1726], radius=45, fill=ACCENT)
+    draw.text((116, 1662), t["story_cta"], font=font(t["bold"], 34), fill=(255, 255, 255))
+    botanisense_card(canvas, t, 72, 1760, width=420)
+    canvas.convert("RGB").save(out / "story.png")
+
+
+def build(lang: str) -> Path:
+    t = COPY[lang]
+    info = stats()
+    out = ROOT / "promo" / "instagram" if lang == "en" else ROOT / "promo" / "instagram" / "zh"
+    out.mkdir(parents=True, exist_ok=True)
+    build_contrast(info, t, out)
+    build_species(info, t, out)
+    build_legend(info, t, out)
+    build_region(info, t, out)
+    build_city(info, t, out)
+    build_backcover(info, t, out)
+    build_story(info, t, out)
+    return out
 
 
 def main() -> int:
-    OUT.mkdir(parents=True, exist_ok=True)
-    info = stats()
-    build_hero(info)
-    build_colours()
-    build_species(info)
-    build_tap()
-    build_cities(info)
-    build_mountainview(info)
-    build_backcover(info)
-    build_story(info)
-    for path in sorted(OUT.glob("*.png")):
-        print(f"  {path.name}  {path.stat().st_size // 1024} KB")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lang", choices=["en", "zh", "both"], default="both")
+    args = parser.parse_args()
+    langs = ["en", "zh"] if args.lang == "both" else [args.lang]
+    for lang in langs:
+        out = build(lang)
+        files = sorted(out.glob("*.png"))
+        print(f"{lang}: {out.relative_to(ROOT)} — {len(files)} files")
+        for path in files:
+            print(f"   {path.name:22s} {path.stat().st_size // 1024:5d} KB")
     return 0
 
 
