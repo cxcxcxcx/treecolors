@@ -642,6 +642,31 @@ MOUNTAIN_VIEW_CA = CitySpec(
 )
 
 
+MILPITAS_CA = CitySpec(
+    slug="milpitas_ca",
+    name="Milpitas, CA",
+    state="CA",
+    bbox=(-122.05, 37.36, -121.75, 37.50),
+    sources=(
+        SourceSpec(
+            slug="city_trees",
+            name="City of Milpitas Street Tree Inventory",
+            url=(
+                "https://services8.arcgis.com/OPmRdssd8jj0bT5H/arcgis/rest/services/"
+                "Trees/FeatureServer/0"
+            ),
+            where="1=1",
+            out_fields=("Species", "Name", "FACILITYID", "CONDITION", "OBJECTID"),
+            species_fields=("Species",),
+            common_fields=("Name",),
+            fixed_city="Milpitas, CA",
+            homepage="https://www.ci.milpitas.ca.gov/",
+        ),
+    ),
+    attribution="City of Milpitas GIS",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -664,6 +689,7 @@ CITIES: tuple[CitySpec, ...] = (
     MISSISSAUGA_ON,
     HAMILTON_ON,
     MOUNTAIN_VIEW_CA,
+    MILPITAS_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}

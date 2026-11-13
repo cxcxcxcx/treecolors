@@ -33,6 +33,7 @@ shown in the app and check the terms of every source you redistribute.
 | Mississauga, ON | [City Owned Tree Inventory](https://data.mississauga.ca/) | City of Mississauga open data terms |
 | Hamilton, ON | [Public Tree Inventory](https://open.hamilton.ca/) | City of Hamilton open data terms |
 | Mountain View, CA | [City Tree Inventory](https://maps.mountainview.gov/arcgis/rest/services/Public/Trees/MapServer/0) (ArcGIS; vacant planting pits excluded) | City of Mountain View GIS terms |
+| Milpitas, CA | [Street Tree Inventory](https://services8.arcgis.com/OPmRdssd8jj0bT5H/arcgis/rest/services/Trees/FeatureServer/0) (ArcGIS) | City of Milpitas GIS terms |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` sources | see individual portal terms |
 
 ## Species annotations
