@@ -32,9 +32,10 @@ Carousel order: 01 → 02 → 03 → 04 → 05, back cover last (or as the share
 - Left: a soft cream plate holding the TreeColors mark, **TreeColors** and the
   **full domain** in accent colour. This is the only highlighted element —
   小红书 cannot carry links, so the domain has to be readable.
-- Right: a quiet, right-aligned byline — small BotaniSense flower +
-  **by BotaniSense**. No card, no box; the product should stay the loudest thing
-  on the slide.
+- Right: the positioning line in two short lines (EN *AI that is actually useful
+  / for plant lovers.*, 中文 *让 AI 对植物爱好者 / 真正有用。*) with the small
+  flower + **by BotaniSense** underneath, all right-aligned. No card, no box —
+  the product stays the loudest thing on the slide.
 - No "map" in headlines, no city-count selling points.
 
 ## Regenerating the screenshots

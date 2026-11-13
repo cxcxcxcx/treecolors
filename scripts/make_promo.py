@@ -74,7 +74,7 @@ COPY = {
         "story_h1": ["Find the colour.", "Walk to it."],
         "story_sub": "Bay Area · {fall:,} trees that turn",
         "story_cta": "Link in bio",
-        "bs_tagline": "AI that is actually useful for plant lovers.",
+        "bs_tagline": ["AI that is actually useful", "for plant lovers."],
         "by_bs": "by BotaniSense",
     },
     "zh": {
@@ -112,7 +112,7 @@ COPY = {
         "story_h1": ["找秋色。", "走过去。"],
         "story_sub": "湾区 · {fall:,} 棵会变色",
         "story_cta": "主页链接",
-        "bs_tagline": "让 AI 对植物爱好者真正有用。",
+        "bs_tagline": ["让 AI 对植物爱好者", "真正有用。"],
         "by_bs": "由 BotaniSense 出品",
     },
 }
@@ -193,38 +193,49 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, width: int) -> list[str]:
     return lines
 
 
-def brand_footer(canvas: Image.Image, t: dict, y: int = 1170, compact: bool = False) -> None:
-    """Bottom bar: TreeColors on the left (highlighted), attribution on the right.
+def brand_footer(canvas: Image.Image, t: dict, y: int = 1192) -> None:
+    """Bottom bar: TreeColors plate on the left, BotaniSense slogan + byline right.
 
-    The product gets the emphasis; "by BotaniSense" is a quiet byline at the
-    same baseline, right-aligned to the slide margin — no white card of its own.
+    The product keeps the highlight; the attribution carries the one-line
+    positioning ("AI that is actually useful for plant lovers") but stays quiet.
     """
     draw = ImageDraw.Draw(canvas)
-    icon_size = 50 if compact else 56
+    icon = 54
+    pad = 18
+    name_font = font(t["bold"], 26)
+    domain_font = font(t["bold"], 20)
 
-    # soft plate behind the product name only, sized to the text it holds
-    name_font = font(t["bold"], 27)
-    domain_font = font(t["bold"], 21)
-    text_x = 72 + icon_size + 12
-    plate_right = text_x + max(canvas.width and draw.textlength("TreeColors", font=name_font),
-                               draw.textlength(DOMAIN, font=domain_font)) + 18
+    # left plate, sized to its own contents with even padding
+    text_x = 72 + pad + icon + 14
+    plate_right = text_x + max(draw.textlength("TreeColors", font=name_font),
+                               draw.textlength(DOMAIN, font=domain_font)) + pad
     plate = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     ImageDraw.Draw(plate).rounded_rectangle(
-        [58, y - 12, plate_right, y + icon_size + 4], radius=16, fill=(255, 252, 245, 235))
+        [72, y, plate_right, y + pad * 2 + icon], radius=16, fill=(255, 252, 245, 235))
     canvas.alpha_composite(plate.filter(ImageFilter.GaussianBlur(0.4)))
 
-    logo = Image.open(ICON).convert("RGBA").resize((icon_size, icon_size), Image.LANCZOS)
-    canvas.alpha_composite(logo, (72, y))
-    draw.text((text_x, y - 2), "TreeColors", font=name_font, fill=INK)
-    draw.text((text_x, y + 32), DOMAIN, font=domain_font, fill=ACCENT)
+    logo = Image.open(ICON).convert("RGBA").resize((icon, icon), Image.LANCZOS)
+    canvas.alpha_composite(logo, (72 + pad, y + pad))
+    draw.text((text_x, y + pad + 1), "TreeColors", font=name_font, fill=INK)
+    draw.text((text_x, y + pad + 34), DOMAIN, font=domain_font, fill=ACCENT)
+
+    # right block: slogan above, byline below, both right-aligned
+    tag_font = font(t["reg"], 18)
+    right = 1008
+    ty = y + pad - 6
+    for line in t["bs_tagline"]:
+        w = draw.textlength(line, font=tag_font)
+        draw.text((right - w, ty), line, font=tag_font, fill=MUTED)
+        ty += 24
 
     flower = Image.open(FLOWER).convert("RGBA")
     flower.thumbnail((22, 22), Image.LANCZOS)
-    byline = f"by BotaniSense"
-    text_w = draw.textlength(byline, font=font(t["reg"], 20))
-    x = 1008 - (flower.width + 8 + text_w)
-    canvas.alpha_composite(flower, (int(x), y + 10))
-    draw.text((x + flower.width + 8, y + 8), byline, font=font(t["reg"], 20), fill=MUTED)
+    byline = t["by_bs"]
+    by_font = font(t["reg"], 20)
+    w = draw.textlength(byline, font=by_font)
+    bx = right - (flower.width + 8 + w)
+    canvas.alpha_composite(flower, (int(bx), ty + 2))
+    draw.text((bx + flower.width + 8, ty), byline, font=by_font, fill=INK)
 
 
 def build_contrast(info: dict, t: dict, out: Path) -> None:
@@ -262,7 +273,7 @@ def build_contrast(info: dict, t: dict, out: Path) -> None:
         for line in wrap(draw, note, font(t["reg"], 21), 540):
             draw.text((72, note_y), line, font=font(t["reg"], 21), fill=MUTED)
             note_y += 28
-    brand_footer(canvas, t, y=1186, compact=True)
+    brand_footer(canvas, t)
     canvas.convert("RGB").save(out / "01-contrast.png")
 
 
@@ -283,7 +294,7 @@ def build_species(info: dict, t: dict, out: Path) -> None:
         canvas.alpha_composite(plate, (x, y))
         draw.text((x, y + size + 12), name, font=font(t["bold"], 28), fill=INK)
         draw.text((x, y + size + 48), colour, font=font(t["reg"], 22), fill=MUTED)
-    brand_footer(canvas, t, y=1180, compact=True)
+    brand_footer(canvas, t)
     canvas.convert("RGB").save(out / "02-species.png")
 
 
@@ -306,7 +317,7 @@ def build_legend(info: dict, t: dict, out: Path) -> None:
         draw.text((252, y + 44), title, font=font(t["bold"], 38), fill=INK)
         draw.text((252, y + 100), note, font=font(t["reg"], 26), fill=MUTED)
         y += 210
-    brand_footer(canvas, t, y=1176, compact=True)
+    brand_footer(canvas, t)
     canvas.convert("RGB").save(out / "03-legend.png")
 
 
@@ -326,7 +337,7 @@ def build_region(info: dict, t: dict, out: Path) -> None:
               font=font(t["bold"], 24), fill=INK)
     draw.text((72, 1118), f"{t['s4_mv']} — {mv['fall']:,} / {mv['total']:,}",
               font=font(t["bold"], 24), fill=INK)
-    brand_footer(canvas, t, y=1178, compact=True)
+    brand_footer(canvas, t)
     canvas.convert("RGB").save(out / "04-region.png")
 
 
@@ -340,10 +351,10 @@ def build_city(info: dict, t: dict, out: Path) -> None:
     draw.text((72, 206), t["s6_stats"].format(total=mv["total"], fall=mv["fall"],
                                               pct=mv["fall"] / mv["total"] * 100),
               font=font(t["reg"], 26), fill=MUTED)
-    photo = rounded_photo(SHOTS / "mv-close.png", (936, 780), radius=26)
-    canvas.alpha_composite(photo, (72, 262))
-    draw.text((72, 1058), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
-    brand_footer(canvas, t, y=1150, compact=True)
+    photo = rounded_photo(SHOTS / "mv-close.png", (936, 840), radius=26)
+    canvas.alpha_composite(photo, (72, 258))
+    draw.text((72, 1116), t["s6_note"], font=font(t["reg"], 24), fill=MUTED)
+    brand_footer(canvas, t)
     canvas.convert("RGB").save(out / "05-mountainview.png")
 
 
@@ -352,12 +363,12 @@ def build_backcover(info: dict, t: dict, out: Path) -> None:
     canvas = Image.new("RGBA", (W, H), CREAM + (255,))
     draw = ImageDraw.Draw(canvas)
     draw.text((72, 76), DOMAIN.upper(), font=font(t["bold"], 26), fill=ACCENT)
-    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 560), radius=28)
+    photo = rounded_photo(SHOTS / "map-all-sj.png", (936, 640), radius=28)
     canvas.alpha_composite(photo, (72, 132))
-    draw.text((72, 736), t["s5_h1"][0], font=fit_text(draw, t["s5_h1"][0], t["bold"], 66, 540), fill=INK)
-    draw.text((72, 810), t["s5_h1"][1], font=fit_text(draw, t["s5_h1"][1], t["bold"], 66, 540), fill=ACCENT)
-    draw.text((72, 900), t["s5_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 27), fill=MUTED)
-    draw.text((72, 940), t["s5_free"], font=font(t["reg"], 25), fill=MUTED)
+    draw.text((72, 872), t["s5_h1"][0], font=fit_text(draw, t["s5_h1"][0], t["bold"], 66, 900), fill=INK)
+    draw.text((72, 946), t["s5_h1"][1], font=fit_text(draw, t["s5_h1"][1], t["bold"], 66, 900), fill=ACCENT)
+    draw.text((72, 1036), t["s5_sub"].format(fall=info["bay_fall"]), font=font(t["reg"], 27), fill=MUTED)
+    draw.text((72, 1076), t["s5_free"], font=font(t["reg"], 25), fill=MUTED)
     brand_footer(canvas, t, y=1176)
     canvas.convert("RGB").save(out / "06-backcover.png")
 
