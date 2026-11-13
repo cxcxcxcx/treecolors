@@ -79,29 +79,28 @@ Free, no account → link in bio.
 ### 中文（小红书）
 
 ```
-湾区看秋色，先看这张图
+湾区这些城市的行道树，都标在一张图上
 
-这个工具就做一件事：把湾区街道上的树，按颜色标在地图上。
+San Francisco、Berkeley、Concord、Fremont、San Leandro、Palo Alto、
+Mountain View、Cupertino、San Jose——9 个城市，57 万棵树，每条街都能查到。
 
-紫红 = 秋天会变色、颜色好看的树
-橙 = 银杏，整条街一起变黄
-绿 = 常绿，冬天也是绿的，可以跳过
+颜色这样读：
+紫红 / 红 = 秋天会变色、颜色好看的
+橙 = 银杏，一整条街一起变黄
+绿 = 常绿，冬天也绿，可以跳过
 褐 = 其他落叶树，颜色没那么出挑
 
-点开任意一棵树，能看到它的具体信息：树种、叶片图示、实拍照片、还有市政府自己的记录。
-常见树种基本都配了一张简单的图示，方便你出门对照着认——不是只挑几种，是尽量把常见的都覆盖到。
+点开任意一棵树，能看到树种、叶片图示、实拍照片，还有市政府自己的记录。
+常见树种基本都配了图示，出门可以对照着认。
 
-今年比去年：
-· 城市更多了，比如 Mountain View
-· 树种的展示更完整，界面也重新做过
-
-明年春天会再加一个「去哪看花」。
+今年比去年：城市更多了（比如 Mountain View），树种展示更完整，界面也重做过。
+明年春天会再加「去哪看花」。
 
 免费，不用注册：treecolors.botanisense.app
 
-另外，BotaniSense 的 App 也上线了，可以帮植物爱好者整理自己的植物照片，应用商店可以下载，细节以后再说。
+BotaniSense 的 App 也上线了，可以帮植物爱好者整理自己的植物照片，应用商店可下载。
 
-#湾区 #MountainView #SanFrancisco #Cupertino #湾区周末 #赏秋 #秋色 #城市漫步 #行道树
+#湾区 #MountainView #SanFrancisco #Cupertino #SanJose #湾区周末 #赏秋 #秋色 #城市漫步 #行道树
 ```
 
 ## Numbers used by the art (from `web/species_stats.json`)

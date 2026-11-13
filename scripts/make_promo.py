@@ -41,6 +41,7 @@ BAY_AREA = {"berkeley", "concordca", "cupertino", "fremontca", "palo_alto",
 COPY = {
     "en": {
         "bold": FONT_EN_BOLD, "reg": FONT_EN,
+        "latin_bold": FONT_EN_BOLD, "latin_reg": FONT_EN,
         "s1_eyebrow": "BAY AREA · AUTUMN COLOUR",
         "s1_h1": ["Same bay.", "Three times the colour."],
         "s1_sub": "Share of street trees that change colour in autumn.",
@@ -74,11 +75,12 @@ COPY = {
         "story_h1": ["Find the colour.", "Walk to it."],
         "story_sub": "Bay Area · {fall:,} trees that turn",
         "story_cta": "Link in bio",
-        "bs_tagline": ["AI that is actually useful", "for plant lovers."],
+        "bs_tagline": ["a sense for plants"],
         "by_bs": "by BotaniSense",
     },
     "zh": {
         "bold": FONT_ZH_BOLD, "reg": FONT_ZH,
+        "latin_bold": FONT_EN_BOLD, "latin_reg": FONT_EN,
         "s1_eyebrow": "湾区 · 秋色",
         "s1_h1": ["同一个湾区，", "三倍的秋色。"],
         "s1_sub": "行道树里，秋天会变色的比例。",
@@ -112,7 +114,7 @@ COPY = {
         "story_h1": ["找秋色。", "走过去。"],
         "story_sub": "湾区 · {fall:,} 棵会变色",
         "story_cta": "主页链接",
-        "bs_tagline": ["让 AI 对植物爱好者", "真正有用。"],
+        "bs_tagline": ["a sense for plants"],
         "by_bs": "由 BotaniSense 出品",
     },
 }
@@ -196,15 +198,15 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, fnt, width: int) -> list[str]:
 def brand_footer(canvas: Image.Image, t: dict, y: int = 1192) -> None:
     """Bottom bar: TreeColors plate on the left, BotaniSense slogan + byline right."""
     draw = ImageDraw.Draw(canvas)
-    icon = 52
-    pad = 16
-    name_font = font(t["bold"], 25)
-    domain_font = font(t["bold"], 19)
+    icon = 58
+    pad = 18
+    name_font = font(t["latin_bold"], 27)
+    domain_font = font(t["latin_bold"], 21)
 
     text_x = 72 + pad + icon + 13
     name_y = y + pad - 1
-    domain_y = name_y + 30
-    text_bottom = domain_y + 23
+    domain_y = name_y + 33
+    text_bottom = domain_y + 25
     plate_bottom = max(y + pad + icon, text_bottom) + pad
     plate_right = text_x + max(draw.textlength("TreeColors", font=name_font),
                                draw.textlength(DOMAIN, font=domain_font)) + pad
@@ -220,7 +222,7 @@ def brand_footer(canvas: Image.Image, t: dict, y: int = 1192) -> None:
     draw.text((text_x, domain_y), DOMAIN, font=domain_font, fill=ACCENT)
 
     # right block: slogan right-aligned, byline underneath
-    tag_font = font(t["reg"], 18)
+    tag_font = font(t["latin_reg"], 19)
     right = 1008
     ty = y + pad - 6
     for line in t["bs_tagline"]:
@@ -230,7 +232,7 @@ def brand_footer(canvas: Image.Image, t: dict, y: int = 1192) -> None:
 
     flower = Image.open(FLOWER).convert("RGBA")
     flower.thumbnail((22, 22), Image.LANCZOS)
-    by_font = font(t["reg"], 20)
+    by_font = font(t["reg"], 21)
     w = draw.textlength(t["by_bs"], font=by_font)
     bx = right - (flower.width + 8 + w)
     canvas.alpha_composite(flower, (int(bx), ty + 2))
