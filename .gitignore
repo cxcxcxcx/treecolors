@@ -197,5 +197,5 @@ samples/
 *.bak-merge
 web/leaves/
 data/work/
-promo/
+/promo/
 tools/venv-vtrace/

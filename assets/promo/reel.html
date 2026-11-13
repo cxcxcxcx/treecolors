@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>TreeColors reel</title>
+<style>
+  :root { --cream: #f7f0e1; --ink: #1f2d3a; --accent: #b84016; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; width: 1080px; height: 1920px; background: var(--cream);
+    font-family: "Microsoft YaHei", -apple-system, sans-serif; overflow: hidden; }
+  .stage { position: relative; width: 1080px; height: 1920px; background: var(--cream); }
+  .scene { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0; animation-duration: 16s; animation-timing-function: ease-in-out; animation-iteration-count: 1;
+    animation-fill-mode: both; }
+  .scene img { width: 1000px; border-radius: 28px; box-shadow: 0 24px 60px rgba(30, 20, 10, .18); }
+  .s1 { animation-name: a1; }
+  .s2 { animation-name: a2; }
+  .s3 { animation-name: a3; }
+  .s4 { animation-name: a4; }
+  .s5 { animation-name: a5; }
+
+  /* 16 s total: four 3.6 s scenes and a 1.6 s end card, 0.4 s cross-fades */
+  @keyframes a1 { 0%{opacity:0; transform:scale(.98)} 3%{opacity:1} 20%{opacity:1; transform:scale(1.03)} 23%{opacity:0} 100%{opacity:0} }
+  @keyframes a2 { 0%{opacity:0} 22%{opacity:0} 25%{opacity:1} 45%{opacity:1; transform:scale(1.03)} 48%{opacity:0} 100%{opacity:0} }
+  @keyframes a3 { 0%{opacity:0} 47%{opacity:0} 50%{opacity:1} 70%{opacity:1; transform:scale(1.03)} 73%{opacity:0} 100%{opacity:0} }
+  @keyframes a4 { 0%{opacity:0} 72%{opacity:0} 75%{opacity:1} 92%{opacity:1; transform:scale(1.03)} 95%{opacity:0} 100%{opacity:0} }
+  @keyframes a5 { 0%{opacity:0} 94%{opacity:0} 97%{opacity:1} 100%{opacity:1; transform:scale(1.02)} }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="scene s1"><img src="../../promo/instagram/01-contrast.png"></div>
+  <div class="scene s2"><img src="../../promo/instagram/02-species.png"></div>
+  <div class="scene s3"><img src="../../promo/instagram/04-city.png"></div>
+  <div class="scene s4"><img src="../../promo/instagram/03-legend.png"></div>
+  <div class="scene s5"><img src="../../promo/instagram/05-backcover.png"></div>
+</div>
+</body>
+</html>

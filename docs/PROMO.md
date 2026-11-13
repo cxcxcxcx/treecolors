@@ -44,20 +44,19 @@ Carousel order: 01 → 02 → 03 → 04, back cover last (or as the share card).
 ## Short video (reel)
 
 ```bash
-python3 scripts/make_reel.py        # promo/instagram/reel.mp4, 1080×1920, ~14 s
+python3 scripts/record_reel.py --seconds 16   # promo/instagram/reel.mp4
 ```
 
-Five beats built from the same assets — hook, SF vs Cupertino contrast, Mountain
-View close-up, species plates, end card — each a still that ffmpeg slowly zooms
-(Ken Burns, 1.0→1.06) with 0.5 s cross-fades. 30 fps, H.264, ~5 MB, no audio.
+The animation lives in **`assets/promo/reel.html`** (CSS keyframes over the real
+promo PNGs), and `record_reel.py` records it from headless Chrome with the
+DevTools screencast. That way what ships in the video is exactly the artwork we
+deploy — no second implementation of the layout or the branding, which is what
+went wrong in the first, ffmpeg-only version.
 
-Why stills rather than a screen recording: it renders in seconds, re-runs after
-any copy change, and has no cursor or loading states to hide. If a "live
-product" cut is wanted later, capture the map with CDP `Page.startScreencast`
-while scripting `map.jumpTo` and a tap on a tree, then mux those frames with the
-same ffmpeg settings.
-
-Music/voice is added in the app afterwards; the file ships silent.
+- Stage 1080×1920, five scenes, ~14 s, 30 fps, H.264 ~2 MB, silent.
+- Frames are re-timed with their own screencast timestamps, so a slow machine
+  produces a smooth file rather than a fast one.
+- Music/voice is added in the app afterwards.
 
 ## Regenerating the screenshots
 
