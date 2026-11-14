@@ -147,6 +147,43 @@ def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
                     str(popup.get("title"))))
     results.append(("plate has no header line", popup.get("plateHeader") is False, ""))
 
+    maps = cdp.eval("""(() => {
+      const props = {species:'Acer rubrum', common_names:['Red maple'], city:'DC', deciduous:true,
+                     fall_colors:true, beautiful_flowers:false};
+      // A picked tree passes its coordinates; a species-list row does not.
+      const withPoint = buildPopupContent(props, 'Acer rubrum', null, false, [-77.0369, 38.9072]);
+      const withoutPoint = buildPopupContent(props, 'Acer rubrum', null, false, null);
+      const link = (html) => {
+        const match = html.match(/<a class="open-in-maps" href="([^"]+)"/);
+        return match ? match[1].replace(/&amp;/g, '&') : '';
+      };
+      return {href: link(withPoint), blank: link(withoutPoint)};
+    })()""") or {}
+    results.append(("picked tree offers Open in Maps",
+                    "38.907200,-77.036900" in maps.get("href", "")
+                    and maps.get("href", "").startswith("https://"),
+                    maps.get("href", "")))
+    results.append(("species row (no pin) has no Open in Maps",
+                    maps.get("blank") == "", str(maps.get("blank"))))
+
+    # Headless Chrome has no GPS, so place the dot by hand — the same call the
+    # geolocation success handler makes — and measure what the user would tap.
+    marker = cdp.eval("""(() => {
+      showUserLocation([-77.0369, 38.9072]);
+      const el = document.querySelector('.user-location-marker');
+      if (!el) return {missing: true};
+      map.jumpTo({center: [-77.0369, 38.9072], zoom: 15});
+      const rect = el.getBoundingClientRect();
+      return {tag: el.tagName, width: Math.round(rect.width), height: Math.round(rect.height),
+              label: el.getAttribute('aria-label') || '',
+              onMap: !!el.closest('.maplibregl-map')};
+    })()""") or {}
+    results.append(("user location dot is a thumb-sized button",
+                    marker.get("tag") == "BUTTON" and marker.get("width", 0) >= 44
+                    and marker.get("height", 0) >= 44 and bool(marker.get("label"))
+                    and marker.get("onMap") is True,
+                    f"{marker.get('tag')} {marker.get('width')}x{marker.get('height')}"))
+
     code_title = cdp.eval("""(() => {
       const props = {species:'Quercus phellos', common_names:'["Willow Oak","QUPE"]',
                      city:'DC', deciduous:true, fall_colors:true, beautiful_flowers:false};

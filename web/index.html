@@ -453,6 +453,33 @@
             line-height: 1;
         }
 
+        /* Hands the coordinates to the phone's own maps app, so directions
+           and turn-by-turn navigation work without us reimplementing them. */
+        .open-in-maps {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: #1a5dab;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .open-in-maps:hover,
+        .open-in-maps:focus {
+            background: #164d8e;
+        }
+
+        .open-in-maps svg {
+            width: 15px;
+            height: 15px;
+            flex: 0 0 15px;
+        }
+
         .plate-section .plate-wrap {
             margin-top: 0;
         }
@@ -773,6 +800,72 @@
             box-shadow: 0 0 0 2px #1f6feb, 0 2px 6px rgba(0, 0, 0, 0.35);
             background: transparent;
             pointer-events: none;
+        }
+
+        /* "You are here". The dot is 18px, but the button around it is 44px
+           so it is a comfortable thumb target; tapping it re-reads the GPS.
+           It sits above the tree circles on purpose — it must be findable. */
+        /* No `position` here: MapLibre's .maplibregl-marker already makes the
+           element absolute and positions it with a transform. */
+        .user-location-marker {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Both pseudo-elements are centred with inset/margin so the pulse
+           grows from the dot rather than from the button's top-left. */
+        .user-location-marker::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            z-index: 1;
+            width: 18px;
+            height: 18px;
+            box-sizing: border-box;
+            border-radius: 50%;
+            background: #4285f4;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+            transition: transform 0.15s ease;
+        }
+
+        .user-location-marker::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(66, 133, 244, 0.4);
+            animation: location-pulse 2.4s ease-out infinite;
+        }
+
+        .user-location-marker:hover::before,
+        .user-location-marker:focus-visible::before {
+            transform: scale(1.15);
+        }
+
+        @keyframes location-pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            70% { transform: scale(3); opacity: 0; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .user-location-marker::after {
+                animation: none;
+                opacity: 0;
+            }
         }
 
         .species-info-button {
@@ -1206,16 +1299,58 @@
             /* ignore */
         }
 
-        // Add user location marker
-        const userLocationEl = document.createElement('div');
+        // Add user location marker.  A real button with a 44px hit area: the
+        // dot is small on purpose, but the target is not, so tapping it to
+        // refresh the GPS reading does not require aim.  Once placed it stays
+        // on the map while panning/zooming.
+        const userLocationEl = document.createElement('button');
+        userLocationEl.type = 'button';
         userLocationEl.className = 'user-location-marker';
-        userLocationEl.style.width = '16px';
-        userLocationEl.style.height = '16px';
-        userLocationEl.style.backgroundColor = '#4285F4';
-        userLocationEl.style.border = '2px solid white';
-        userLocationEl.style.borderRadius = '50%';
-        userLocationEl.style.boxShadow = '0 0 5px rgba(0,0,0,0.3)';
+        userLocationEl.setAttribute('aria-label', 'Update my location');
+        userLocationEl.title = 'Update my location';
+        userLocationEl.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation(); // do not also pick the tree underneath
+            locateUser(false);
+        });
         const userLocationMarker = new maplibregl.Marker({ element: userLocationEl });
+        let userLocationOnMap = false;
+        let locationWatchId = null;
+
+        function showUserLocation(coordinates) {
+            if (!coordinates) return;
+            userLocationMarker.setLngLat(coordinates);
+            if (!userLocationOnMap) {
+                userLocationMarker.addTo(map);
+                userLocationOnMap = true;
+            }
+        }
+
+        // Keep the dot honest after the first fix: people walk around the
+        // block before picking a tree.  This only moves the marker, never the
+        // camera — moving the view under someone reading the sheet is worse
+        // than a slightly stale dot.
+        function startLocationWatch() {
+            if (locationWatchId !== null || !navigator.geolocation) return;
+            locationWatchId = navigator.geolocation.watchPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                showUserLocation([longitude, latitude]);
+            }, () => {}, { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 });
+        }
+
+        function stopLocationWatch() {
+            if (locationWatchId === null) return;
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopLocationWatch();
+            } else if (userLocated) {
+                startLocationWatch();
+            }
+        });
 
         legendLocateButton.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -1573,6 +1708,39 @@
                     message: 'Wikipedia data unavailable.'
                 };
             }
+        }
+
+        // Hand the pin to the platform's own map app: Apple Maps on iOS (the
+        // default there), Google Maps everywhere else.  Both URLs open the
+        // installed app when present and fall back to the web, and both put
+        // one tap between the pin and turn-by-turn directions.
+        function mapsUrlFor(coordinates, label) {
+            if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+            const lng = Number(coordinates[0]);
+            const lat = Number(coordinates[1]);
+            if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
+            const point = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+            const name = (label || 'Tree').trim() || 'Tree';
+            const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent)
+                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isAppleMobile) {
+                return `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}&z=18`;
+            }
+            return `https://www.google.com/maps/search/?api=1&query=${point}`;
+        }
+
+        function buildOpenInMapsSection(coordinates, label) {
+            const url = mapsUrlFor(coordinates, label);
+            if (!url) return '';
+            return `
+                <a class="open-in-maps" href="${escapeHtml(url)}" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 3 3 10.5l7.5 3L14 21z"></path>
+                    </svg>
+                    <span>Open in Maps</span>
+                </a>
+            `;
         }
 
         function buildPlateSection(speciesName) {
@@ -2023,8 +2191,9 @@
             navigator.geolocation.getCurrentPosition((position) => {
                 const { latitude, longitude } = position.coords;
                 userLocated = true;
-                userLocationMarker.setLngLat([longitude, latitude]).addTo(map);
                 const target = [longitude, latitude];
+                showUserLocation(target);
+                startLocationWatch();
                 map.flyTo({
                     center: target,
                     zoom: Math.max(13, map.getZoom()),
@@ -2042,7 +2211,13 @@
                     alert(msg);
                 }
                 legendLocateButton.classList.remove('loading');
-            }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+            }, {
+                enableHighAccuracy: false,
+                timeout: 8000,
+                // A tap on the dot means "where am I now", so do not accept a
+                // ten-minute-old fix; the startup locate can.
+                maximumAge: auto ? 600000 : 30000
+            });
         }
 
         function maybeAutoLocate() {
@@ -2120,13 +2295,13 @@
             if (!sheet || !body) return;
             const key = (speciesName || '').trim().toLowerCase();
             body.innerHTML = buildPopupContent(properties, speciesName, speciesInfoCache[key],
-                !speciesInfoCache[key], null);
+                !speciesInfoCache[key], coordinates);
             sheet.classList.remove('hidden');
             body.scrollTop = 0;
             requestAnimationFrame(() => ensurePointVisibleAboveSheet(coordinates));
             ensureWiki(speciesName, (result) => {
                 if (sheet.classList.contains('hidden')) return;
-                body.innerHTML = buildPopupContent(properties, speciesName, result, false, null);
+                body.innerHTML = buildPopupContent(properties, speciesName, result, false, coordinates);
             });
         }
 
@@ -2232,6 +2407,7 @@
                             <span>Flowers ${flowersValue}</span>
                         </div>
                     </div>
+                    ${buildOpenInMapsSection(coordinates, title)}
                     ${buildPlateSection(speciesName)}
                     <div class="info-basics info-meta">
                         ${basics}
@@ -2402,7 +2578,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261113-001948';
+                const SW_QUERY = 'tree-map-v20261114-121942';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

@@ -43,6 +43,13 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
   viewport, works the same on mobile, and leaves the tree visible via a pan.
 - **The list and the map share one filter.** Typing in the search dims
   non-matching trees and ignores clicks on them; otherwise the list lies.
+- **"You are here" is a control, not a decoration.** The dot is 18px but its
+  button is 44px, and tapping it re-reads the GPS (`maximumAge` 30 s, not the
+  10 min the startup locate accepts). After the first fix a
+  `watchPosition` keeps the dot current without moving the camera.
+- **Navigation is delegated.** The tree sheet's *Open in Maps* hands the pin
+  to Apple Maps on iOS and Google Maps elsewhere; we never build directions.
+  It only appears when the sheet was opened from a tree with coordinates.
 - **Locating must not stare at a blank map.** After `flyTo`, zoom out until the
   viewport holds a few thousand mapped trees — but wait for the tiles first, and
   require two consecutive empty reads so a slow tile cannot trigger a zoom-out.
