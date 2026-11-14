@@ -57,6 +57,12 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
 - **Locate lives on the map, not in the legend.** It is a MapLibre control
   stacked under the zoom buttons (top-right); collapsing the legend must
   never hide it. The species panel starts at 148px so it clears that stack.
+- **The compass stays, and it must say when it matters.** Two fingers rotate
+  the map, so reset-to-north is a real action. MapLibre's stock needle is
+  grey whether you are upright or rotated 40° — an invisible state change.
+  Tint it (needle + button background) whenever `map.getBearing() != 0` and
+  keep the label "Map faces north" / "Map is rotated — tap to face north".
+  Do not remove it on the grounds that north is usually up.
 - **Install is visible whenever the app is not installed.** Do not gate it on
   `beforeinstallprompt`: Safari and Firefox never fire it, and Chromium fires
   it only after engagement heuristics, which made the button vanish on

@@ -257,16 +257,33 @@ def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
 
     controls = cdp.eval("""(() => {
       const groups = Array.from(document.querySelectorAll('.maplibregl-ctrl-top-right .maplibregl-ctrl-group'));
+      const compass = document.querySelector('.maplibregl-ctrl-compass');
+      const label = compass ? (compass.getAttribute('aria-label') || '') : '';
+      const tintedAtNorth = compass ? compass.classList.contains('compass-off-north') : null;
+      // Two fingers can rotate the map, so the compass is a live control.
+      map.jumpTo({bearing: 40});
+      const tintedRotated = compass ? compass.classList.contains('compass-off-north') : null;
+      const rotatedLabel = compass ? (compass.getAttribute('aria-label') || '') : '';
+      map.jumpTo({bearing: 0});
       return {
         labels: groups.flatMap(g => Array.from(g.querySelectorAll('button'),
           b => (b.getAttribute('aria-label') || b.title || '').toLowerCase())),
-        compass: !!document.querySelector('.maplibregl-ctrl-compass')
+        hasCompass: !!compass, label, tintedAtNorth, tintedRotated, rotatedLabel,
+        tintedBack: compass ? compass.classList.contains('compass-off-north') : null
       };
     })()""") or {}
-    results.append(("no dead compass above locate",
-                    controls.get("compass") is False, str(controls.get("compass"))))
-    results.append(("top-right holds exactly zoom + locate",
-                    sorted(controls.get("labels") or []) == ["locate me", "zoom in", "zoom out"],
+    results.append(("compass present but quiet facing north",
+                    controls.get("hasCompass") is True and controls.get("tintedAtNorth") is False
+                    and "north" in (controls.get("label") or "").lower(),
+                    str(controls.get("label"))))
+    results.append(("compass turns tinted when the map is rotated",
+                    controls.get("tintedRotated") is True
+                    and "rotated" in (controls.get("rotatedLabel") or "").lower()
+                    and controls.get("tintedBack") is False,
+                    str(controls.get("rotatedLabel"))))
+    results.append(("top-right holds exactly compass + zoom + locate",
+                    sorted(controls.get("labels") or []) == ["locate me", "map faces north",
+                                                              "zoom in", "zoom out"],
                     str(controls.get("labels"))))
 
     detail = cdp.eval("""(() => {

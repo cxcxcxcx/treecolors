@@ -299,6 +299,18 @@
             background: #eef3f7;
         }
 
+        /* The stock compass is monochrome. While the map is rotated, tinting
+           the needle and the ring is the cheapest "something changed here"
+           signal — at 0° it stays the default grey and attracts no eye. */
+        .maplibregl-ctrl-compass.compass-off-north {
+            background: #eef4fa;
+        }
+
+        .maplibregl-ctrl-compass.compass-off-north .maplibregl-ctrl-icon {
+            filter: invert(27%) sepia(56%) saturate(1739%) hue-rotate(188deg)
+                brightness(92%) contrast(92%);
+        }
+
         /* Locate lives on the map itself, stacked under the zoom buttons, so
            it survives collapsing the legend and is always a thumb away. */
         .map-locate-control button:disabled {
@@ -2635,14 +2647,35 @@
         // Add navigation controls; locate sits directly under the +/− pair.
         // Positioned top-right rather than top-left: the legend lives there on
         // phones and the two would stack into each other.
-        // No compass: this map is flat, north is always up, and a reset-bearing
-        // button that does nothing when you are already north reads as broken.
-        const navigationControl = new maplibregl.NavigationControl({ showCompass: false });
+        // The compass is not decoration: two fingers can rotate the map, and
+        // when it is off north you need one tap back. It is tinted while the
+        // bearing is non-zero (see syncCompassState) so a rotated map says so.
+        const navigationControl = new maplibregl.NavigationControl();
         map.addControl(navigationControl, 'top-right');
         map.addControl({
             onAdd() { return locateControl; },
             onRemove() { locateControl.remove(); }
         }, 'top-right');
+
+        // MapLibre's compass is a grey needle on grey — a rotated map looks the
+        // same as an upright one at a glance. Mark it while the bearing is off
+        // north so the way back is obvious, and leave it quiet at 0°.
+        // (MapLibre itself rotates the needle via `.maplibregl-ctrl-compass-arrow`.)
+        function syncCompassState() {
+            const compass = document.querySelector('.maplibregl-ctrl-compass');
+            if (!compass) return;
+            const offNorth = Math.abs(map.getBearing()) > 0.5;
+            compass.classList.toggle('compass-off-north', offNorth);
+            const label = offNorth
+                ? 'Map is rotated — tap to face north'
+                : 'Map faces north';
+            compass.setAttribute('aria-label', label);
+            compass.title = label;
+        }
+        map.on('rotate', syncCompassState);
+        map.on('rotateend', syncCompassState);
+        map.once('load', syncCompassState);
+        map.once('idle', syncCompassState);
 
         // Try to center on the user after the initial render.  If they have
         // already started panning/zooming, leave their view alone.  Multiple
@@ -2694,7 +2727,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261114-141200';
+                const SW_QUERY = 'tree-map-v20261114-141802';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
