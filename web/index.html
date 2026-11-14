@@ -299,6 +299,28 @@
             background: #eef3f7;
         }
 
+        /* Locate lives on the map itself, stacked under the zoom buttons, so
+           it survives collapsing the legend and is always a thumb away. */
+        .map-locate-control button:disabled {
+            cursor: default;
+            opacity: 0.75;
+        }
+
+        .map-locate-control.locating svg {
+            animation: locate-pulse 0.9s ease-in-out infinite;
+        }
+
+        @keyframes locate-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .map-locate-control.locating svg {
+                animation: none;
+            }
+        }
+
         .map-overlay.collapsed .legend-body {
             display: none;
         }
@@ -453,48 +475,44 @@
             line-height: 1;
         }
 
-        /* Hands the pin to a maps app so directions and turn-by-turn are the
-           platform's job. Deliberately small: one quiet line under the chips
-           — visible at a glance, but it must not push the artwork down. */
-        .maps-row {
+        /* The species name block (common + botanical) and, to its right, one
+           icon that hands the pin to the map app. No label: the names are
+           what people read, the arrow is what they tap. */
+        .info-head {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-            margin-top: 10px;
-            font-size: 12px;
-            line-height: 1;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            /* Clear the sheet's close button, which is absolutely positioned. */
+            padding-right: 34px;
         }
 
-        .maps-row-label {
+        .info-names {
+            min-width: 0;
+        }
+
+        .info-map-button {
+            flex: 0 0 auto;
+            width: 34px;
+            height: 34px;
+            margin-top: -2px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            color: #8a94a0;
-        }
-
-        .maps-row-label svg {
-            width: 12px;
-            height: 12px;
-            flex: 0 0 12px;
-        }
-
-        .maps-link {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 11px;
+            justify-content: center;
             border: 1px solid #d3dde5;
-            border-radius: 999px;
+            border-radius: 50%;
             background: #fff;
             color: #1a5dab;
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 1.25;
             text-decoration: none;
         }
 
-        .maps-link:hover,
-        .maps-link:focus {
+        .info-map-button svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        .info-map-button:hover,
+        .info-map-button:focus {
             background: #eef4fa;
             border-color: #b6cddf;
         }
@@ -611,10 +629,12 @@
 
         .species-panel {
             position: absolute;
-            top: calc(10px + env(safe-area-inset-top, 0px));
+            /* Clears the zoom + locate control stack in the map's top-right
+               corner; without this the panel sits underneath it. */
+            top: calc(148px + env(safe-area-inset-top, 0px));
             right: calc(10px + env(safe-area-inset-right, 0px));
             width: 330px;
-            max-height: calc(100vh - 20px);
+            max-height: calc(100vh - 158px);
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
@@ -1037,11 +1057,17 @@
                 padding: 12px;
             }
 
-            .legend-info-button,
-            .legend-locate-button {
+            .legend-info-button {
                 width: 26px;
                 height: 26px;
                 font-size: 14px;
+            }
+
+            /* Keep the map control tappable on phones: the default 29px is
+               finger-hostile, and it sits on its own group. */
+            .map-locate-control button {
+                width: 40px;
+                height: 40px;
             }
 
 
@@ -1187,13 +1213,6 @@
                             <path d="M5 21h14"></path>
                         </svg>
                     </button>
-                    <button type="button" class="legend-icon-button" id="legend-locate-button" aria-label="Locate me"
-                        title="Locate me">
-                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-                        </svg>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1285,7 +1304,22 @@
         const legendInfoButton = document.getElementById('legend-info-button');
         const legendInfoPopup = document.getElementById('legend-info-popup');
         const legendInfoClose = document.getElementById('legend-info-close');
-        const legendLocateButton = document.getElementById('legend-locate-button');
+        // Built here, mounted on the map as a control once the map exists.
+        // It used to live in the legend footer, which meant collapsing the
+        // legend hid the one action people look for most.
+        const locateButton = document.createElement('button');
+        locateButton.type = 'button';
+        locateButton.id = 'locate-button';
+        locateButton.setAttribute('aria-label', 'Locate me');
+        locateButton.title = 'Locate me';
+        locateButton.innerHTML = `
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+            </svg>`;
+        const locateControl = document.createElement('div');
+        locateControl.className = 'maplibregl-ctrl maplibregl-ctrl-group map-locate-control';
+        locateControl.appendChild(locateButton);
         const legendOverlay = document.querySelector('.map-overlay');
         const legendToggleButton = document.getElementById('legend-toggle-button');
         const LEGEND_COLLAPSED_KEY = 'treecolors.legendCollapsed';
@@ -1371,7 +1405,7 @@
             }
         });
 
-        legendLocateButton.addEventListener('click', (event) => {
+        locateButton.addEventListener('click', (event) => {
             event.stopPropagation();
             locateUser(false);
         });
@@ -1766,27 +1800,35 @@
             if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
             const point = `${lat.toFixed(6)},${lng.toFixed(6)}`;
             const name = (label || 'Tree').trim() || 'Tree';
-            return {
-                google: `https://www.google.com/maps/search/?api=1&query=${point}`,
-                apple: `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}&z=18`
-            };
+            // Hand off to whatever the system considers its map: Android's
+            // `geo:` URI lets the OS offer its chooser, iOS has no such
+            // scheme so it goes to Apple Maps, and a desktop browser gets the
+            // Google Maps web app. The visitor never sees a platform question.
+            let url;
+            if (/Android/i.test(navigator.userAgent)) {
+                url = `geo:${point}?q=${point}(${encodeURIComponent(name)})`;
+            } else if (/iPhone|iPad|iPod/.test(navigator.userAgent)
+                    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+                url = `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}&z=18`;
+            } else {
+                url = `https://www.google.com/maps/search/?api=1&query=${point}`;
+            }
+            return { url };
         }
 
-        function buildOpenInMapsSection(coordinates, label) {
-            const urls = mapsUrlsFor(coordinates, label);
-            if (!urls) return '';
+        // One icon, no label: the name is what people read, this is what they
+        // tap when they want to walk there.
+        function buildOpenInMapsButton(coordinates, label) {
+            const maps = mapsUrlsFor(coordinates, label);
+            if (!maps) return '';
             return `
-                <div class="maps-row">
-                    <span class="maps-row-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M21 3 3 10.5l7.5 3L14 21z"></path>
-                        </svg>
-                        Directions
-                    </span>
-                    <a class="maps-link" href="${escapeHtml(urls.google)}" target="_blank" rel="noopener">Google Maps</a>
-                    <a class="maps-link" href="${escapeHtml(urls.apple)}" target="_blank" rel="noopener">Apple Maps</a>
-                </div>
+                <a class="info-map-button" href="${escapeHtml(maps.url)}" target="_blank" rel="noopener"
+                    aria-label="Open this tree in a maps app" title="Open in Maps">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                    </svg>
+                </a>
             `;
         }
 
@@ -2229,12 +2271,24 @@
             return false;
         }
 
+        let locating = false;
+
+        function setLocating(active) {
+            locating = active;
+            locateControl.classList.toggle('locating', active);
+            locateButton.disabled = active;
+            locateButton.setAttribute('aria-busy', String(active));
+        }
+
         function locateUser(auto = false) {
             if (!navigator.geolocation) {
                 if (!auto) alert('Geolocation is not supported by your browser');
                 return;
             }
-            if (!auto) legendLocateButton.classList.add('loading');
+            // A second tap while the first fix is in flight only makes the
+            // browser queue another request; show that it is working instead.
+            if (locating) return;
+            if (!auto) setLocating(true);
             navigator.geolocation.getCurrentPosition((position) => {
                 const { latitude, longitude } = position.coords;
                 userLocated = true;
@@ -2246,7 +2300,7 @@
                     zoom: Math.max(13, map.getZoom()),
                     essential: true
                 });
-                legendLocateButton.classList.remove('loading');
+                setLocating(false);
                 zoomOutUntilTrees(target);
             }, (error) => {
                 console.error('Error getting location:', error);
@@ -2257,7 +2311,7 @@
                     else if (error.code === 3) msg = 'Location request timed out';
                     alert(msg);
                 }
-                legendLocateButton.classList.remove('loading');
+                setLocating(false);
             }, {
                 enableHighAccuracy: false,
                 timeout: 8000,
@@ -2438,8 +2492,13 @@
 
             return `
                 <div class="info-popup">
-                    <h4>${escapeHtml(title)}</h4>
-                    ${firstCommon ? `<div class="info-sci">${escapeHtml(speciesName)}</div>` : ''}
+                    <div class="info-head">
+                        <div class="info-names">
+                            <h4>${escapeHtml(title)}</h4>
+                            ${firstCommon ? `<div class="info-sci">${escapeHtml(speciesName)}</div>` : ''}
+                        </div>
+                        ${buildOpenInMapsButton(coordinates, title)}
+                    </div>
                     <div class="info-chips">
                         <div class="${deciduousClass}" title="Deciduous">
                             <span class="icon">&#127795;</span>
@@ -2454,7 +2513,6 @@
                             <span>Flowers ${flowersValue}</span>
                         </div>
                     </div>
-                    ${buildOpenInMapsSection(coordinates, title)}
                     ${buildPlateSection(speciesName)}
                     <div class="info-basics info-meta">
                         ${basics}
@@ -2572,8 +2630,15 @@
             });
         });
 
-        // Add navigation controls
-        map.addControl(new maplibregl.NavigationControl());
+        // Add navigation controls; locate sits directly under the +/− pair.
+        // Positioned top-right rather than top-left: the legend lives there on
+        // phones and the two would stack into each other.
+        const navigationControl = new maplibregl.NavigationControl();
+        map.addControl(navigationControl, 'top-right');
+        map.addControl({
+            onAdd() { return locateControl; },
+            onRemove() { locateControl.remove(); }
+        }, 'top-right');
 
         // Try to center on the user after the initial render.  If they have
         // already started panning/zooming, leave their view alone.  Multiple
@@ -2625,7 +2690,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261114-123504';
+                const SW_QUERY = 'tree-map-v20261114-135156';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

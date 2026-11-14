@@ -153,37 +153,46 @@ def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
       // A picked tree passes its coordinates; a species-list row does not.
       const withPoint = buildPopupContent(props, 'Acer rubrum', null, false, [-77.0369, 38.9072]);
       const withoutPoint = buildPopupContent(props, 'Acer rubrum', null, false, null);
-      const links = (html) => Array.from(
-        html.matchAll(/<a class="maps-link" href="([^"]+)"/g),
-        m => m[1].replace(/&amp;/g, '&'));
-      return {hrefs: links(withPoint), blank: links(withoutPoint)};
+      const href = (withPoint.match(/<a class="info-map-button" href="([^"]+)"/) || [])[1] || '';
+      return {
+        href: href.replace(/&amp;/g, '&'),
+        blank: withoutPoint.includes('info-map-button'),
+        labelled: /aria-label="[^"]+"/.test(withPoint)
+      };
     })()""") or {}
-    hrefs = maps.get("hrefs") or []
-    results.append(("picked tree offers both map apps, not one guess",
-                    len(hrefs) == 2
-                    and hrefs[0].startswith("https://www.google.com/maps/")
-                    and hrefs[1].startswith("https://maps.apple.com/")
-                    and all("38.907200,-77.036900" in h for h in hrefs),
-                    str(hrefs)))
-    results.append(("species row (no pin) has no directions links",
-                    maps.get("blank") == [], str(maps.get("blank"))))
+    results.append(("picked tree has one map icon beside the name",
+                    "38.907200,-77.036900" in maps.get("href", "")
+                    and maps.get("labelled") is True, maps.get("href", "")))
+    results.append(("species row (no pin) has no map icon",
+                    maps.get("blank") is False, str(maps.get("blank"))))
 
     compact = cdp.eval("""(() => {
       const props = {species:'Acer rubrum', common_names:['Red maple'], city:'DC', deciduous:true,
                      fall_colors:true, beautiful_flowers:false};
       window.openTreeSheet(props, 'Acer rubrum', [-77.0369, 38.9072]);
-      const row = document.querySelector('#species-sheet .maps-row');
+      const head = document.querySelector('#species-sheet .info-head');
+      const button = document.querySelector('#species-sheet .info-map-button');
+      const title = document.querySelector('#species-sheet .info-head h4');
       const chips = document.querySelector('#species-sheet .info-chips');
-      if (!row || !chips) return {missing: true};
-      const rowRect = row.getBoundingClientRect();
-      const chipRect = chips.getBoundingClientRect();
+      if (!head || !button || !title || !chips) return {missing: true};
+      const buttonRect = button.getBoundingClientRect();
+      const titleRect = title.getBoundingClientRect();
+      const chipsRect = chips.getBoundingClientRect();
       closeSpeciesSheet();
-      return {height: Math.round(rowRect.height), gap: Math.round(rowRect.top - chipRect.bottom),
-              buttons: row.querySelectorAll('.maps-link').length};
+      return {
+        sideBySide: buttonRect.left > titleRect.right,
+        clearsClose: buttonRect.right < document.documentElement.clientWidth - 40,
+        noText: button.innerText.trim() === '',
+        size: [Math.round(buttonRect.width), Math.round(buttonRect.height)],
+        gap: Math.round(chipsRect.top - titleRect.bottom)
+      };
     })()""") or {}
-    results.append(("directions row stays a thin line under the chips",
-                    compact.get("buttons") == 2 and compact.get("height", 999) <= 40,
-                    f"{compact.get('height')}px tall, {compact.get('gap')}px gap"))
+    results.append(("map button sits right of the names, no label, chips still close",
+                    compact.get("sideBySide") is True and compact.get("noText") is True
+                    and compact.get("clearsClose") is True
+                    and max(compact.get("size") or [99, 99]) <= 40
+                    and compact.get("gap", 99) <= 60,
+                    f"size={compact.get('size')} gap={compact.get('gap')}px"))
 
     # Headless Chrome has no GPS, so place the dot by hand — the same call the
     # geolocation success handler makes — and measure what the user would tap.
@@ -232,17 +241,19 @@ def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
       if (!overlay.classList.contains('collapsed')) toggle.click();
       const collapsed = {
         height: Math.round(overlay.getBoundingClientRect().height),
-        locate: !!document.querySelector('.legend-locate-button')?.offsetParent,
         info: !!document.getElementById('legend-info-button')?.offsetParent,
       };
+      // Locate moved onto the map precisely so collapsing cannot hide it.
+      collapsed.locate = !!document.getElementById('locate-button')?.offsetParent;
       toggle.click();
       return {collapsed, expandedHeight: Math.round(overlay.getBoundingClientRect().height)};
     })()""") or {}
     collapsed = legend.get("collapsed") or {}
     results.append(("legend collapses to a slim bar",
-                    collapsed.get("height", 999) < 90 and not collapsed.get("locate")
-                    and not collapsed.get("info"),
+                    collapsed.get("height", 999) < 90 and not collapsed.get("info"),
                     f"{collapsed.get('height')}px"))
+    results.append(("locate stays on the map when the legend collapses",
+                    collapsed.get("locate") is True, ""))
 
     detail = cdp.eval("""(() => {
       const button = document.querySelector('.species-info-button');

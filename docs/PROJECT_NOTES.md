@@ -47,12 +47,16 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
   button is 44px, and tapping it re-reads the GPS (`maximumAge` 30 s, not the
   10 min the startup locate accepts). After the first fix a
   `watchPosition` keeps the dot current without moving the camera.
-- **Navigation is delegated, and the choice is the visitor's.** The tree
-  sheet offers Google Maps *and* Apple Maps side by side as two small pill
-  links on the line under the traits — never one guessed from the user agent.
-  We never build directions. The row only appears when the sheet was opened
-  from a tree with coordinates; keep it thin (one line, ≤40px) so it does not
-  push the plate down.
+- **Navigation is one icon, not a text block.** The tree sheet has a single
+  round map button to the right of the common/botanical name pair; it hands
+  the pin to the system's map (`geo:` on Android so the OS offers its
+  chooser, Apple Maps on iOS, the Google Maps web app on desktop). We never
+  build directions and never ask the visitor to pick a platform. It only
+  appears when the sheet was opened from a tree with coordinates — a
+  species-list row has no pin.
+- **Locate lives on the map, not in the legend.** It is a MapLibre control
+  stacked under the zoom buttons (top-right); collapsing the legend must
+  never hide it. The species panel starts at 148px so it clears that stack.
 - **Install is visible whenever the app is not installed.** Do not gate it on
   `beforeinstallprompt`: Safari and Firefox never fire it, and Chromium fires
   it only after engagement heuristics, which made the button vanish on
@@ -66,7 +70,8 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
 ## UI principles
 
 1. Product name first, status second, actions last. The legend's footer holds
-   About · BotaniSense on the left and install/locate on the right.
+   About · BotaniSense on the left and install on the right. Locate is a map
+   control (above) — the footer is not the place for a primary action.
 2. One consistent bottom bar on promo art: TreeColors plate left, quiet
    `by BotaniSense` + slogan right. Only the product gets a highlight.
 3. Headlines must not carry "map" — it is visibly a map. Do not sell city counts.
