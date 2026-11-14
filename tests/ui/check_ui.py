@@ -255,6 +255,20 @@ def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
     results.append(("locate stays on the map when the legend collapses",
                     collapsed.get("locate") is True, ""))
 
+    controls = cdp.eval("""(() => {
+      const groups = Array.from(document.querySelectorAll('.maplibregl-ctrl-top-right .maplibregl-ctrl-group'));
+      return {
+        labels: groups.flatMap(g => Array.from(g.querySelectorAll('button'),
+          b => (b.getAttribute('aria-label') || b.title || '').toLowerCase())),
+        compass: !!document.querySelector('.maplibregl-ctrl-compass')
+      };
+    })()""") or {}
+    results.append(("no dead compass above locate",
+                    controls.get("compass") is False, str(controls.get("compass"))))
+    results.append(("top-right holds exactly zoom + locate",
+                    sorted(controls.get("labels") or []) == ["locate me", "zoom in", "zoom out"],
+                    str(controls.get("labels"))))
+
     detail = cdp.eval("""(() => {
       const button = document.querySelector('.species-info-button');
       if (!button) return Promise.resolve({opened: false, reason: 'no button'});

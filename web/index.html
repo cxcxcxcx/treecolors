@@ -1315,7 +1315,9 @@
         locateButton.innerHTML = `
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
                 fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
             </svg>`;
         const locateControl = document.createElement('div');
         locateControl.className = 'maplibregl-ctrl maplibregl-ctrl-group map-locate-control';
@@ -2633,7 +2635,9 @@
         // Add navigation controls; locate sits directly under the +/− pair.
         // Positioned top-right rather than top-left: the legend lives there on
         // phones and the two would stack into each other.
-        const navigationControl = new maplibregl.NavigationControl();
+        // No compass: this map is flat, north is always up, and a reset-bearing
+        // button that does nothing when you are already north reads as broken.
+        const navigationControl = new maplibregl.NavigationControl({ showCompass: false });
         map.addControl(navigationControl, 'top-right');
         map.addControl({
             onAdd() { return locateControl; },
@@ -2690,7 +2694,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261114-135156';
+                const SW_QUERY = 'tree-map-v20261114-141200';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
