@@ -47,9 +47,18 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
   button is 44px, and tapping it re-reads the GPS (`maximumAge` 30 s, not the
   10 min the startup locate accepts). After the first fix a
   `watchPosition` keeps the dot current without moving the camera.
-- **Navigation is delegated.** The tree sheet's *Open in Maps* hands the pin
-  to Apple Maps on iOS and Google Maps elsewhere; we never build directions.
-  It only appears when the sheet was opened from a tree with coordinates.
+- **Navigation is delegated, and the choice is the visitor's.** The tree
+  sheet offers Google Maps *and* Apple Maps side by side as two small pill
+  links on the line under the traits — never one guessed from the user agent.
+  We never build directions. The row only appears when the sheet was opened
+  from a tree with coordinates; keep it thin (one line, ≤40px) so it does not
+  push the plate down.
+- **Install is visible whenever the app is not installed.** Do not gate it on
+  `beforeinstallprompt`: Safari and Firefox never fire it, and Chromium fires
+  it only after engagement heuristics, which made the button vanish on
+  iPhones and on first visits. Where the event exists we open the native
+  dialog; otherwise the click explains Share → Add to Home Screen (iOS),
+  File → Add to Dock (desktop Safari), or the browser menu.
 - **Locating must not stare at a blank map.** After `flyTo`, zoom out until the
   viewport holds a few thousand mapped trees — but wait for the tiles first, and
   require two consecutive empty reads so a slow tile cannot trigger a zoom-out.

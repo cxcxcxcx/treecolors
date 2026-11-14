@@ -453,31 +453,50 @@
             line-height: 1;
         }
 
-        /* Hands the coordinates to the phone's own maps app, so directions
-           and turn-by-turn navigation work without us reimplementing them. */
-        .open-in-maps {
-            display: inline-flex;
+        /* Hands the pin to a maps app so directions and turn-by-turn are the
+           platform's job. Deliberately small: one quiet line under the chips
+           — visible at a glance, but it must not push the artwork down. */
+        .maps-row {
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 6px;
             margin-top: 10px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            background: #1a5dab;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .maps-row-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #8a94a0;
+        }
+
+        .maps-row-label svg {
+            width: 12px;
+            height: 12px;
+            flex: 0 0 12px;
+        }
+
+        .maps-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 11px;
+            border: 1px solid #d3dde5;
+            border-radius: 999px;
+            background: #fff;
+            color: #1a5dab;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.25;
             text-decoration: none;
         }
 
-        .open-in-maps:hover,
-        .open-in-maps:focus {
-            background: #164d8e;
-        }
-
-        .open-in-maps svg {
-            width: 15px;
-            height: 15px;
-            flex: 0 0 15px;
+        .maps-link:hover,
+        .maps-link:focus {
+            background: #eef4fa;
+            border-color: #b6cddf;
         }
 
         .plate-section .plate-wrap {
@@ -1356,26 +1375,53 @@
             event.stopPropagation();
             locateUser(false);
         });
+        // Install is shown whenever the app is not already installed — not
+        // only after Chromium's `beforeinstallprompt`. Safari and Firefox
+        // never fire that event, and Chromium only fires it once its
+        // engagement heuristics are met, so gating on it made the button
+        // silently disappear on iPhones and on a first Chrome visit.
+        // Click: real dialog where available, otherwise say where to look.
         let deferredInstallPrompt = null;
         const installButton = document.getElementById('legend-install-button');
+        const isStandalone = () => (window.matchMedia
+            && window.matchMedia('(display-mode: standalone)').matches)
+            || navigator.standalone === true;
+        const isSafari = () => !/Chrome|Chromium|CriOS|FxiOS|EdgiOS|OPiOS|OPR\/|Edg\//.test(navigator.userAgent)
+            && /Safari/.test(navigator.userAgent);
+        // iPadOS reports itself as a Mac, hence the touch-point check.
+        const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
         window.addEventListener('beforeinstallprompt', (event) => {
             event.preventDefault();
             deferredInstallPrompt = event;
-            installButton.classList.remove('hidden');
+            if (!isStandalone()) installButton.classList.remove('hidden');
         });
         installButton.addEventListener('click', async () => {
-            if (!deferredInstallPrompt) return;
-            deferredInstallPrompt.prompt();
-            await deferredInstallPrompt.userChoice;
-            deferredInstallPrompt = null;
-            installButton.classList.add('hidden');
+            if (isStandalone()) return;
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+                installButton.classList.add('hidden');
+                return;
+            }
+            if (isSafari()) {
+                showToast(isIos()
+                    ? 'Tap Share, then “Add to Home Screen”.'
+                    : 'In Safari, choose File → Add to Dock.', 9000);
+                return;
+            }
+            showToast('Open the browser menu and choose “Install” or “Add to Home screen”.', 9000);
         });
         window.addEventListener('appinstalled', () => {
             deferredInstallPrompt = null;
             installButton.classList.add('hidden');
         });
-        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+        if (isStandalone()) {
             installButton.classList.add('hidden');
+        } else {
+            installButton.classList.remove('hidden');
         }
 
 
@@ -1710,36 +1756,37 @@
             }
         }
 
-        // Hand the pin to the platform's own map app: Apple Maps on iOS (the
-        // default there), Google Maps everywhere else.  Both URLs open the
-        // installed app when present and fall back to the web, and both put
-        // one tap between the pin and turn-by-turn directions.
-        function mapsUrlFor(coordinates, label) {
+        // The pin goes to whichever map app the visitor prefers — we do not
+        // guess from the user agent.  Both URLs open the installed app when
+        // there is one and fall back to the web otherwise.
+        function mapsUrlsFor(coordinates, label) {
             if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
             const lng = Number(coordinates[0]);
             const lat = Number(coordinates[1]);
             if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
             const point = `${lat.toFixed(6)},${lng.toFixed(6)}`;
             const name = (label || 'Tree').trim() || 'Tree';
-            const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent)
-                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            if (isAppleMobile) {
-                return `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}&z=18`;
-            }
-            return `https://www.google.com/maps/search/?api=1&query=${point}`;
+            return {
+                google: `https://www.google.com/maps/search/?api=1&query=${point}`,
+                apple: `https://maps.apple.com/?ll=${point}&q=${encodeURIComponent(name)}&z=18`
+            };
         }
 
         function buildOpenInMapsSection(coordinates, label) {
-            const url = mapsUrlFor(coordinates, label);
-            if (!url) return '';
+            const urls = mapsUrlsFor(coordinates, label);
+            if (!urls) return '';
             return `
-                <a class="open-in-maps" href="${escapeHtml(url)}" target="_blank" rel="noopener">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21 3 3 10.5l7.5 3L14 21z"></path>
-                    </svg>
-                    <span>Open in Maps</span>
-                </a>
+                <div class="maps-row">
+                    <span class="maps-row-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 3 3 10.5l7.5 3L14 21z"></path>
+                        </svg>
+                        Directions
+                    </span>
+                    <a class="maps-link" href="${escapeHtml(urls.google)}" target="_blank" rel="noopener">Google Maps</a>
+                    <a class="maps-link" href="${escapeHtml(urls.apple)}" target="_blank" rel="noopener">Apple Maps</a>
+                </div>
             `;
         }
 
@@ -2578,7 +2625,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261114-121942';
+                const SW_QUERY = 'tree-map-v20261114-123504';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

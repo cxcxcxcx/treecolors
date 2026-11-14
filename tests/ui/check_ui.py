@@ -153,21 +153,53 @@ def checks(cdp: Cdp, url: str) -> list[tuple[str, bool, str]]:
       // A picked tree passes its coordinates; a species-list row does not.
       const withPoint = buildPopupContent(props, 'Acer rubrum', null, false, [-77.0369, 38.9072]);
       const withoutPoint = buildPopupContent(props, 'Acer rubrum', null, false, null);
-      const link = (html) => {
-        const match = html.match(/<a class="open-in-maps" href="([^"]+)"/);
-        return match ? match[1].replace(/&amp;/g, '&') : '';
-      };
-      return {href: link(withPoint), blank: link(withoutPoint)};
+      const links = (html) => Array.from(
+        html.matchAll(/<a class="maps-link" href="([^"]+)"/g),
+        m => m[1].replace(/&amp;/g, '&'));
+      return {hrefs: links(withPoint), blank: links(withoutPoint)};
     })()""") or {}
-    results.append(("picked tree offers Open in Maps",
-                    "38.907200,-77.036900" in maps.get("href", "")
-                    and maps.get("href", "").startswith("https://"),
-                    maps.get("href", "")))
-    results.append(("species row (no pin) has no Open in Maps",
-                    maps.get("blank") == "", str(maps.get("blank"))))
+    hrefs = maps.get("hrefs") or []
+    results.append(("picked tree offers both map apps, not one guess",
+                    len(hrefs) == 2
+                    and hrefs[0].startswith("https://www.google.com/maps/")
+                    and hrefs[1].startswith("https://maps.apple.com/")
+                    and all("38.907200,-77.036900" in h for h in hrefs),
+                    str(hrefs)))
+    results.append(("species row (no pin) has no directions links",
+                    maps.get("blank") == [], str(maps.get("blank"))))
+
+    compact = cdp.eval("""(() => {
+      const props = {species:'Acer rubrum', common_names:['Red maple'], city:'DC', deciduous:true,
+                     fall_colors:true, beautiful_flowers:false};
+      window.openTreeSheet(props, 'Acer rubrum', [-77.0369, 38.9072]);
+      const row = document.querySelector('#species-sheet .maps-row');
+      const chips = document.querySelector('#species-sheet .info-chips');
+      if (!row || !chips) return {missing: true};
+      const rowRect = row.getBoundingClientRect();
+      const chipRect = chips.getBoundingClientRect();
+      closeSpeciesSheet();
+      return {height: Math.round(rowRect.height), gap: Math.round(rowRect.top - chipRect.bottom),
+              buttons: row.querySelectorAll('.maps-link').length};
+    })()""") or {}
+    results.append(("directions row stays a thin line under the chips",
+                    compact.get("buttons") == 2 and compact.get("height", 999) <= 40,
+                    f"{compact.get('height')}px tall, {compact.get('gap')}px gap"))
 
     # Headless Chrome has no GPS, so place the dot by hand — the same call the
     # geolocation success handler makes — and measure what the user would tap.
+    # Safari never fires beforeinstallprompt and Chromium fires it late, so
+    # gating on it made the button silently disappear. It must be visible in a
+    # plain browser visit, not hidden until an event that may never come.
+    install = cdp.eval("""(() => {
+      const el = document.getElementById('legend-install-button');
+      if (!el) return {missing: true};
+      return {hidden: el.classList.contains('hidden'), rendered: !!el.offsetParent,
+              label: el.getAttribute('aria-label') || ''};
+    })()""") or {}
+    results.append(("install button is visible without beforeinstallprompt",
+                    install.get("hidden") is False and install.get("rendered") is True
+                    and bool(install.get("label")), str(install)))
+
     marker = cdp.eval("""(() => {
       showUserLocation([-77.0369, 38.9072]);
       const el = document.querySelector('.user-location-marker');
