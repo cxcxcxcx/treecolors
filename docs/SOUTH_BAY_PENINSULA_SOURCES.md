@@ -35,13 +35,33 @@ live service on 12–13 November 2026, not copied from a portal description.
 
 ## Available but deliberately not added
 
-- **Sunnyvale — truncated export.** The county-hosted "Sunnyvale Trees" layer
+- **Sunnyvale — truncated export, and the city has no public inventory of its own.**
+  The county-hosted "Sunnyvale Trees" layer
   (`Tree_Inventories_in_Santa_Clara_County_WFL1/FeatureServer/1`) returns exactly
-  10,000 rows, with OBJECTIDs 1–10000 contiguous and street names running only A–D.
-  That is a capped export, not the inventory. Separately, its species field packs the
-  common and scientific name into one string, e.g. "NAME (Scientific)", and the name
-  cleaner keeps only the common name — only 65 of 167 distinct values resolve to a
-  species. Wait for the full export before mapping Sunnyvale.
+  10,000 rows. The evidence that this is a capped copy rather than the real count:
+
+  - OBJECTID statistics are `min = 1`, `max = 10000`, `count = 10000` — a contiguous
+    block, not a sample or a filtered subset.
+  - Street names cover only A–D: A 1,874 · B 3,205 · C 3,672 · D 1,249. Sunnyvale's
+    street grid continues well past D (Evelyn, Fair Oaks, Mathilda, Murphy, etc.).
+  - Queried in street order, the last record is "DWIGHT AV"; nothing sorts after D.
+  - The layer's `editingInfo.dataLastEditDate` is 2021-08-11, so even the capped copy
+    is a five-year-old snapshot.
+
+  The city's own GIS (`gis.sunnyvale.ca.gov/arcgis/rest/services`, 32 services across
+  12 folders) has **no tree layer at all** — it publishes parcels, zoning, utilities,
+  bikeways, permits and addresses, but no urban forestry assets. The only county-side
+  Sunnyvale records outside this layer are 974 rows inside the county "Tree Plotter"
+  inventory, a small subset already superseded by the 10,000-row copy.
+
+  Separately, the species field packs common and scientific name into one string,
+  e.g. `LIQUIDAMBAR SWEETGUM (Liquidambar styraciflua)`, and the current name cleaner
+  drops the parenthetical, so only 65 of 167 distinct values resolve to a species.
+  Reading the scientific name out of the parentheses first raises that to 153 of 167,
+  so this is a fixable parsing detail, not a reason to skip the data.
+
+  Conclusion: a usable Sunnyvale layer exists but the public copy is capped. The ask
+  is the **uncapped export**, not a new inventory.
 - **Saratoga heritage trees — 44 trees.** The city's main "Trees" service has had
   0 features since 2023; the county layer's 512 Saratoga trees are already included
   through the county group. The heritage layer is a nice supplement but not a
@@ -81,13 +101,21 @@ tree inventory that could be added today.
   tree service, but the county layer's records for these places are already live.
   A direct city inventory would only be worth requesting to get fresher data.
 
-## Caveat on contact addresses
+## Contact addresses
 
-Every city website was checked from this machine and returned 403 or timed out, and
-the general web fetcher failed with a 502, so **no city clerk or public records
-email address was verified**. The drafts below therefore address the records request
-to a role, not to an address. Look the address up on the city's own "Public Records"
-or "City Clerk" page before sending; do not guess an address.
+Sunnyvale's website is behind a WAF that returns 403 for every path, including
+`robots.txt`, with any user agent — so its clerk page could not be read directly.
+The address below was recovered from the footer of a current city meeting agenda
+published on Legistar (agenda for the Personnel Board, 16 November 2026), which
+carries the City Clerk's office contact in English, Spanish and Chinese:
+
+- **Sunnyvale City Clerk** — 456 W. Olive Ave., Sunnyvale, CA 94086 ·
+  408-730-7483 · `cityclerk@sunnyvale.ca.gov` (verified 13 Nov 2026)
+
+For every other city on the request list, no address was verified: their sites
+returned 403 or timed out and the general web fetcher failed with a 502. The draft
+below is written so the address can be filled in from the city's own "Public
+Records" or "City Clerk" page. Do not guess an address.
 
 ## Email draft — request for a tree inventory
 
@@ -134,11 +162,50 @@ Thank you,
 - Send the same email to: Millbrae, San Bruno, Los Altos, Redwood City, Menlo Park,
   San Carlos, Foster City, Daly City, South San Francisco, Pacifica, Belmont,
   Atherton, Woodside, Portola Valley, Half Moon Bay, East Palo Alto, Los Altos Hills.
-- For Sunnyvale, skip the inventory request and ask instead for the **uncapped
-  export** of the existing "Sunnyvale Trees" layer, since the public copy is capped
-  at 10,000 rows.
+- **Sunnyvale is the one city with a verified address**:
+  `cityclerk@sunnyvale.ca.gov`, 408-730-7483. Use the alternate draft below — the
+  ask is the uncapped export of the inventory they already maintain, not a new
+  inventory.
 - For Campbell, Gilroy and Morgan Hill, the ask is a current city-maintained
   inventory rather than the county's republished copy.
+
+## Email draft — Sunnyvale, uncapped export
+
+To: cityclerk@sunnyvale.ca.gov
+Subject: Public records request — complete copy of the Sunnyvale tree inventory
+
+Hello City Clerk,
+
+I am writing to request a copy of the city's tree inventory in electronic form.
+
+I am already working with the copy of "Sunnyvale Trees" that the County of Santa
+Clara republishes at
+Tree_Inventories_in_Santa_Clara_County_WFL1, feature layer 1. That public copy
+contains exactly 10,000 records, has sequential record IDs 1 through 10,000, and
+stops at street names beginning with "D" — it looks like a capped export rather
+than the full inventory. Its last data edit is dated 11 August 2021.
+
+Could you provide:
+
+1. The complete tree inventory as point locations — a GIS export (file
+   geodatabase, shapefile or GeoJSON), a CSV with coordinates, or a link to the
+   hosted REST service, whichever is easiest.
+2. Per tree: species or genus, trunk diameter where recorded, address or street
+   segment, and location.
+3. The date of the last update.
+
+If the inventory is managed in a system such as Tree Plotter or TreeKeeper, a
+read-only service link is ideal and would avoid an export entirely.
+
+I understand this is a request under the California Public Records Act. The data
+would be used in a free public map of street tree species and autumn colour, with
+each tree linked back to the city's own inventory record; the map credits every
+city and does not resell the data — https://treecolors.botanisense.app/ and
+https://treecolors.botanisense.app/DATA_LICENSES.md.
+
+Thank you,
+[Name]
+[Email] · [Phone]
 
 ## Method
 
