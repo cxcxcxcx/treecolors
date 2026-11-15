@@ -124,7 +124,8 @@
     "blooming_season": "Spring",
     "chinese_common_names": [
       "中国无花果",
-      "黄连木"
+      "黄连木",
+      "无患子"
     ],
     "common_names": [
       "Chinese Pistache",
@@ -148,8 +149,8 @@
     "explanation": "Quercus agrifolia is an evergreen oak native to the coastal regions of California. It is known for its rugged appearance and ecological significance."
   },
   "ulmus parvifolia": {
-    "deciduous": true,
-    "fall_colors": true,
+    "deciduous": false,
+    "fall_colors": false,
     "beautiful_flowers": false,
     "blooming_season": "Late Summer to Fall",
     "chinese_common_names": [
@@ -458,7 +459,7 @@
       "Purpleleaf Plum"
     ],
     "deciduous": true,
-    "fall_colors": true,
+    "fall_colors": false,
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
@@ -634,7 +635,6 @@
     "common_names": [
       "Crepe Myrtle",
       "Crape Myrtle",
-      "Crape myrtle",
       "LATH"
     ],
     "explanation": "Lagerstroemia indica, commonly known as Crepe Myrtle, is known for its vibrant summer blooms in shades of pink, white, and purple. It is a deciduous tree that also offers colorful fall foliage. It is widely cultivated in warm climates for its striking appearance."
@@ -938,9 +938,13 @@
     "fall_colors": false,
     "beautiful_flowers": true,
     "blooming_season": "spring",
-    "chinese_common_names": [],
+    "chinese_common_names": [
+      "美洲梓树"
+    ],
     "common_names": [
-      "Northern Catalpa"
+      "Northern Catalpa",
+      "Cigar Tree",
+      "Western Catalpa"
     ],
     "explanation": "Known for its large heart-shaped leaves and showy white flowers, this tree is often used as an ornamental."
   },
@@ -1004,7 +1008,9 @@
     "fall_colors": false,
     "beautiful_flowers": false,
     "blooming_season": "N/A",
-    "chinese_common_names": [],
+    "chinese_common_names": [
+      "铁树"
+    ],
     "common_names": [
       "Fern Pine"
     ],
@@ -1557,7 +1563,8 @@
     ],
     "common_names": [
       "Brazilian Pepper",
-      "Christmas Berry"
+      "Christmas Berry",
+      "Christmasberry"
     ],
     "explanation": "Schinus terebinthifolius, commonly known as Brazilian pepper, is an evergreen shrub or small tree native to South America. While it produces small white flowers, it is more notable for its bright red berries, which often appear around Christmas."
   },
@@ -1606,13 +1613,14 @@
     "beautiful_flowers": false,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "加利福尼亚月桂"
+      "加利福尼亚月桂",
+      "加州月桂"
     ],
     "common_names": [
       "California Bay Laurel",
       "Oregon Myrtle",
-      "California bay laurel",
-      "California laurel"
+      "California laurel",
+      "Bay Laurel"
     ],
     "explanation": "Umbellularia californica is an evergreen tree native to the coastal forests of California and Oregon. Known for its aromatic leaves, which are used in cooking, this tree is not particularly noted for flowers or fall colors, but it holds economic and ecological significance."
   },
@@ -1730,7 +1738,9 @@
     "fall_colors": false,
     "beautiful_flowers": true,
     "blooming_season": "Spring",
-    "chinese_common_names": [],
+    "chinese_common_names": [
+      "垂枝瓶刷树"
+    ],
     "common_names": [
       "weeping bottlebrush"
     ],
@@ -1738,7 +1748,7 @@
   },
   "ulmus parvifolia 'athena'": {
     "deciduous": false,
-    "fall_colors": true,
+    "fall_colors": false,
     "beautiful_flowers": false,
     "blooming_season": "N/A",
     "chinese_common_names": [
@@ -2215,7 +2225,8 @@
       "罗汉松"
     ],
     "common_names": [
-      "yew podocarpus"
+      "yew podocarpus",
+      "Buddhist pine"
     ],
     "explanation": "An evergreen tree native to southern Japan and China, mainly grown for its foliage."
   },
@@ -2253,7 +2264,8 @@
     "beautiful_flowers": false,
     "blooming_season": "N/A",
     "chinese_common_names": [
-      "道格拉斯冷杉"
+      "道格拉斯冷杉",
+      "道格拉斯枞"
     ],
     "common_names": [
       "Douglas Fir",
@@ -2636,8 +2648,8 @@
     "explanation": "Rhamnus alaternus, or Italian Buckthorn, is an evergreen shrub or small tree with glossy leaves. While it produces small, inconspicuous flowers, it is primarily used for its foliage and landscaping properties rather than ornamental blooms or fall colors."
   },
   "ulmus parvifolia 'allee'": {
-    "deciduous": true,
-    "fall_colors": true,
+    "deciduous": false,
+    "fall_colors": false,
     "beautiful_flowers": false,
     "blooming_season": "Late Summer",
     "chinese_common_names": [
@@ -3020,7 +3032,8 @@
     "beautiful_flowers": false,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "无花果"
+      "无花果",
+      "无花果 (wú huā guǒ)"
     ],
     "common_names": [
       "edible fig"
@@ -3757,7 +3770,7 @@
   },
   "prunus cerasifera 'thundercloud'": {
     "deciduous": true,
-    "fall_colors": true,
+    "fall_colors": false,
     "beautiful_flowers": true,
     "blooming_season": "spring",
     "chinese_common_names": [
@@ -3927,7 +3940,8 @@
     "blooming_season": "Spring",
     "chinese_common_names": [
       "仙人刺槐",
-      "刺桐"
+      "刺桐",
+      "耶路撒冷荆棘"
     ],
     "common_names": [
       "Jerusalem Thorn",
@@ -3962,7 +3976,7 @@
   },
   "prunus cerasifera 'green'": {
     "deciduous": true,
-    "fall_colors": true,
+    "fall_colors": false,
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
@@ -4213,7 +4227,8 @@
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "南美樱桃"
+      "南美樱桃",
+      "澳洲樱桃"
     ],
     "common_names": [
       "Magenta Cherry",
@@ -4580,7 +4595,8 @@
       "Chinese Arborvitae",
       "Oriental Thuja",
       "Oriental Arborvitae",
-      "THUJA ORIENTALIS"
+      "THUJA ORIENTALIS",
+      "Chinese thuja"
     ],
     "explanation": "Platycladus orientalis, commonly known as Chinese Arborvitae, is native to northeastern Asia. It is a coniferous evergreen tree valued for its durability and traditional use in landscaping."
   },
@@ -4979,13 +4995,13 @@
     "blooming_season": "Spring to Fall",
     "chinese_common_names": [
       "洋槐",
-      "香荚蒾"
+      "香荚蒾",
+      "香大芒"
     ],
     "common_names": [
       "Sweet Acacia",
       "Needle Bush",
       "Huisache",
-      "Sweet acacia",
       "Small's Acacia"
     ],
     "explanation": "This is a small tree with fragrant yellow flowers and is native to the Americas. It is known for its sweet-smelling blooms."
@@ -5009,7 +5025,8 @@
     "beautiful_flowers": false,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "枣椰树"
+      "枣椰树",
+      "椰枣树"
     ],
     "common_names": [
       "Date Palm"
@@ -5101,7 +5118,8 @@
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "垂花枇杷"
+      "垂花枇杷",
+      "铜色枇杷"
     ],
     "common_names": [
       "Bronze Loquat"
@@ -5204,7 +5222,8 @@
     ],
     "common_names": [
       "Rubber Plant",
-      "Rubber Fig"
+      "Rubber Fig",
+      "Rubber Tree"
     ],
     "explanation": "Ficus elastica is an evergreen tree native to Southeast Asia. It's commonly grown as a houseplant due to its large, glossy leaves. It's known for the latex produced in its sap, which was once used to make rubber."
   },
@@ -5283,7 +5302,8 @@
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "白花栒子"
+      "白花栒子",
+      "牛奶花栒子"
     ],
     "explanation": "Milkflower Cotoneaster is an evergreen shrub known for its white flowers and bright red berries, providing year-round visual interest in gardens."
   },
@@ -5489,7 +5509,8 @@
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "美洲番樱桃"
+      "美洲番樱桃",
+      "大果野樱桃"
     ],
     "common_names": [
       "Pacific madrone",
@@ -6017,7 +6038,8 @@
     "beautiful_flowers": false,
     "blooming_season": "N/A",
     "chinese_common_names": [
-      "榕树"
+      "榕树",
+      "榕属"
     ],
     "common_names": [
       "Indian Laurel Fig"
@@ -6212,19 +6234,6 @@
     ],
     "explanation": "This term refers not to a specific tree, but rather to a designated area where future tree planting is proposed."
   },
-  "strawberry tree": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Fall",
-    "chinese_common_names": [
-      "草莓树"
-    ],
-    "common_names": [
-      "strawberry tree"
-    ],
-    "explanation": "The strawberry tree is an evergreen shrub or small tree native to Mediterranean regions, known for its red, strawberry-like fruits and clusters of small white flowers."
-  },
   "saratoga laurel": {
     "deciduous": false,
     "fall_colors": false,
@@ -6246,19 +6255,6 @@
       "brisbane box"
     ],
     "explanation": "The Brisbane box, native to eastern Australia, is an evergreen tree known for its dense canopy, tolerance to urban pollution, and its smooth, patchy bark."
-  },
-  "chinese pistache": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "无患子"
-    ],
-    "common_names": [
-      "chinese pistache"
-    ],
-    "explanation": "Chinese pistache is a deciduous tree known for its hardiness, drought resistance, and vibrant fall colors, which range from yellow to orange to red."
   },
   "ceanothus": {
     "common_names": [
@@ -6295,7 +6291,8 @@
     "beautiful_flowers": true,
     "blooming_season": "Summer",
     "chinese_common_names": [
-      "火力木芙蓉"
+      "火力木芙蓉",
+      "炸药紫薇"
     ],
     "explanation": "Dynamite Crape Myrtle is a popular cultivar known for its striking red flowers and attractive exfoliating bark. It is used extensively in landscape design."
   },
@@ -6561,7 +6558,8 @@
     "beautiful_flowers": true,
     "blooming_season": "Summer",
     "chinese_common_names": [
-      "马斯科吉木芙蓉"
+      "马斯科吉木芙蓉",
+      "穆斯科吉百日红"
     ],
     "explanation": "The Muskogee Crape Myrtle is a cultivar noted for its pale lavender flowers, long-lasting bloom period, and attractive bark."
   },
@@ -6956,19 +6954,6 @@
     ],
     "explanation": "A tall palm native to Mexico, known for its fan-shaped leaves. It is often planted as an ornamental tree in urban areas."
   },
-  "bronze loquat": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "铜色枇杷"
-    ],
-    "common_names": [
-      "Bronze Loquat"
-    ],
-    "explanation": "An ornamental evergreen tree with large leaves and small, fragrant white flowers. Known for its attractive bronze-colored new growth."
-  },
   "california pepper": {
     "deciduous": false,
     "fall_colors": false,
@@ -6981,17 +6966,6 @@
       "California Pepper"
     ],
     "explanation": "A fast-growing, drought-tolerant tree with weeping branches and small, peppercorn-like fruits. Common in California landscapes."
-  },
-  "evergreen ash": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [],
-    "common_names": [
-      "Evergreen Ash"
-    ],
-    "explanation": "An evergreen tree often used for shade. It is known for its ability to adapt to various soil conditions."
   },
   "hong kong orchid": {
     "deciduous": false,
@@ -7082,19 +7056,6 @@
     ],
     "explanation": "An evergreen tree known for its red peeling bark and clusters of pink flowers. It is drought-tolerant and cold-hardy."
   },
-  "brush cherry": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "澳洲樱桃"
-    ],
-    "common_names": [
-      "Brush Cherry"
-    ],
-    "explanation": "An evergreen shrub or small tree with small, glossy leaves and edible red fruits. Often used in hedging."
-  },
   "pygmy date palm": {
     "deciduous": false,
     "fall_colors": false,
@@ -7107,32 +7068,6 @@
       "Pygmy Date Palm"
     ],
     "explanation": "A small ornamental palm often used in landscapes for its attractive leaves and small size, making it ideal for limited spaces."
-  },
-  "camphor tree": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "樟树"
-    ],
-    "common_names": [
-      "Camphor Tree"
-    ],
-    "explanation": "An evergreen tree known for its glossy leaves and camphor-scented essential oils. It is widely used in traditional medicine."
-  },
-  "natchez crape myrtle": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "Summer",
-    "chinese_common_names": [
-      "纳切兹紫薇"
-    ],
-    "common_names": [
-      "Natchez Crape Myrtle"
-    ],
-    "explanation": "A popular ornamental tree known for its vibrant summer blooms and attractive exfoliating bark. Its flowers can be white, pink, red, or purple."
   },
   "vitex": {
     "deciduous": true,
@@ -7282,20 +7217,6 @@
     ],
     "explanation": "Pear trees are grown for their fruit and beautiful white flowers. They are a staple in home orchards and commercial production."
   },
-  "benjamin fig": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "榕树"
-    ],
-    "common_names": [
-      "Benjamin Fig",
-      "Weeping Fig"
-    ],
-    "explanation": "The Benjamin Fig is a popular indoor plant with graceful weeping branches and glossy leaves, frequently used in homes and offices."
-  },
   "soft tree fern": {
     "deciduous": false,
     "fall_colors": false,
@@ -7363,32 +7284,6 @@
       "Plum"
     ],
     "explanation": "Known for their beautiful blossoms and delicious fruit, both cherries and plums are staples in orchards and gardens alike."
-  },
-  "date palm": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "椰枣树"
-    ],
-    "common_names": [
-      "Date Palm"
-    ],
-    "explanation": "The Date Palm is a type of palm tree known for its sweet fruit, dates. It thrives in hot climates and is commonly found in desert regions."
-  },
-  "incense cedar": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "香柏"
-    ],
-    "common_names": [
-      "Incense Cedar"
-    ],
-    "explanation": "Incense Cedar is a coniferous tree native to the western United States. Its wood is prized for use in making pencils."
   },
   "mandarin": {
     "deciduous": false,
@@ -7795,19 +7690,6 @@
     ],
     "explanation": "Dragon Tree is a unique tree known for its red sap and sword-shaped leaves. It is often used as an ornamental houseplant or outdoor plant in subtropical climates."
   },
-  "white mulberry": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "spring",
-    "chinese_common_names": [
-      "桑树"
-    ],
-    "common_names": [
-      "White Mulberry"
-    ],
-    "explanation": "White Mulberry is native to India and China and is known for its quick growth and use in sericulture (silk production), as its leaves are the primary food source for silkworms."
-  },
   "common plum": {
     "deciduous": true,
     "fall_colors": false,
@@ -7898,20 +7780,6 @@
       "Metasequoia"
     ],
     "explanation": "The dawn redwood is a deciduous conifer, which is unusual for conifers. Known for its fast growth and feathery foliage, it exhibits attractive fall colors."
-  },
-  "oriental arborvitae": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "侧柏"
-    ],
-    "common_names": [
-      "Oriental arborvitae",
-      "Chinese thuja"
-    ],
-    "explanation": "Oriental arborvitae is an evergreen tree valued for its aromatic leaves and attractive, feather-like foliage. It is often used in hedging and landscaping."
   },
   "boulevard false cypress": {
     "deciduous": false,
@@ -8233,20 +8101,6 @@
     ],
     "explanation": "Noted for its twisted, spiraled branches that provide winter interest, making it a popular ornamental tree."
   },
-  "giant sequoia": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "巨杉"
-    ],
-    "common_names": [
-      "Giant Sequoia",
-      "Sierra Redwood"
-    ],
-    "explanation": "Known as one of the largest tree species on Earth, giant sequoias are recognized for their immense size and longevity."
-  },
   "arborvitae": {
     "deciduous": false,
     "fall_colors": false,
@@ -8384,20 +8238,6 @@
       "red-flowering gum"
     ],
     "explanation": "A popular ornamental tree known for its brilliant red or pink flowers and glossy leaves, native to Australia."
-  },
-  "pacific madrone": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "fall",
-    "chinese_common_names": [
-      "大果野樱桃"
-    ],
-    "common_names": [
-      "pacific madrone",
-      "madrona"
-    ],
-    "explanation": "This evergreen tree is noted for its peeling red-orange bark and clusters of red berries."
   },
   "spruce": {
     "deciduous": false,
@@ -8555,19 +8395,6 @@
     ],
     "explanation": "Known for its sweet, edible pods, this tree is prized in tropical regions for shade and food."
   },
-  "indian laurel fig": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "spring",
-    "chinese_common_names": [
-      "榕属"
-    ],
-    "common_names": [
-      "indian laurel fig"
-    ],
-    "explanation": "Often used as a street tree, it's recognized for its dense canopy and glossy, dark green leaves."
-  },
   "fuyu persimmon": {
     "deciduous": true,
     "fall_colors": true,
@@ -8695,32 +8522,6 @@
     ],
     "explanation": "The Natchez Crape Myrtle is a popular cultivar known for its stunning white flowers, excellent disease resistance, and beautiful peeling bark. It is often planted for its summer blooms and vibrant fall foliage."
   },
-  "milkflower cotoneaster": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Late Spring",
-    "chinese_common_names": [
-      "牛奶花栒子"
-    ],
-    "common_names": [
-      "Milkflower Cotoneaster"
-    ],
-    "explanation": "This is an evergreen shrub known for its dense growth habit and small white flowers followed by red berries, often used in hedges and groundcovers."
-  },
-  "muskogee crape myrtle": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "Summer",
-    "chinese_common_names": [
-      "穆斯科吉百日红"
-    ],
-    "common_names": [
-      "Muskogee Crape Myrtle"
-    ],
-    "explanation": "Muskogee Crape Myrtle is known for its soft lavender flowers, extended blooming season, and beautiful fall foliage, making it a favorite in gardens and streetscapes."
-  },
   "blue blossom": {
     "deciduous": false,
     "fall_colors": false,
@@ -8762,33 +8563,6 @@
     ],
     "explanation": "This evergreen tree is known for its dense wood and fragrant yellow flowers, often used in reforestation and as an ornamental species."
   },
-  "weeping bottlebrush": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "垂枝瓶刷树"
-    ],
-    "common_names": [
-      "Weeping Bottlebrush"
-    ],
-    "explanation": "Named for its red, brush-like flowers, this evergreen tree adds whimsical beauty to landscapes and attracts nectar-feeding birds."
-  },
-  "brazilian pepper": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "巴西胡椒"
-    ],
-    "common_names": [
-      "Brazilian Pepper",
-      "Christmasberry"
-    ],
-    "explanation": "A vigorous evergreen known for its red berries, often viewed as invasive in certain regions but still appreciated for ornamental use."
-  },
   "silver dollar gum eucalyptus": {
     "deciduous": false,
     "fall_colors": false,
@@ -8829,20 +8603,6 @@
     ],
     "explanation": "Tuscarora crape myrtle is a popular garden tree known for its vibrant pink-red flowers, attractive bark, and colorful fall foliage."
   },
-  "yew podocarpus": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "罗汉松"
-    ],
-    "common_names": [
-      "Yew podocarpus",
-      "Buddhist pine"
-    ],
-    "explanation": "Yew podocarpus is an evergreen tree or shrub recognized for its needle-like leaves and resistance to air pollution, often used in hedging."
-  },
   "sago palm": {
     "deciduous": false,
     "fall_colors": false,
@@ -8868,19 +8628,6 @@
       "She-oak"
     ],
     "explanation": "Casuarinas are evergreen trees or shrubs known for their feathery foliage and adaptability to poor soils, commonly used as windbreaks."
-  },
-  "dynamite crape myrtle": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "Summer",
-    "chinese_common_names": [
-      "炸药紫薇"
-    ],
-    "common_names": [
-      "Dynamite crape myrtle"
-    ],
-    "explanation": "This variety of crape myrtle is adored for its explosive red blossoms and striking bark, providing late summer color."
   },
   "broadleaf deciduous small": {
     "deciduous": true,
@@ -8999,20 +8746,6 @@
     ],
     "explanation": "Named for its swollen trunk base resembling a bottle, this tree is adapted to arid conditions and has long, narrow leaves."
   },
-  "tulip tree": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "spring",
-    "chinese_common_names": [
-      "鹅掌楸"
-    ],
-    "common_names": [
-      "tulip tree",
-      "yellow poplar"
-    ],
-    "explanation": "This large tree is known for its uniquely shaped leaves and tulip-like flowers. It also has attractive golden-yellow fall foliage."
-  },
   "queensland bottle tree": {
     "deciduous": true,
     "fall_colors": false,
@@ -9081,17 +8814,6 @@
       "hardy hibiscus"
     ],
     "explanation": "A flowering shrub that produces large, showy blossoms in various colors throughout summer, often used in hedges and as a decorative plant."
-  },
-  "coyote brush": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "fall",
-    "chinese_common_names": [],
-    "common_names": [
-      "coyote brush"
-    ],
-    "explanation": "This evergreen shrub is native to the west coast of North America and is known for its ability to stabilize soil and provide habitat for wildlife."
   },
   "northern hackberry": {
     "deciduous": true,
@@ -9329,7 +9051,8 @@
       "垂枝巨杉"
     ],
     "common_names": [
-      "Weeping Giant Sequoia"
+      "Weeping Giant Sequoia",
+      "Pendulum Redwood"
     ],
     "explanation": "This cultivar of the giant sequoia boasts a unique, weeping form and is prized for its majestic presence in large gardens and parks."
   },
@@ -9581,19 +9304,6 @@
       "Liquidambar Formosana"
     ],
     "explanation": "Chinese Sweet Gum is admired for its star-shaped leaves that turn vibrant colors in the autumn. Its resin-scented bark and upright form make it a standout in parks and large gardens."
-  },
-  "indian hawthorn": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "印度山楂"
-    ],
-    "common_names": [
-      "Indian Hawthorn"
-    ],
-    "explanation": "Indian Hawthorn is an evergreen shrub noted for its compact form and clusters of pink or white flowers. It is often used in landscaping for its durability and year-round appeal."
   },
   "small-leaved fig": {
     "deciduous": false,
@@ -9947,19 +9657,6 @@
     ],
     "explanation": "This evergreen shrub is known for its myrtle-like leaves and beautiful pink to lilac flowers, adding color and vibrancy to gardens."
   },
-  "douglas fir": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "道格拉斯枞"
-    ],
-    "common_names": [
-      "Douglas Fir"
-    ],
-    "explanation": "Not a true fir, this evergreen conifer is highly valued for its timber and is commonly used as a Christmas tree."
-  },
   "autumn gold ginkgo": {
     "deciduous": true,
     "fall_colors": true,
@@ -10215,7 +9912,8 @@
     "beautiful_flowers": false,
     "blooming_season": "spring",
     "chinese_common_names": [
-      "垂柳桑"
+      "垂柳桑",
+      "垂桑"
     ],
     "common_names": [
       "Weeping Mulberry"
@@ -10271,12 +9969,15 @@
     "beautiful_flowers": true,
     "blooming_season": "summer to autumn",
     "chinese_common_names": [
-      "公爵花"
+      "公爵花",
+      "紫花苞"
     ],
     "common_names": [
       "Princess-Flower",
       "Princess Flower",
-      "Tibouchina"
+      "Tibouchina",
+      "Glory Bush",
+      "Glory Tree"
     ],
     "explanation": "Tropical shrub with striking purple flowers, often grown as an ornamental plant in warmer climates."
   },
@@ -10475,10 +10176,13 @@
     "beautiful_flowers": true,
     "blooming_season": "late spring to early summer",
     "chinese_common_names": [
-      "欧洲金链花"
+      "欧洲金链花",
+      "金链树"
     ],
     "common_names": [
-      "Common Laburnum"
+      "Common Laburnum",
+      "Golden Rain",
+      "Golden Chain"
     ],
     "explanation": "Known for its long, cascading golden flowers. All parts are highly toxic if ingested."
   },
@@ -10788,7 +10492,8 @@
     "beautiful_flowers": false,
     "blooming_season": "spring",
     "chinese_common_names": [
-      "开心果"
+      "开心果",
+      "开心果树"
     ],
     "common_names": [
       "Pistachio Tree"
@@ -10979,7 +10684,9 @@
     "fall_colors": false,
     "beautiful_flowers": false,
     "blooming_season": "spring",
-    "chinese_common_names": [],
+    "chinese_common_names": [
+      "加州越桔"
+    ],
     "common_names": [
       "California Huckleberry"
     ],
@@ -11026,7 +10733,8 @@
       "毛叶栒子"
     ],
     "common_names": [
-      "Silverleaf Cotoneaster"
+      "Silverleaf Cotoneaster",
+      "Grey Cotoneaster"
     ],
     "explanation": "A hardy evergreen shrub often used for erosion control and its attractive foliage."
   },
@@ -11256,19 +10964,6 @@
     ],
     "explanation": "An Australian native tree that releases a peppermint scent when crushed, often used as an ornamental."
   },
-  "common boxwood": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "欧洲黄杨"
-    ],
-    "common_names": [
-      "Common Boxwood"
-    ],
-    "explanation": "Common boxwood is an evergreen shrub widely used in formal gardens for its dense, compact growth and ease of shaping."
-  },
   "weeping crabapple": {
     "deciduous": true,
     "fall_colors": true,
@@ -11297,20 +10992,6 @@
       "POPSICLE AZALEA"
     ],
     "explanation": "A group of evergreen or deciduous shrubs known for their vibrant, showy blooms and diverse color range."
-  },
-  "rubber plant": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "橡皮树"
-    ],
-    "common_names": [
-      "Rubber Plant",
-      "Rubber Tree"
-    ],
-    "explanation": "An evergreen tree known for its large, glossy leaves and its use as a popular houseplant."
   },
   "melaleuca decora": {
     "deciduous": false,
@@ -11483,32 +11164,6 @@
     ],
     "explanation": "A popular ornamental conifer in Japan, known for its aromatic wood often used in temples."
   },
-  "california huckleberry": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "spring",
-    "chinese_common_names": [
-      "加州越桔"
-    ],
-    "common_names": [
-      "California Huckleberry"
-    ],
-    "explanation": "Evergreen shrub native to coastal forests, with edible berries highly valued by wildlife."
-  },
-  "fern pine": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "铁树"
-    ],
-    "common_names": [
-      "Fern Pine"
-    ],
-    "explanation": "Known for its soft, fern-like foliage and used as an ornamental landscape plant."
-  },
   "scarlett wisteria": {
     "deciduous": true,
     "fall_colors": false,
@@ -11521,20 +11176,6 @@
       "Scarlett Wisteria"
     ],
     "explanation": "Valued for its cascading racemes of purple and pink flowers, it's a climbing plant often used in garden structures."
-  },
-  "northern catalpa": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "Late Spring to Early Summer",
-    "chinese_common_names": [
-      "美洲梓树"
-    ],
-    "common_names": [
-      "Cigar Tree",
-      "Western Catalpa"
-    ],
-    "explanation": "The Northern Catalpa is known for its large heart-shaped leaves and showy white flowers that grow in spring."
   },
   "white champaca": {
     "deciduous": false,
@@ -11594,28 +11235,6 @@
     ],
     "explanation": "Jasmine species are known for their highly fragrant flowers and are used in perfumes and teas."
   },
-  "weeping giant sequoia": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [],
-    "common_names": [
-      "Pendulum Redwood"
-    ],
-    "explanation": "Known for its weeping form, this sequoia variety is a stunning ornamental tree with cascading branches."
-  },
-  "silverleaf cotoneaster": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [],
-    "common_names": [
-      "Grey Cotoneaster"
-    ],
-    "explanation": "This species features silver-hued leaves and small red berries, offering fall interest and wildlife habitat."
-  },
   "royal paulownia": {
     "deciduous": true,
     "fall_colors": false,
@@ -11669,20 +11288,6 @@
     ],
     "explanation": "The Castorbean plant is famous for producing castor oil and features large, attractive leaves."
   },
-  "common laburnum": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "金链树"
-    ],
-    "common_names": [
-      "Golden Rain",
-      "Golden Chain"
-    ],
-    "explanation": "A small deciduous tree known for its beautiful yellow hanging flowers in spring."
-  },
   "palm evergreen small": {
     "deciduous": false,
     "fall_colors": false,
@@ -11693,19 +11298,6 @@
       "Small Evergreen Palm"
     ],
     "explanation": "A small palm species that remains green throughout the year, primarily known for its ornamental foliage."
-  },
-  "weeping mulberry": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "垂桑"
-    ],
-    "common_names": [
-      "Weeping Mulberry"
-    ],
-    "explanation": "A decorative tree with a weeping growth habit, often used in landscaping for its graceful form."
   },
   "california flannelbush": {
     "deciduous": false,
@@ -11796,19 +11388,6 @@
       "Broadleaf Deciduous Large"
     ],
     "explanation": "A general category referring to large deciduous trees with broad leaves that change color in autumn."
-  },
-  "pistachio tree": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "开心果树"
-    ],
-    "common_names": [
-      "Pistachio Tree"
-    ],
-    "explanation": "Cultivated for its edible seeds, the tree displays attractive fall foliage."
   },
   "paper mulberry": {
     "deciduous": true,
@@ -12101,11 +11680,11 @@
     "blooming_season": "Spring",
     "chinese_common_names": [
       "智利槐树",
-      "智利豆科"
+      "智利豆科",
+      "智利豆科刺树"
     ],
     "common_names": [
       "chilean mesquite",
-      "Chilean Mesquite",
       "Thornless Chilean Mesquite"
     ],
     "explanation": "This drought-resistant tree is known for its feathery foliage and is often used for its wood and as a source of shade."
@@ -12208,7 +11787,7 @@
   },
   "prunus cerasifera 'pissardii'": {
     "deciduous": true,
-    "fall_colors": true,
+    "fall_colors": false,
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
@@ -12677,19 +12256,6 @@
     ],
     "explanation": "Known for its resilience, this palm is characterized by its fan-shaped leaves and is commonly used in landscaping."
   },
-  "weeping fig": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "垂榕"
-    ],
-    "common_names": [
-      "Weeping Fig"
-    ],
-    "explanation": "A popular houseplant, the Weeping Fig is known for its graceful dropping branches and glossy leaves."
-  },
   "weeping fig varigata": {
     "deciduous": false,
     "fall_colors": false,
@@ -12780,19 +12346,6 @@
       "Indian Longleaf Pine"
     ],
     "explanation": "A towering conifer native to India, it is known for its long needles and is a prominent feature of dry deciduous forests."
-  },
-  "caucasian wingnut": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "高加索羽翅树"
-    ],
-    "common_names": [
-      "Caucasian Wingnut"
-    ],
-    "explanation": "This tree is notable for its winged seeds and grows predominantly along riverbanks in the Caucasus region."
   },
   "south african coral tree": {
     "deciduous": true,
@@ -13339,11 +12892,13 @@
     "beautiful_flowers": true,
     "blooming_season": "Spring",
     "chinese_common_names": [
-      "柳叶瓶刷树"
+      "柳叶瓶刷树",
+      "白瓶刷"
     ],
     "common_names": [
       "Willow Bottlebrush",
-      "White Bottlebrush"
+      "White Bottlebrush",
+      "Callistemon"
     ],
     "explanation": "This Australian native features unique, brush-like flowers and willow-like leaves, thriving in a variety of soil types and offering ecological benefits to local wildlife."
   },
@@ -13896,33 +13451,6 @@
       "Madagascar Dragon Tree"
     ],
     "explanation": "An ornamental plant known for its hardy nature and striking arching leaves; native to Madagascar."
-  },
-  "jerusalem thorn": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "N/A",
-    "chinese_common_names": [
-      "耶路撒冷荆棘"
-    ],
-    "common_names": [
-      "Jerusalem Thorn"
-    ],
-    "explanation": "A spiny shrub or small tree with layered green bark, noted for surviving arid regions."
-  },
-  "california laurel": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Winter",
-    "chinese_common_names": [
-      "加州月桂"
-    ],
-    "common_names": [
-      "California Laurel",
-      "Bay Laurel"
-    ],
-    "explanation": "An aromatic evergreen tree or shrub with glossy leaves, found along the coast of California and southern Oregon."
   },
   "queensland pittosporum": {
     "deciduous": false,
@@ -15030,20 +14558,6 @@
     ],
     "explanation": "The Tulipwood Tree is valued for its beautiful, tulip-shaped yellow flowers and is often used in furniture making."
   },
-  "sweet acacia": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "late winter to spring",
-    "chinese_common_names": [
-      "香大芒"
-    ],
-    "common_names": [
-      "Sweet Acacia",
-      "Needle Bush"
-    ],
-    "explanation": "Sweet Acacia is a small tree known for its fragrant yellow flowers and is used in making perfumes."
-  },
   "grey ironbark": {
     "deciduous": false,
     "fall_colors": false,
@@ -15082,21 +14596,6 @@
       "Bird Catcher Tree"
     ],
     "explanation": "Parapara is known for its sticky seeds that can trap small birds, giving it the name 'Bird Catcher Tree.'"
-  },
-  "tibouchina": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "summer to fall",
-    "chinese_common_names": [
-      "紫花苞"
-    ],
-    "common_names": [
-      "Tibouchina",
-      "Glory Bush",
-      "Glory Tree"
-    ],
-    "explanation": "Known for its stunning purple flowers, Tibouchina is often grown as an ornamental shrub or small tree."
   },
   "wonderful pomegranate": {
     "deciduous": true,
@@ -15911,7 +15410,9 @@
     "beautiful_flowers": false,
     "blooming_season": "N/A",
     "chinese_common_names": [
-      "垂葉榕"
+      "垂葉榕",
+      "榕树",
+      "垂榕"
     ],
     "common_names": [
       "Weeping Fig",
@@ -16440,19 +15941,6 @@
     ],
     "explanation": "Cherry and plum trees are known for their stunning pink and white blossoms in the spring, and they produce edible fruits in the summer."
   },
-  "crape myrtle": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "Summer",
-    "chinese_common_names": [
-      "紫薇"
-    ],
-    "common_names": [
-      "crape myrtle"
-    ],
-    "explanation": "Crape myrtle is revered for its vibrant summer flowers and impressive fall foliage, offering a palette of red, yellow, and orange."
-  },
   "mulberry": {
     "deciduous": true,
     "fall_colors": false,
@@ -16556,19 +16044,6 @@
       "majestic beauty indian hawthorn"
     ],
     "explanation": "This ornamental shrub is known for its dense, glossy foliage and clusters of pink spring flowers, often used in landscaping."
-  },
-  "heavenly bamboo": {
-    "deciduous": false,
-    "fall_colors": true,
-    "beautiful_flowers": true,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "南天竹"
-    ],
-    "common_names": [
-      "heavenly bamboo"
-    ],
-    "explanation": "Heavenly bamboo is an evergreen shrub with bamboo-like appearance, famous for its red berries in winter and decorative foliage."
   },
   "argyle apple; silver dollar eucalyptus": {
     "deciduous": false,
@@ -16939,20 +16414,6 @@
     ],
     "explanation": "Xylosma species are typically evergreen shrubs or small trees. They are not particularly known for fall colors or showy flowers."
   },
-  "chinese mahogany": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "香椿"
-    ],
-    "common_names": [
-      "Chinese Mahogany",
-      "Toona sinensis"
-    ],
-    "explanation": "Chinese Mahogany is a deciduous tree known for its aromatic leaves, used in culinary dishes, and vibrant fall foliage."
-  },
   "gold ellen": {
     "deciduous": true,
     "fall_colors": true,
@@ -17150,19 +16611,6 @@
     ],
     "explanation": "This ornamental conifer is appreciated for its twisted, spiraling foliage and distinctive architectural shape."
   },
-  "red mulberry": {
-    "deciduous": true,
-    "fall_colors": true,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "红桑"
-    ],
-    "common_names": [
-      "Red Mulberry"
-    ],
-    "explanation": "Red Mulberry trees are known for their large, juicy fruits and coarse, broad leaves that color in the fall."
-  },
   "coast banksia": {
     "deciduous": false,
     "fall_colors": false,
@@ -17175,20 +16623,6 @@
       "Coast Banksia"
     ],
     "explanation": "Native to Australia, this hardy evergreen tree boasts distinctive cylindrical flower spikes loved by birds."
-  },
-  "white bottlebrush": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "白瓶刷"
-    ],
-    "common_names": [
-      "White Bottlebrush",
-      "Callistemon"
-    ],
-    "explanation": "The White Bottlebrush is a native Australian shrub known for its brush-like flowers resembling a bottlebrush, typically blooming in spring."
   },
   "baldcypress": {
     "deciduous": true,
@@ -17512,19 +16946,6 @@
     ],
     "explanation": "It's an invasive climbing plant known for its fragrant white flowers and rapid growth."
   },
-  "chilean mesquite": {
-    "deciduous": false,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "智利豆科刺树"
-    ],
-    "common_names": [
-      "Chilean Mesquite"
-    ],
-    "explanation": "Chilean mesquite is a drought-tolerant tree native to South America, valued for its ability to provide shade and food."
-  },
   "sacred fig": {
     "deciduous": true,
     "fall_colors": false,
@@ -17698,21 +17119,6 @@
       "parajubaea cocoides"
     ],
     "explanation": "This palm tree is native to the Andes of Bolivia, noted for its resilience to cold temperatures and attractive appearance, including feathery fronds and globular fruits."
-  },
-  "hardy orange": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": true,
-    "blooming_season": "Spring",
-    "chinese_common_names": [
-      "枳",
-      "枸柚"
-    ],
-    "common_names": [
-      "Hardy Orange",
-      "Trifoliate Orange"
-    ],
-    "explanation": "Hardy orange is a thorny shrub that produces small, bitter oranges and is used as a rootstock for citrus plants."
   },
   "virginia palm": {
     "deciduous": false,
@@ -18200,19 +17606,6 @@
       "eucalyptus globulus"
     ],
     "explanation": "Tasmanian Bluegum is one of the most well-known species of eucalyptus, recognized for its rapid growth, medicinal oil extraction, and wood production."
-  },
-  "edible fig": {
-    "deciduous": true,
-    "fall_colors": false,
-    "beautiful_flowers": false,
-    "blooming_season": "Summer",
-    "chinese_common_names": [
-      "无花果 (wú huā guǒ)"
-    ],
-    "common_names": [
-      "edible fig"
-    ],
-    "explanation": "The Edible Fig is known for its sweet fruit rather than its flowers. It thrives in warm climates and is a staple in many culinary traditions."
   },
   "rattlebox": {
     "deciduous": false,
@@ -20521,7 +19914,8 @@
       "Common Boxwood"
     ],
     "chinese_common_names": [
-      "常绿黄杨"
+      "常绿黄杨",
+      "欧洲黄杨"
     ]
   },
   "prunus americana": {
@@ -20763,7 +20157,8 @@
     "explanation": "Cedrella sinensis is a synonym for Toona sinensis.",
     "common_names": [
       "Chinese Mahogany",
-      "CEDRELLA SINENSIS"
+      "CEDRELLA SINENSIS",
+      "Toona sinensis"
     ],
     "chinese_common_names": [
       "香椿"
@@ -21131,7 +20526,8 @@
       "Orange, Japanese Bitter (Hardy orange)"
     ],
     "chinese_common_names": [
-      "枳"
+      "枳",
+      "枸柚"
     ]
   },
   "ilex aquifolium": {
@@ -22523,7 +21919,8 @@
       "Natchez Crapemyrtle"
     ],
     "chinese_common_names": [
-      "紫薇"
+      "紫薇",
+      "纳切兹紫薇"
     ]
   },
   "quercus cerris": {
@@ -22806,7 +22203,8 @@
       "Caucasian Wingnut"
     ],
     "chinese_common_names": [
-      "大果榉"
+      "大果榉",
+      "高加索羽翅树"
     ]
   },
   "cephalanthus occidentalis": {
@@ -26265,7 +25663,8 @@
       "Indian Hawthorne 'Majestic Beauty'"
     ],
     "chinese_common_names": [
-      "石楠"
+      "石楠",
+      "印度山楂"
     ]
   },
   "paulownia": {

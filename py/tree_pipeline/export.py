@@ -14,7 +14,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "py"))
 from tree_data import deterministic_color  # noqa: E402
 
 from .cities import CitySpec
-from .species import SpeciesResolver, is_invalid
+from .species import SpeciesResolver, is_invalid, norm_key
 from .sources import RAW_ROOT
 
 
@@ -31,6 +31,19 @@ def _color_range(species_key: str, info: dict[str, Any]) -> str:
     if info.get("deciduous"):
         return "red" if info.get("fall_colors") else "brown"
     return "green"
+
+
+def species_color(species_key: str, color_range: str) -> str:
+    """One colour per species, in every city.
+
+    Hashes the KB key reduced to its binomial (hybrid ``x`` kept), so cultivars
+    share their species' colour and inventory spelling or case never matters.
+    Older exports hashed the raw inventory name, which painted the same
+    Chinese pistache crimson in San Jose and magenta in Mountain View.
+    """
+    tokens = norm_key(species_key).split()
+    size = 3 if len(tokens) >= 3 and tokens[1] == "x" else 2
+    return deterministic_color(" ".join(tokens[:size]), color_range=color_range)
 
 
 def _read_city_records(city: CitySpec) -> list[dict[str, Any]]:
@@ -129,7 +142,7 @@ def process_city(city: CitySpec, resolver: SpeciesResolver) -> dict[str, Any]:
 
         info = resolution.info
         color_range = _color_range(resolution.key, info)
-        color = deterministic_color(resolution.key, color_range=color_range)
+        color = species_color(resolution.key, color_range)
         display = canonical_display.setdefault(resolution.key, resolution.display)
         species_counts[display] += 1
         species_colors.setdefault(resolution.display, (color, color_range))

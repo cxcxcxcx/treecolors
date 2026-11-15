@@ -45,12 +45,22 @@ ENGLISH_TOKENS = {
 }
 
 
+NOT_GENERA = {"bottlebrush", "corkscrew", "cotton", "lemon", "star", "victorian"}
+
+# Common names that the KB attached to the wrong binomial, or to a genus
+# placeholder whose traits are "Varies".
+NEVER_MERGE = {"sydney blue gum", "ficus"}
+
+
 def genus_tokens(kb: dict, aliases: dict) -> set[str]:
     """First tokens that behave like botanical genera.
 
     Derived from alias targets, which are binomials by construction: a token
-    that heads at least three of them is a genus.  Common English words are
-    excluded so that "red maple" is never mistaken for a binomial.
+    that heads one of them is a genus.  Common English words, and the few
+    common-name heads that slipped into alias targets, are excluded so that
+    "red maple" is never mistaken for a binomial.  (A three-target threshold
+    used to stand in for that list and missed Pistacia and Sequoia, leaving
+    "chinese pistache" a separate species with its own map colour.)
     """
     counts: Counter[str] = Counter()
     for value in aliases.values():
@@ -59,7 +69,7 @@ def genus_tokens(kb: dict, aliases: dict) -> set[str]:
             counts[tokens[0]] += 1
     return {
         token for token, count in counts.items()
-        if count >= 3 and token not in ENGLISH_TOKENS
+        if token not in ENGLISH_TOKENS and token not in NOT_GENERA
     }
 
 
@@ -75,6 +85,8 @@ def find_pairs(kb: dict, genera: set[str]) -> list[tuple[str, str]]:
 
     pairs: dict[str, str] = {}
     for key in kb:
+        if key in NEVER_MERGE:
+            continue
         if is_binomial(key):
             continue
         candidates = [k for k in by_common.get(key.lower(), []) if k != key and is_binomial(k)]
@@ -86,7 +98,8 @@ def find_pairs(kb: dict, genera: set[str]) -> list[tuple[str, str]]:
             continue
         for name in entry.get("common_names") or []:
             other = name.strip().lower()
-            if other in kb and other != key and not is_binomial(other) and other not in pairs:
+            if (other in kb and other != key and not is_binomial(other) and other not in pairs
+                    and other not in NEVER_MERGE):
                 pairs[other] = key
 
     return sorted(pairs.items())
@@ -103,9 +116,13 @@ def pick_survivor(candidates: list[str]) -> str:
 
 
 def merge_entry(target: dict, source: dict, common_key: str) -> dict:
+    # The binomial's traits win; the common-name entry only fills gaps. OR-ing
+    # them let one loose annotation (e.g. "silverleaf cotoneaster" turns red)
+    # recategorise every tree of the species.
     merged = dict(target)
     for field in TRAIT_FIELDS:
-        merged[field] = bool(target.get(field)) or bool(source.get(field))
+        if not isinstance(target.get(field), bool) and isinstance(source.get(field), bool):
+            merged[field] = source[field]
     for field in ("blooming_season", "explanation"):
         if not str(merged.get(field) or "").strip() and str(source.get(field) or "").strip():
             merged[field] = source[field]

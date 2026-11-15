@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from .cities import CITIES
+from .export import _color_range, species_color
 from .species import load_resolver
 
 
@@ -147,6 +148,12 @@ def _with_common(entries: list[dict[str, Any]], resolver) -> list[dict[str, Any]
         entry["common"] = common
         if hit is not None:
             key = hit.key
+            # Stored colours and categories may predate species_color() and the
+            # current KB; recompute both so the legend and list match the tiles
+            # after scripts/recolor_geojson.py --sync-traits.
+            if "deciduous" in hit.info:
+                entry["color_range"] = _color_range(key, hit.info)
+            entry["color"] = species_color(key, entry.get("color_range") or "green")
             slug = "".join(c if c.isalnum() else "_" for c in key.lower()).strip("_")
             if slug in plates:
                 plate = slug

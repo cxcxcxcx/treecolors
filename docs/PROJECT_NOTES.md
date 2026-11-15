@@ -37,6 +37,29 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
 - **Species colours are deterministic** (`deterministic_color`). Ginkgo is a
   single literal `orange`; red/brown/green ranges are hashes within a hue band.
   The legend must match the data, not a designer's gradient.
+- **One species, one colour, in every city** (user, 2026-11-15: the same tree in
+  two colours is badly confusing). `species_color()` hashes the binomial, so
+  spelling, case and cultivar never change the colour; the category comes from
+  the *current* KB, never from whatever an old export stored. After any KB edit:
+  `scripts/recolor_geojson.py --sync-traits` → `web-assets` → `build_tiles.sh`
+  (→ `export_guides.py` for the botanisense.app guides).
+- **Categories mean what the leaves do in autumn.** red = colours before
+  dropping (red, purple *or* yellow); orange = ginkgo; brown = deciduous but no
+  real autumn display (drawn very dark, near black); green = keeps its leaves.
+  - *Purple-leaf plum* (`prunus cerasifera` and cultivars) is **brown**, not
+    red (decided 2026-11-15). It is purple from spring to fall, so it is not an
+    autumn colour, and counting it added ~7 points to SF's "turning" share and
+    skewed Santa Clara. It is deciduous, so it is never green. A separate
+    "coloured all year" category (purple plum, copper beech, 'Forest Pansy'
+    redbud, 'Crimson King' maple) was considered and left for later: it needs a
+    KB field, a legend row and stats changes, for ~50k plums out of 6.6M trees.
+  - *Chinese elm / lacebark elm* (`ulmus parvifolia` and cultivars) is
+    **green** (user, 2026-11-15). In cold climates it is deciduous with yellow
+    to purplish-red fall colour (NCSU; commit 0c935d1 had set it red), but in
+    the mild California climates most of our content covers it keeps its
+    leaves through winter, and there is one category per species, not per
+    climate. As red it had pushed SF from ~16% to 18% (32k trees across all
+    cities). Revisit if a cold-climate city guide (e.g. Calgary) needs it.
 - **Artwork covers the head, not the tail.** 298 plates cover ~95% of trees;
   missing artwork is normal and the UI hides the block.
 - **Bottom sheet, not anchored popup.** A fixed sheet cannot be clipped by the
@@ -107,6 +130,8 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
 | Map looked empty after locating | zoomed to z13 before tiles loaded, counted 0 features | wait for `sourcedata`, two empty reads before stepping back |
 | Freeze when zooming out | `queryRenderedFeatures` over the whole viewport at z7 | count rendered features only at z≥10, else use city totals |
 | Same species, two colours | KB keyed by common name *and* binomial | `merge_duplicate_keys.py`, then rebuild tiles |
+| Same species, different colour per city | old exports hashed the raw inventory name ("PISTACIA CHINENSIS" ≠ "Pistacia chinensis"), and old cities kept categories from an older KB | `species_color()` hashes the binomial; `scripts/recolor_geojson.py --sync-traits`, `web-assets`, rebuild tiles |
+| `merge_duplicate_keys.py` missed "chinese pistache" | genus list needed ≥3 alias targets, so Pistacia/Sequoia weren't genera | any alias-target head is a genus, minus `NOT_GENERA`; binomial's traits win on merge |
 | Plate showed a green tree for a species that turns | `fall_colors` read as "spectacular", not "changes" | prompt now always shows the real autumn state |
 | Legend colours drifted from the map | reviewer replaced split swatches with gradients | keep the exact hex pairs, hard 50% stop |
 | Preview URL served a stale image | Cloudflare 4 h cache on `/preview/` | new filename per revision, never overwrite |
