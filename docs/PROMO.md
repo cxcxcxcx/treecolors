@@ -71,6 +71,38 @@ Storyboard (1080×1920, 18 s, 30 fps, silent — add music in the app):
 - Keep text out of the platform overlays: top ~150 px, bottom ~400 px, right
   ~130 px below mid-height.
 - Copy for both languages is the `COPY` object in the HTML.
+- Alternative openings live in `HOOKS` (`?hook=…`). `planted` (English):
+  *Bay Area fall colour isn't random. / It was planted. / street by street*, and
+  the grey map turns colour row by row instead of the circular wipe.
+  `python3 scripts/record_reel.py --lang en --hook planted` → `reel-planted.mp4`.
+
+### Voiceover
+
+```bash
+python3 scripts/voiceover.py --print            # show the script (numbers from species_stats.json)
+python3 scripts/voiceover.py --check            # zh + en × Aoede, Sulafat, Achird; Gemini transcribes each result
+python3 scripts/voiceover.py --lang en --voices Achird
+```
+
+Gemini TTS (`gemini-3.8-flash-tts`) on `GOOGLE_API_KEY`, the no-billing key.
+The free tier allows **10 requests per day per model**: one voice in one language
+is one request. Responses are cached in `data/work/voiceover/`, so re-mixing
+after a script or timing change is free; only `--fresh` or a new voice costs
+quota. Each line is placed at its scene's start time in the reel.
+
+The `planted` opening has its own script lines (`HOOKS` in `voiceover.py`).
+It was voiced with the second model, whose quota is separate. That model speaks
+more slowly, so it is sped up to keep the voice in step:
+
+```bash
+python3 scripts/voiceover.py --lang en --hook planted --voices Aoede \
+    --model gemini-2.5-flash-preview-tts --max-pause 0.3 --tempo 1.12
+```
+
+Outputs next to the reel: `reel-vo-<voice>.mp4` (video + voice) and
+`vo-<voice>.wav` (voice only — upload the plain `reel.mp4` and add this plus
+music in the app if you want to balance them yourself). With `--hook H`:
+`reel-H-vo-<voice>.mp4` and `vo-H-<voice>.wav`.
 
 ## Regenerating the screenshots
 
@@ -119,7 +151,7 @@ Palo Alto、Mountain View、Cupertino、San Jose。
 
 明年春天会再加一个「去哪看花」。
 
-免费，不用注册：treecolors.botanisense.app
+免费，不用下载 App，浏览器打开就能用：treecolors.botanisense.app
 
 BotaniSense 的 App 也上线了，可以帮植物爱好者整理自己的植物照片，应用商店可下载。
 
@@ -143,7 +175,7 @@ record.
 Nine Bay Area cities so far, including San Francisco, Berkeley, Concord,
 Fremont, San Leandro, Palo Alto, Mountain View, Cupertino and San Jose.
 
-Free, no account → treecolors.botanisense.app
+Free, nothing to install → treecolors.botanisense.app
 
 #bayarea #fallfoliage #autumn #cupertino #mountainview #sanfrancisco
 #urbanforestry #citywalk #treelovers #dataviz

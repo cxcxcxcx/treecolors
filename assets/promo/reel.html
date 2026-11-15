@@ -3,37 +3,395 @@
 <head>
 <meta charset="utf-8">
 <title>TreeColors reel</title>
+<!--
+  Vertical short video (TikTok / Reels / 小红书), 1080×1920, ~18 s.
+  Every motion is a CSS animation on one shared clock; scripts/record_reel.py
+  seeks that clock frame by frame (window.render(t)) and screenshots it.
+  Open the file directly to watch a live, looping preview: ?lang=en|zh
+  Numbers come from promo/instagram/reel-data.js, written by the recorder from
+  web/species_stats.json — never typed in here.
+-->
+<script src="../../promo/instagram/reel-data.js"></script>
 <style>
-  :root { --cream: #f7f0e1; --ink: #1f2d3a; --accent: #b84016; }
+  :root {
+    --cream: #f7f0e1; --card: #fffcf5; --ink: #1f2d3a; --muted: #6c7883;
+    --accent: #b84016; --turn: #9e1a68; --track: #e4dccb;
+    --pop: cubic-bezier(.2, 1.5, .4, 1); --out: cubic-bezier(.2, .8, .2, 1);
+  }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; width: 1080px; height: 1920px; background: var(--cream);
-    font-family: "Microsoft YaHei", -apple-system, sans-serif; overflow: hidden; }
-  .stage { position: relative; width: 1080px; height: 1920px; background: var(--cream); }
-  .scene { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    opacity: 0; animation-duration: 16s; animation-timing-function: ease-in-out; animation-iteration-count: 1;
-    animation-fill-mode: both; }
-  .scene img { width: 1000px; border-radius: 28px; box-shadow: 0 24px 60px rgba(30, 20, 10, .18); }
-  .s1 { animation-name: a1; }
-  .s2 { animation-name: a2; }
-  .s3 { animation-name: a3; }
-  .s4 { animation-name: a4; }
-  .s5 { animation-name: a5; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+  body { font-family: "DejaVu Sans", "Microsoft YaHei", sans-serif; color: var(--ink); }
+  .stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+  .scene { position: absolute; inset: 0; }
+  .abs { position: absolute; }
+  .center { left: 60px; right: 60px; text-align: center; }
+  img { display: block; }
 
-  /* 16 s total: four 3.6 s scenes and a 1.6 s end card, 0.4 s cross-fades */
-  @keyframes a1 { 0%{opacity:0; transform:scale(.98)} 3%{opacity:1} 20%{opacity:1; transform:scale(1.03)} 23%{opacity:0} 100%{opacity:0} }
-  @keyframes a2 { 0%{opacity:0} 22%{opacity:0} 25%{opacity:1} 45%{opacity:1; transform:scale(1.03)} 48%{opacity:0} 100%{opacity:0} }
-  @keyframes a3 { 0%{opacity:0} 47%{opacity:0} 50%{opacity:1} 70%{opacity:1; transform:scale(1.03)} 73%{opacity:0} 100%{opacity:0} }
-  @keyframes a4 { 0%{opacity:0} 72%{opacity:0} 75%{opacity:1} 92%{opacity:1; transform:scale(1.03)} 95%{opacity:0} 100%{opacity:0} }
-  @keyframes a5 { 0%{opacity:0} 94%{opacity:0} 97%{opacity:1} 100%{opacity:1; transform:scale(1.02)} }
+  /* ---------- keyframes ---------- */
+  @keyframes in { from { opacity: 0 } to { opacity: 1 } }
+  @keyframes out { from { opacity: 1; transform: scale(1) } to { opacity: 0; transform: scale(1.06); filter: blur(6px) } }
+  @keyframes gone { to { opacity: 0 } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(40px) } to { opacity: 1; transform: none } }
+  @keyframes pop { 0% { opacity: 0; transform: scale(.3) } 60% { opacity: 1; transform: scale(1.12) } 100% { opacity: 1; transform: scale(1) } }
+  @keyframes slam { 0% { opacity: 0; transform: scale(2.4) } 50% { opacity: 1; transform: scale(.93) } 75% { transform: scale(1.03) } 100% { opacity: 1; transform: scale(1) } }
+  @keyframes fromLeft { from { opacity: 0; transform: translateX(-110%) } to { opacity: 1; transform: none } }
+  @keyframes fromRight { from { opacity: 0; transform: translateX(110%) } to { opacity: 1; transform: none } }
+  @keyframes grow { from { transform: scaleX(0) } to { transform: scaleX(var(--s)) } }
+  @keyframes reveal { from { clip-path: circle(0% at 50% 45%) } to { clip-path: circle(80% at 50% 45%) } }
+  @keyframes plant { from { clip-path: inset(var(--a) var(--r0) var(--b) var(--l0)) } to { clip-path: inset(var(--a) 0 var(--b) 0) } }
+  @keyframes kb { from { transform: scale(1) } to { transform: scale(var(--k, 1.15)) } }
+  @keyframes rise { from { opacity: 0; transform: translateY(160px) scale(.85) } to { opacity: 1; transform: none } }
+  @keyframes sheet { from { transform: translateY(100%) } to { transform: none } }
+  @keyframes press { 0% { opacity: 0; transform: scale(1.6) } 40% { opacity: 1; transform: scale(1) } 60% { transform: scale(.8) } 100% { opacity: 0; transform: scale(.8) } }
+  @keyframes ripple { from { opacity: .9; transform: scale(.4) } to { opacity: 0; transform: scale(3.2) } }
+  @keyframes fly { from { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(.2) rotate(0) }
+                   to { opacity: 1; transform: rotate(var(--r)) } }
+  @keyframes fall { from { transform: translate(0, -160px) rotate(0) } to { transform: translate(var(--dx), 2100px) rotate(var(--spin)) } }
+  @keyframes sway { 0%, 100% { margin-left: -30px } 50% { margin-left: 30px } }
+
+  /* ---------- 1 · hook ---------- */
+  .eyebrow { font-size: 40px; font-weight: 700; color: var(--accent); letter-spacing: 2px; }
+  .h1 { font-size: 104px; font-weight: 700; line-height: 1.15; white-space: nowrap; }
+  .h1 .ch { display: inline-block; white-space: pre; }
+  .accent { color: var(--accent); }
+  .sub { font-size: 42px; color: var(--muted); line-height: 1.4; }
+  /* taller than the frame on purpose: pushes the site's floating button (bottom of the shot) off-screen */
+  .bgmap { left: 0; right: 0; top: 860px; height: 1160px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 26%); }
+  .bgmap .layer { position: absolute; inset: 0; }
+  .bgmap img { width: 100%; height: 100%; object-fit: cover; }
+  .grey { filter: grayscale(1) contrast(.85) brightness(1.08); opacity: .6; }
+
+  /* ---------- 2 · contrast ---------- */
+  .h2 { font-size: 76px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+  .mapcard { left: 60px; width: 960px; height: 380px; border-radius: 30px; overflow: hidden;
+    box-shadow: 0 22px 50px rgba(60, 40, 20, .18); }
+  .mapcard img { width: 100%; height: 100%; object-fit: cover; }
+  .row { left: 60px; right: 60px; display: flex; justify-content: space-between; align-items: baseline; }
+  .city { font-size: 50px; font-weight: 700; }
+  .city small { display: block; font-size: 32px; font-weight: 400; color: var(--muted); margin-top: 6px; }
+  .pct { font-size: 104px; font-weight: 700; color: var(--turn); line-height: 1; }
+  .bar { left: 60px; width: 960px; height: 26px; border-radius: 13px; background: var(--track); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--turn); border-radius: 13px; transform-origin: left; }
+  .stamp { width: 210px; height: 210px; border-radius: 50%; background: var(--accent); color: var(--cream);
+    display: flex; align-items: center; justify-content: center; font-size: 96px; font-weight: 700;
+    box-shadow: 0 16px 40px rgba(184, 64, 22, .4); }
+  .stamp span { display: block; transform: rotate(-12deg); }
+
+  /* ---------- 3/4 · phone ---------- */
+  .phone { left: 220px; top: 400px; width: 640px; height: 1385px; border-radius: 76px; background: #182029;
+    padding: 16px; box-shadow: 0 40px 90px rgba(30, 20, 10, .35); }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 62px; overflow: hidden; background: #eee; }
+  .screen .map { position: absolute; inset: 0; transform-origin: 46% 38%; }
+  .screen .map img { width: 100%; height: 100%; object-fit: cover; }
+  .notch { left: 50%; top: 18px; width: 150px; height: 40px; margin-left: -75px; border-radius: 20px; background: #182029; }
+  .chip { left: 40px; display: flex; align-items: center; gap: 22px; padding: 22px 34px 22px 24px;
+    background: var(--card); border-radius: 60px; box-shadow: 0 16px 40px rgba(30, 20, 10, .22);
+    font-size: 42px; font-weight: 700; transform-origin: left center; }
+  .dot { width: 56px; height: 56px; border-radius: 50%; flex: none; }
+  .finger { width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 255, 255, .9);
+    border: 6px solid rgba(31, 45, 58, .25); box-shadow: 0 8px 24px rgba(0, 0, 0, .3); }
+  .ring { width: 110px; height: 110px; border-radius: 50%; border: 8px solid #fff; opacity: 0; }
+  .sheet { left: 0; right: 0; bottom: 0; height: 900px; background-repeat: no-repeat;
+    background-size: 608px auto; background-position: 0 -422px; background-color: #fff;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, .25); }
+  /* fade out the bottom of the shot, which carries the site's floating button */
+  .sheet::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 110px;
+    background: linear-gradient(rgba(255, 255, 255, 0), #fff 45%); }
+  .plate { width: 300px; border-radius: 28px; background: var(--card); padding: 12px 12px 16px;
+    box-shadow: 0 22px 50px rgba(30, 20, 10, .28); }
+  .plate .art { width: 276px; height: 250px; border-radius: 18px; overflow: hidden; }
+  .plate .art img { width: 100%; height: 115%; object-fit: cover; object-position: top; }
+  .plate b { display: block; font-size: 32px; margin-top: 10px; text-align: center; }
+
+  /* ---------- 5 · end card ---------- */
+  .leaf { position: absolute; top: 0; }
+  .leaf svg { display: block; }
+  .domain { left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 26px 48px; border-radius: 30px;
+    background: var(--card); border: 3px solid #e7dcc6; font-size: 50px; font-weight: 700; color: var(--accent);
+    box-shadow: 0 16px 40px rgba(60, 40, 20, .14); }
+  .domain-wrap { left: 0; right: 0; }
+  .by { display: flex; justify-content: center; align-items: center; gap: 14px; font-size: 36px; color: var(--ink); }
 </style>
 </head>
 <body>
-<div class="stage">
-  <div class="scene s1"><img src="../../promo/instagram/01-contrast.png"></div>
-  <div class="scene s2"><img src="../../promo/instagram/02-species.png"></div>
-  <div class="scene s3"><img src="../../promo/instagram/04-city.png"></div>
-  <div class="scene s4"><img src="../../promo/instagram/03-legend.png"></div>
-  <div class="scene s5"><img src="../../promo/instagram/05-backcover.png"></div>
+<div class="stage" id="stage">
+
+  <!-- 1 · hook (0 – 3.4 s) -->
+  <section class="scene" style="animation: out .35s ease-in 3.15s forwards">
+    <div class="abs bgmap">
+      <div class="layer" id="hookmap" style="--k: 1.14; animation: kb 3.5s linear 0s both">
+        <div class="layer grey"><img src="../../promo/shots/cmp-cupertino.png"></div>
+        <div class="layer" id="reveal" style="animation: reveal 1.3s var(--out) 1.0s both"><img src="../../promo/shots/cmp-cupertino.png"></div>
+      </div>
+    </div>
+    <div class="abs center eyebrow" style="top: 300px" data-t="s1_eyebrow"></div>
+    <div class="abs center h1 fit" style="top: 380px" data-t="s1_a" data-split="0.03,0.045"></div>
+    <div class="abs center h1 accent fit" style="top: 520px; animation: slam .55s ease-out .75s both" data-t="s1_b"></div>
+    <div class="abs center sub" style="top: 710px; animation: fadeUp .45s var(--out) 1.7s both" data-t="s1_sub"></div>
+  </section>
+
+  <!-- 2 · contrast (3.3 – 8.0 s) -->
+  <section class="scene" style="animation: in .3s ease-out 3.3s both, out .35s ease-in 7.75s forwards">
+    <div class="abs center h2 fit" style="top: 190px; animation: fadeUp .45s var(--out) 3.35s both" data-t="s2_head"></div>
+
+    <div class="abs mapcard" style="top: 340px; animation: fromLeft .55s var(--out) 3.5s both">
+      <img src="../../promo/shots/map-all-sf.png">
+    </div>
+    <div class="abs row" style="top: 740px; animation: fadeUp .4s var(--out) 3.75s both">
+      <div class="city">San Francisco<small data-t="s2_turn"></small></div>
+      <div class="pct" data-count="sf" data-from="3.8" data-to="4.7" data-fmt="pct">0%</div>
+    </div>
+    <div class="abs bar" style="top: 920px; animation: fadeUp .4s var(--out) 3.75s both">
+      <i data-bar="sf" style="animation: grow .9s var(--out) 3.8s both"></i>
+    </div>
+
+    <div class="abs mapcard" style="top: 960px; animation: fromRight .55s var(--out) 4.75s both">
+      <img src="../../promo/shots/cmp-cupertino.png">
+    </div>
+    <div class="abs row" style="top: 1360px; animation: fadeUp .4s var(--out) 5.0s both">
+      <div class="city">Cupertino<small data-t="s2_turn"></small></div>
+      <div class="pct" data-count="cupertino" data-from="5.05" data-to="6.1" data-fmt="pct">0%</div>
+    </div>
+    <div class="abs bar" style="top: 1540px; animation: fadeUp .4s var(--out) 5.0s both">
+      <i data-bar="cupertino" style="animation: grow 1.05s var(--out) 5.05s both"></i>
+    </div>
+
+    <div class="abs stamp" style="left: 790px; top: 1150px; animation: pop .5s var(--pop) 6.35s both">
+      <span data-ratio>×3</span>
+    </div>
+  </section>
+
+  <!-- 3/4 · the app (7.9 – 15.0 s) -->
+  <section class="scene" style="animation: in .3s ease-out 7.9s both, out .35s ease-in 14.75s forwards">
+    <div class="abs center h2 fit" style="top: 150px; animation: fadeUp .45s var(--out) 8.0s both, gone .25s ease-in 11.35s forwards" data-t="s3_head"></div>
+    <div class="abs center sub" style="top: 270px; animation: fadeUp .45s var(--out) 8.2s both, gone .25s ease-in 11.35s forwards">
+      <span data-count="bay_trees" data-from="8.2" data-to="9.6" data-fmt="int">0</span><span data-t="s3_sub"></span>
+    </div>
+    <div class="abs center h2 fit" style="top: 150px; animation: fadeUp .45s var(--out) 11.5s both" data-t="s4_head"></div>
+    <div class="abs center sub" style="top: 270px; animation: fadeUp .45s var(--out) 11.65s both, gone .25s ease-in 12.95s forwards" data-t="s4_sub"></div>
+    <div class="abs center sub" style="top: 270px; animation: fadeUp .45s var(--out) 13.1s both" data-t="s4_plates"></div>
+
+    <div class="abs phone" style="animation: rise .7s var(--out) 7.95s both">
+      <div class="screen">
+        <div class="map" style="--k: 1.35; animation: kb 3.8s ease-in-out 8.2s both">
+          <img src="../../promo/shots/map-ctx-sj-close.png">
+        </div>
+        <div class="abs ring" style="left: 225px; top: 400px; animation: ripple .7s ease-out 11.75s forwards"></div>
+        <div class="abs finger" style="left: 225px; top: 400px; animation: press .8s ease-out 11.4s both"></div>
+        <div class="abs sheet" style="background-image: url(../../promo/shots/ui-sheet-mobile.png); animation: sheet .55s var(--out) 11.95s both"></div>
+        <div class="abs notch"></div>
+        <img src="../../promo/shots/ui-sheet-mobile.png" style="display: none" alt=""><!-- preload for the sheet -->
+
+      </div>
+    </div>
+
+    <div class="abs chip" style="top: 760px; animation: pop .5s var(--pop) 9.2s both, gone .3s ease-in 11.15s forwards">
+      <span class="dot" style="background: linear-gradient(90deg, #cc0000 50%, #800080 50%)"></span><span data-t="c_turn"></span>
+    </div>
+    <div class="abs chip" style="top: 900px; animation: pop .5s var(--pop) 9.55s both, gone .3s ease-in 11.15s forwards">
+      <span class="dot" style="background: #ffa500"></span><span data-t="c_ginkgo"></span>
+    </div>
+    <div class="abs chip" style="top: 1040px; animation: pop .5s var(--pop) 9.9s both, gone .3s ease-in 11.15s forwards">
+      <span class="dot" style="background: linear-gradient(90deg, #2d5016 50%, #4caf50 50%)"></span><span data-t="c_green"></span>
+    </div>
+
+    <div class="abs plate" style="left: 30px; top: 560px; --r: -8deg; --fx: 260px; --fy: 500px; animation: fly .6s var(--out) 13.0s both">
+      <div class="art"><img src="../../web/plates/liquidambar_styraciflua.png"></div><b data-t="p1"></b>
+    </div>
+    <div class="abs plate" style="left: 740px; top: 470px; --r: 7deg; --fx: -300px; --fy: 560px; animation: fly .6s var(--out) 13.25s both">
+      <div class="art"><img src="../../web/plates/pistacia_chinensis.png"></div><b data-t="p2"></b>
+    </div>
+    <div class="abs plate" style="left: 50px; top: 1020px; --r: 5deg; --fx: 250px; --fy: 50px; animation: fly .6s var(--out) 13.5s both">
+      <div class="art"><img src="../../web/plates/lagerstroemia_indica.png"></div><b data-t="p3"></b>
+    </div>
+  </section>
+
+  <!-- 5 · end card (14.9 – 18 s) -->
+  <section class="scene" style="animation: in .35s ease-out 14.9s both">
+    <div id="leaves"></div>
+    <img class="abs" src="../../web/icon-f-512.png" style="left: 430px; top: 420px; width: 220px; animation: pop .6s var(--pop) 15.05s both">
+    <div class="abs center h1 fit" style="top: 700px; animation: fadeUp .5s var(--out) 15.35s both" data-t="s5_a"></div>
+    <div class="abs center h1 accent fit" style="top: 830px; animation: fadeUp .5s var(--out) 15.6s both" data-t="s5_b"></div>
+    <div class="abs domain-wrap" style="top: 1020px; animation: fadeUp .5s var(--out) 15.95s both">
+      <div class="abs domain">treecolors.botanisense.app</div>
+    </div>
+    <div class="abs center sub" style="top: 1170px; animation: fadeUp .45s var(--out) 16.25s both" data-t="s5_free"></div>
+    <div class="abs center by" style="top: 1270px; animation: fadeUp .45s var(--out) 16.5s both">
+      <img src="../../promo/brand/botanisense-flower.png" style="height: 44px"><span data-t="s5_by"></span>
+    </div>
+  </section>
 </div>
+
+<script>
+const SECONDS = 18;
+
+const COPY = {
+  zh: {
+    s1_eyebrow: "湾区 · 秋色",
+    s1_a: "在湾区住了六七年",
+    s1_b: "才知道树会变色",
+    s1_sub: "不是我迟钝，是住的那片树本来就不变色",
+    s2_head: "同一个湾区，三倍的秋色",
+    s2_turn: "的行道树秋天会变色",
+    s3_head: "每一棵行道树，都在地图上",
+    s3_sub: " 棵 · 湾区 {bay_cities} 个城市",
+    c_turn: "会变色", c_ginkgo: "银杏", c_green: "常绿，跳过",
+    s4_head: "点开任意一棵",
+    s4_sub: "树种 · 图示 · 实拍 · 市政记录",
+    s4_plates: "{plates} 张图示，出门对照着认",
+    p1: "枫香", p2: "中国黄连木", p3: "紫薇",
+    s5_a: "找秋色。", s5_b: "走过去。",
+    s5_free: "免费 · 不用装 App · 浏览器打开就能用",
+    s5_by: "由 BotaniSense 出品",
+  },
+  en: {
+    s1_eyebrow: "BAY AREA · AUTUMN",
+    s1_a: "Six years in the Bay Area.",
+    s1_b: "Never saw the trees turn.",
+    s1_sub: "Turns out my street just doesn't.",
+    s2_head: "Same bay. 3× the colour.",
+    s2_turn: "of street trees turn in autumn",
+    s3_head: "Every street tree, mapped",
+    s3_sub: " trees · {bay_cities} Bay Area cities",
+    c_turn: "These turn", c_ginkgo: "Ginkgo", c_green: "Evergreen — skip",
+    s4_head: "Tap any tree",
+    s4_sub: "species · plate · photos · city record",
+    s4_plates: "{plates} botanical plates",
+    p1: "Sweetgum", p2: "Chinese pistache", p3: "Crape myrtle",
+    s5_a: "Find the colour.", s5_b: "Walk to it.",
+    s5_free: "Free · no app needed · opens in your browser",
+    s5_by: "by BotaniSense",
+  },
+};
+
+// alternative openings: ?hook=<name> swaps the scene-1 copy (and its map reveal)
+const HOOKS = {
+  planted: {
+    en: {
+      s1_eyebrow: "STREET TREES · AUTUMN",
+      s1_a: "Bay Area fall colour\nisn't random.",
+      s1_b: "It was planted.",
+      s1_sub: "street by street",
+    },
+  },
+};
+
+const params = new URLSearchParams(location.search);
+const lang = params.get("lang") === "en" ? "en" : "zh";
+const hook = params.get("hook");
+document.documentElement.lang = lang === "en" ? "en" : "zh-CN";
+const DATA = window.REEL_DATA || null;
+const T = { ...COPY[lang], ...(HOOKS[hook] || {})[lang] };
+
+// "planted": colour comes in row by row, alternating direction, instead of one circular wipe
+if (hook === "planted") {
+  const reveal = document.getElementById("reveal"), rows = 9;
+  for (let i = 0; i < rows; i++) {
+    const band = reveal.cloneNode(true);
+    band.removeAttribute("id");
+    const ltr = i % 2 === 0;
+    band.style.cssText = `--a: ${(100 * i / rows).toFixed(2)}%; --b: ${(100 - 100 * (i + 1) / rows).toFixed(2)}%;
+      --l0: ${ltr ? 0 : 100}%; --r0: ${ltr ? 100 : 0}%;
+      animation: plant .55s cubic-bezier(.5, 0, .3, 1) ${(1.05 + i * 0.13).toFixed(2)}s both`;
+    reveal.before(band);
+  }
+  reveal.remove();
+  // the first line is set on two lines (\n in the copy): push the rest down
+  const [a, b, sub] = ["s1_a", "s1_b", "s1_sub"].map(k => document.querySelector(`[data-t="${k}"]`));
+  a.classList.remove("fit");
+  a.style.fontSize = "84px";
+  b.style.top = "605px";
+  sub.style.top = "765px";
+}
+const fill = s => s.replace(/\{(\w+)\}/g, (_, k) => DATA ? DATA[k].toLocaleString("en-US") : "—");
+
+// text
+document.querySelectorAll("[data-t]").forEach(el => { el.textContent = fill(T[el.dataset.t]); });
+
+// per-character (zh) or per-word (en) pop-in
+document.querySelectorAll("[data-split]").forEach(el => {
+  const [start, step] = el.dataset.split.split(",").map(Number);
+  const parts = lang === "en" ? el.textContent.split(/(?<= )|(?=\n)|(?<=\n)/) : [...el.textContent];
+  el.textContent = "";
+  parts.forEach((p, i) => {
+    if (p === "\n") return el.appendChild(document.createElement("br"));
+    const span = document.createElement("span");
+    span.className = "ch";
+    span.textContent = p;
+    span.style.animation = `pop .45s var(--pop) ${(start + i * (lang === "en" ? step * 2.2 : step)).toFixed(3)}s both`;
+    el.appendChild(span);
+  });
+});
+
+// shrink single-line headlines until they fit the 960 px column
+function fitAll() {
+  document.querySelectorAll(".fit").forEach(el => {
+    el.style.fontSize = "";
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth + 1 && size > 40) el.style.fontSize = `${--size}px`;
+  });
+}
+
+// bars, counters and the ×N stamp from the stats
+const share = slug => DATA ? 100 * DATA.city[slug].fall / DATA.city[slug].total : 0;
+document.querySelectorAll("[data-bar]").forEach(el => el.style.setProperty("--s", (share(el.dataset.bar) / 100).toFixed(4)));
+if (DATA) document.querySelector("[data-ratio]").textContent = `×${Math.round(share("cupertino") / share("sf"))}`;
+const counters = [...document.querySelectorAll("[data-count]")].map(el => {
+  const key = el.dataset.count;
+  const target = !DATA ? 0 : DATA.city[key] ? share(key) : DATA[key];
+  return { el, target, t0: +el.dataset.from, t1: +el.dataset.to, fmt: el.dataset.fmt };
+});
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+
+// falling leaves on the end card — fixed seeds so every render is identical
+const LEAF = "M0,-34 C22,-22 26,8 0,34 C-26,8 -22,-22 0,-34 Z";
+const LEAF_COLOURS = ["#cc0000", "#800080", "#ffa500", "#b84016", "#9e1a68", "#e0a10b"];
+const leaves = document.getElementById("leaves");
+for (let i = 0; i < 14; i++) {
+  const x = (i * 157 + 40) % 1040, size = 0.8 + ((i * 37) % 10) / 10, colour = LEAF_COLOURS[i % LEAF_COLOURS.length];
+  const wrap = document.createElement("div");
+  wrap.className = "leaf";
+  wrap.style.left = `${x}px`;
+  wrap.style.setProperty("--dx", `${((i * 71) % 160) - 80}px`);
+  wrap.style.setProperty("--spin", `${(i % 2 ? 1 : -1) * (300 + (i * 53) % 300)}deg`);
+  wrap.style.animation = `fall ${3.6 + (i % 4) * 0.5}s linear ${(14.6 + (i * 0.23) % 2.2).toFixed(2)}s both`;
+  wrap.innerHTML = `<div style="animation: sway ${1.6 + (i % 3) * 0.3}s ease-in-out ${(14.6 + i * 0.1).toFixed(2)}s 4 both">
+    <svg width="${(70 * size).toFixed(0)}" height="${(90 * size).toFixed(0)}" viewBox="-40 -40 80 90" style="opacity: .85">
+      <path d="${LEAF}" fill="${colour}"/><path d="M0,-30 L0,46" stroke="${colour}" stroke-width="4"/>
+    </svg></div>`;
+  leaves.appendChild(wrap);
+}
+
+// one clock for everything: seek every CSS animation, then update counters
+function render(t) {
+  for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; }
+  for (const c of counters) {
+    const x = Math.min(1, Math.max(0, (t - c.t0) / (c.t1 - c.t0)));
+    const v = c.target * easeOut(x);
+    c.el.textContent = c.fmt === "pct" ? `${Math.round(v)}%` : Math.round(v).toLocaleString("en-US");
+  }
+}
+window.render = render;
+
+window.reelReady = Promise.all([
+  document.fonts.ready,
+  ...[...document.images].map(img => img.complete ? null : new Promise(r => { img.onload = img.onerror = r; })),
+]).then(() => {
+  fitAll();
+  render(0);
+  return { seconds: SECONDS, hasData: !!DATA,
+           missing: [...document.images].filter(i => !i.naturalWidth).map(i => i.src) };
+});
+
+// live preview in a normal browser: loop forever
+if (!params.has("record")) {
+  window.reelReady.then(() => {
+    const start = performance.now();
+    const tick = now => { render(((now - start) / 1000) % (SECONDS + 1)); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
+}
+</script>
 </body>
 </html>
