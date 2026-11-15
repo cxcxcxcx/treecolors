@@ -19,5 +19,9 @@ sed -i "s/const CACHE_NAME = .*/const CACHE_NAME = '$NEW_VERSION';/" web/sw.js
 sed -i "s/const SW_QUERY = '[^']*';/const SW_QUERY = '$NEW_VERSION';/" web/index.html
 echo "Updated sw.js cache to $NEW_VERSION"
 
+# The licence list lives at the repo root; the map, its llms.txt and the botanisense.app
+# guides link to /DATA_LICENSES.md, so ship a copy with the site.
+cp DATA_LICENSES.md web/DATA_LICENSES.md
+
 # web/preview is scratch space for reviews; it must never reach production.
 rsync -avz --delete --exclude 'preview/' web/ "$DEPLOY_HOST:$DEPLOY_PATH"

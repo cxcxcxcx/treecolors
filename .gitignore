@@ -199,3 +199,5 @@ web/leaves/
 data/work/
 /promo/
 tools/venv-vtrace/
+# copied from the repo root by push.sh
+web/DATA_LICENSES.md
