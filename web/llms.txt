@@ -6,8 +6,8 @@ illustration, Wikipedia photos and the original inventory record.
 
 ## What the map contains
 
-- 6,607,614 individual trees in 39 cities across the United States and Canada
-- 3,187 distinct species names (1,805 normalized keys); 298 have an AI-generated botanical plate
+- 6,609,288 individual trees in 39 cities across the United States and Canada
+- 3,205 distinct species names (1,766 normalized keys); 298 have an AI-generated botanical plate
 - One PMTiles vector tileset (`/trees.pmtiles`), no per-city selector
 
 Cities: Arlington County VA, Austin TX, Baltimore MD, Berkeley CA, Boston MA, Calgary AB,

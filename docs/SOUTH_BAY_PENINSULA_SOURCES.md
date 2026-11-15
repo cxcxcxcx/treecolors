@@ -1,10 +1,10 @@
 # South Bay & Peninsula Tree Data — Coverage, Gaps and Records Requests
 
-Compiled 13 November 2026 for treecolors.botanisense.app.
+Compiled 13 November 2026, revised 15 November 2026 for treecolors.botanisense.app.
 
 ## Status
 
-The map now carries **39 municipal inventories and 6,607,614 trees**. Six Bay Area
+The map now carries **39 municipal inventories and 6,609,288 trees**. Six Bay Area
 layers were added in this round: Santa Clara, Los Gatos, San Mateo, Burlingame,
 Brisbane and the Santa Clara County inventory. Mountain View and Milpitas were
 already live.
@@ -14,18 +14,36 @@ live service on 12–13 November 2026, not copied from a portal description.
 
 ## Added in this round (live)
 
-- **Santa Clara, CA — 9,692 trees.** Street Trees plus Parkway Trees from the city's
+- **Santa Clara, CA — 11,366 trees.** Street Trees plus Parkway Trees from the city's
   Lucity inventory, limited to `StatusCode = 2` ("In Inventory") rows that have a
-  species name. Removed trees, privately owned trees and trees transferred to the
-  property owner are excluded. No coordinate overlap with the San Jose, Cupertino,
-  Mountain View, Palo Alto or county layers.
+  species name. The only thing the filter removes is trees marked `999` "Removed",
+  which are no longer standing; private trees and trees transferred to the property
+  owner stay in. (The status field is the only exclusion: `StatusCode = 5` "Private"
+  is just 68 rows, and 1,957 rows with `OwnerCode = 103` "Private" pass the filter and
+  are mapped.) No coordinate overlap with the San Jose, Cupertino, Mountain View,
+  Palo Alto or county layers. An earlier build dropped 1,700 rows whose species names
+  were missing from the resolver's vocabulary — "Flowering Pear", "Liquid Amber",
+  "Fruitless Mulberry", "Camphor", "Geijera", "Redwood" and similar — which was a
+  knowledge-base gap, not a data-quality one. Adding 23 common-name aliases recovered
+  1,674 of them; only three ambiguous names (Laurel, Abelia, Bay Tree, 26 rows) are
+  still unresolved.
 - **Los Gatos, CA — 11,993 trees.** Town inventory published by Santa Clara County.
 - **San Mateo, CA — 22,950 trees.** City street tree inventory; records freeze in
   September 2019, so it is a snapshot rather than a live feed.
 - **Burlingame, CA — 16,433 trees.** Rows without a botanical name dropped. Published
-  from the city's web map by the account `andpineda`, not an official city account —
-  the fields (District, address, species) look like genuine city data, but the
-  provenance is worth confirming with the city before citing it as authoritative.
+  from the city's web map by the account `andpineda`, not an official city account,
+  so the attribution is worth confirming before it is cited as authoritative — but
+  the data itself checks out: coordinates are at ~1e-6° precision, and 96% of the
+  12,853 points shared with the city's separately published November 2026 layer carry
+  the same species. Two real caveats: the layer currently on the map has every
+  contextual field (address, street, district, condition, land use, DBH) empty — only
+  species and geometry survive — and its `Tree_ID` is reordered between versions, so
+  it cannot be used to join records across releases. Neither affects the map, which
+  plots species and position only. The account publishes a newer, complete-attribute
+  layer at `Burlingame_November_Update_WFL1` (16,765 rows, `IsValid` all `Yes`), but
+  its underlying data is older (last `DateModified` 2023-08-24, versus 2025-02-10 for
+  the layer in use), so switching would trade completeness for freshness and change
+  the species label on about 4% of shared points.
 - **Brisbane, CA — 4,650 trees.** PlanITGeo inventory; rows with a blank scientific
   name dropped.
 - **Santa Clara County, CA — 4,416 trees.** Saratoga, Campbell, Gilroy, Morgan Hill,

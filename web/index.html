@@ -66,7 +66,7 @@
                 "@type": "Dataset",
                 "@id": "https://treecolors.botanisense.app/#dataset",
                 "name": "North American street tree inventory map",
-                "description": "Point locations of 6,607,614 street and park trees across 39 North American cities, each with species, colour group and a link to the publishing municipality's inventory record.",
+                "description": "Point locations of 6,609,288 street and park trees across 39 North American cities, each with species, colour group and a link to the publishing municipality's inventory record.",
                 "url": "https://treecolors.botanisense.app/",
                 "isAccessibleForFree": true,
                 "creator": { "@type": "Organization", "name": "BotaniSense", "url": "https://botanisense.app/" },
@@ -1122,7 +1122,7 @@
             <button type="button" class="legend-info-close" id="legend-info-close"
                 aria-label="Close introduction">&times;</button>
             <h4 id="legend-info-title">About this map</h4>
-            <p><strong>6,607,614 trees</strong> from <strong>39 municipal inventories</strong> across the United States
+            <p><strong>6,609,288 trees</strong> from <strong>39 municipal inventories</strong> across the United States
                 and Canada, drawn from each city's open data portal.</p>
             <p>Colours follow the legend: green for evergreens, a single orange for ginkgo, red-to-purple for species
                 with striking autumn colour, and brown tones for other deciduous trees.</p>
@@ -2727,7 +2727,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261114-202025';
+                const SW_QUERY = 'tree-map-v20261115-082615';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();

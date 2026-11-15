@@ -74,3 +74,38 @@ def test_common_eastern_species_are_present():
     resolver = load_resolver()
     for name in ("Taxodium distichum", "Fagus grandifolia", "Quercus bicolor", "Pinus strobus"):
         assert resolver.resolve(name) is not None, name
+
+
+def test_bay_area_common_names_resolve():
+    # Santa Clara's Lucity inventory names most trees by common name only, and the
+    # aliases these depend on are easy to lose when the alias file is regenerated.
+    resolver = load_resolver()
+    expected = {
+        "Flowering Pear": "pyrus calleryana",
+        "Liquid Amber": "liquidambar styraciflua",
+        "Fruitless Mulberry": "morus alba",
+        "Camphor": "cinnamomum camphora",
+        "Geijera": "geijera parviflora",
+        "Redwood": "sequoia sempervirens",
+        "Chinese Fringe": "chionanthus retusus",
+        "Fruitless Olive": "olea europaea",
+    }
+    for name, key in expected.items():
+        hit = resolver.resolve(name)
+        assert hit is not None, name
+        assert hit.key == key, f"{name} -> {hit.key}, expected {key}"
+
+
+def test_bay_area_aliases_do_not_resolve_to_wrong_habit():
+    # Camphor, Geijera and the redwood are evergreens; the others are deciduous.
+    resolver = load_resolver()
+    for name, deciduous in (
+        ("Camphor", False),
+        ("Geijera", False),
+        ("Redwood", False),
+        ("Flowering Pear", True),
+        ("Liquid Amber", True),
+    ):
+        hit = resolver.resolve(name)
+        assert hit is not None, name
+        assert bool(hit.info.get("deciduous")) is deciduous, name
