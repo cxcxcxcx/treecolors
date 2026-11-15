@@ -1,11 +1,11 @@
 ---
 name: tree-map-pipeline
-description: Operate and extend the Fall Color tree map at . — city registry, ArcGIS/Socrata/CSV fetchers, species resolution and GPT enrichment, QA files, species stats, and batched PMTiles builds. Use for adding a city, debugging missing species/coordinates, or understanding how the tree data is produced.
+description: Operate and extend the TreeColors map in this repository — city registry, ArcGIS/Socrata/CSV fetchers, species resolution and GPT enrichment, QA files, species stats, and batched PMTiles builds. Use for adding a city, debugging missing species/coordinates, or understanding how the tree data is produced.
 ---
 
-# Fall Color tree map pipeline
+# TreeColors pipeline
 
-Project: `.`
+Project: the repository root (paths below are relative to it).
 Live map: `https://treecolors.botanisense.app/`
 
 ## Architecture

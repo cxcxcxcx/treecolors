@@ -28,7 +28,6 @@ import base64
 import io
 import json
 import os
-import re
 import subprocess
 import sys
 import time
@@ -109,9 +108,6 @@ def base_script(lang: str) -> list[tuple[float, str]]:
 
 def api_key() -> str:
     key = os.environ.get("GOOGLE_API_KEY")
-***REMOVED***
-***REMOVED***
-***REMOVED***
     if not key:
         raise SystemExit("GOOGLE_API_KEY not set")
     return key

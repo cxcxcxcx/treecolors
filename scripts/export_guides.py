@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import re
 import time
@@ -29,7 +30,9 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / "web"
-DEFAULT_WEB_HOME = Path("./web_home")
+# The Astro site the guides are written into. Point WEB_HOME at it, or pass
+# --web-home; there is no sensible default outside the maintainer's machine.
+DEFAULT_WEB_HOME = Path(os.environ["WEB_HOME"]) if os.environ.get("WEB_HOME") else None
 
 # Region membership by city name as it appears in species_stats.json.
 # Santa Clara County is left out: its inventory may overlap the cities in it.
@@ -389,7 +392,9 @@ def export_images(out: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--web-home", type=Path, default=DEFAULT_WEB_HOME)
+    parser.add_argument("--web-home", type=Path, default=DEFAULT_WEB_HOME,
+                        required=DEFAULT_WEB_HOME is None,
+                        help="Astro site root that receives the guides (or set WEB_HOME)")
     args = parser.parse_args()
     data_file = args.web_home / "src" / "data" / "fall-colors.json"
     data_file.parent.mkdir(parents=True, exist_ok=True)

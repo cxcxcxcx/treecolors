@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -32,8 +33,11 @@ DOMAIN = "treecolors.botanisense.app"
 
 FONT_EN_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 FONT_EN = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-FONT_ZH_BOLD = "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc"
-FONT_ZH = "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc"
+# A CJK face is needed for the zh layouts. The default ships with most Linux
+# distributions and has a single weight, so bold falls back to it unless
+# PROMO_FONT_ZH_BOLD names a bold face.
+FONT_ZH = os.environ.get("PROMO_FONT_ZH", "/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc")
+FONT_ZH_BOLD = os.environ.get("PROMO_FONT_ZH_BOLD", FONT_ZH)
 
 BAY_AREA = {"berkeley", "concordca", "cupertino", "fremontca", "palo_alto",
             "sf", "san_jose", "sanleandroca", "mountain_view_ca"}

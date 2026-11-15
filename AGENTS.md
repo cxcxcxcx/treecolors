@@ -53,4 +53,9 @@ assets/iconography/   shipped icons + their vectors, per version
 ## Related skills
 
 `treecolors-artwork` (plates, leaves, data rules), `treecolors-promo`
-(Instagram / 小红书 images and captions).
+(Instagram / 小红书 images and captions), and `tree-map-deploy` (push.sh,
+nginx/URL changes, PMTiles Range, headless checks).
+
+`tree-map-deploy` is a **maintainer-local skill** (`~/.agents/skills/`); it is
+deliberately not in this repository because it describes the production host.
+The pipeline skill stays in-tree under `.opencode/skills/`.
