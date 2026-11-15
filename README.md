@@ -1,144 +1,277 @@
-# Fall Color Tree Map
+# TreeColors
 
-Interactive map of individual street/park trees, colored by whether the species
-is evergreen, deciduous, known for fall color, or a ginkgo. One PMTiles file
-contains every city; there is no per-city selector.
+**Every street tree in 39 North American cities, on one map — coloured by what it does in autumn.**
 
-## Cities
+By [BotaniSense](https://botanisense.app/) · live at **https://treecolors.botanisense.app/**
 
-| Group | Source | Kept trees |
-|---|---|---:|
-| Washington, DC | DDOT UFA Street Trees + NPS Tidal Basin cherry trees | ~201k |
-| Arlington, VA | Arlington County DPR Trees | ~29k |
-| Montgomery County, MD | MCDOT street trees + Montgomery Parks + Gaithersburg + Bethesda BUP | ~106k |
-| Baltimore, MD | Baltimore City Forestry / TreeBaltimore | ~113k |
-| Philadelphia, PA | Philadelphia Parks & Recreation 2023 inventory | ~150k |
-| Richmond, VA | Richmond Tree Inventory | ~77k |
-| New York City, NY | NYC 2015 Street Tree Census | ~652k |
-| Boston, MA | BPRD Trees | ~52k |
-| Seattle, WA | SDOT Trees | ~215k |
-| Portland, OR | Street Tree Inventory | ~216k |
-| Austin, TX | Tree Inventory | ~59k |
-| Denver, CO | Denver Tree Inventory | ~301k |
-| Toronto, ON | Street Tree Data | ~617k |
-| Montreal, QC | Public Trees | ~330k |
-| Ottawa, ON | Tree Inventory | ~287k |
-| Calgary, AB | Public Trees | ~564k |
-| Edmonton, AB | Trees | ~482k |
-| Winnipeg, MB | Tree Inventory | ~306k |
-| Mississauga, ON | City Owned Tree Inventory | ~413k |
-| Hamilton, ON | Public Tree Inventory | ~280k |
-| Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` scripts | existing |
+[![Every street tree in the Bay Area on the map: San Francisco green, Berkeley and the South Bay red and purple](docs/screenshot-map.webp)](https://treecolors.botanisense.app/)
 
-All metro inventories are fetched by the city registry in
-`py/tree_pipeline/cities.py`. Adding a city is a data change: add a `CitySpec`
-with its source URL and field mapping, then run the pipeline. ArcGIS, Socrata
-and CSV sources are supported.
+Click any dot for its species, a botanical illustration, Wikipedia photos and a
+link back to the city's own inventory record. Free, no account, runs entirely in
+the browser.
 
-## Layout
+## Why
 
-```text
-data/
-  raw/<city>/<source>.jsonl      # fetched, normalized records (git-ignored)
-  tree_info/species_info.json    # curated species trait knowledge base (tracked)
-  tree_info/species_aliases.json # enrichment aliases (tracked)
-  output/geojson/trees_*.geojson # one file per city
-  output/summary/                # species + coordinate summaries
-  output/qa/                     # per-city QA report
-web/
-  index.html                     # MapLibre frontend
-  species_stats.json             # species panel stats per city (tracked)
-  sources.json                   # per-tree source links (tracked)
-  trees.pmtiles                  # generated, git-ignored
+Most "where to see fall colours" guides send people to the hills. In California
+the hills are mostly evergreen; the colour people photograph is planted street
+trees — pistache, sweetgum, maple, ginkgo. Saying that precisely requires
+knowing which trees grow where. Cities publish that: their street-tree
+inventories list every tree they maintain, with a species and a coordinate.
+
+So we collect those inventories, name the species, and paint each tree by its
+autumn behaviour. The same data answers other questions — how much of a city's
+canopy is evergreen, what was planted where, which streets will be worth a walk
+in three weeks — without a second collection effort.
+
+It is not a botanical authority and not a forecast: species traits are
+AI-assisted annotations, and the map shows what was planted, not what a given
+tree will do this year.
+
+## What is in it
+
+- **6.6 million trees** in **39 cities** across the US and Canada, from the
+  cities' own open inventories.
+- **1,765 species keys** (from 3,187 spellings in the inventories), resolved to
+  a canonical name and traits: deciduous or evergreen, autumn colour, flowers,
+  blooming season, common names in English and Chinese.
+- **298 botanical plates** and 315 leaf thumbnails, covering 94% of mapped trees.
+- **One PMTiles vector tileset** (~74 MB) with a single layer. There is no
+  per-city selector: the map is the index, and the same file is served from a
+  static host with HTTP Range.
+
+### Colours
+
+| Colour | Meaning |
+|---|---|
+| Green | Evergreen: keeps its leaves all winter |
+| Orange | Ginkgo, in one literal orange |
+| Red → purple | Deciduous, announces autumn colour |
+| Brown → near-black | Deciduous, but nothing showy |
+
+A species has **one colour in every city**: the colour is a hash of the
+binomial inside the category's hue band, so spelling, case and cultivar never
+paint the same tree two ways. Categories come from the knowledge base, not from
+how a particular inventory labelled the tree.
+
+### Cities
+
+<!-- cities:start -->
+<!-- Generated by scripts/readme_cities.py from web/species_stats.json. Do not edit by hand. -->
+
+**39 cities · 6,607,614 trees · 68% turn in autumn.** Counts are from the last `web-assets` run.
+
+| City | Trees | Turn | Added via | Slug |
+|---|---:|---:|---|---|
+| New York City, NY | 651,750 | 76% | registry | `new_york_ny` |
+| Toronto, ON | 617,107 | 73% | registry | `toronto_on` |
+| Calgary, AB | 564,293 | 67% | registry | `calgary_ab` |
+| Edmonton, AB | 482,157 | 72% | registry | `edmonton_ab` |
+| Mississauga, ON | 412,952 | 71% | registry | `mississauga_on` |
+| Montreal, QC | 329,672 | 76% | registry | `montreal_qc` |
+| Los Angeles, CA | 327,131 | 26% | legacy import | `los_angeles` |
+| Winnipeg, MB | 305,551 | 88% | registry | `winnipeg_mb` |
+| Denver, CO | 301,168 | 73% | registry | `denver_co` |
+| Ottawa, ON | 286,622 | 71% | registry | `ottawa_on` |
+| Hamilton, ON | 279,603 | 73% | registry | `hamilton_on` |
+| Portland, OR | 216,101 | 84% | registry | `portland_or` |
+| Seattle, WA | 214,549 | 70% | registry | `seattle_wa` |
+| San Jose, CA | 204,593 | 46% | legacy import | `san_jose` |
+| Washington, DC | 201,461 | 80% | registry | `washington_dc` |
+| Vancouver, BC | 150,114 | 79% | legacy import | `vancouver` |
+| Philadelphia, PA | 149,942 | 68% | registry | `philadelphia_pa` |
+| Baltimore City, MD | 112,927 | 79% | registry | `baltimore_md` |
+| Montgomery County, MD | 105,808 | 78% | registry | `montgomery_md` |
+| San Francisco, CA | 95,051 | 16% | legacy import | `sf` |
+| Fremont, CA | 78,237 | 45% | legacy import | `fremontca` |
+| Richmond, VA | 76,529 | 82% | registry | `richmond_va` |
+| Concord, CA | 75,611 | 41% | legacy import | `concordca` |
+| Austin, TX | 58,667 | 33% | registry | `austin_tx` |
+| Boston, MA | 52,006 | 85% | registry | `boston_ma` |
+| Berkeley, CA | 30,316 | 55% | legacy import | `berkeley` |
+| Palo Alto, CA | 30,258 | 39% | legacy import | `palo_alto` |
+| Arlington County, VA | 29,298 | 81% | registry | `arlington_va` |
+| Mountain View, CA | 28,518 | 46% | registry | `mountain_view_ca` |
+| San Mateo, CA | 22,950 | 40% | registry | `san_mateo_ca` |
+| San Diego, CA | 21,434 | 16% | legacy import | `sdtt` |
+| Milpitas, CA | 17,240 | 49% | registry | `milpitas_ca` |
+| Cupertino, CA | 16,584 | 51% | legacy import | `cupertino` |
+| Burlingame, CA | 16,433 | 39% | registry | `burlingame_ca` |
+| San Leandro, CA | 14,230 | 30% | legacy import | `sanleandroca` |
+| Los Gatos, CA | 11,993 | 45% | registry | `los_gatos_ca` |
+| Santa Clara, CA | 9,692 | 72% | registry | `santa_clara_ca` |
+| Brisbane, CA | 4,650 | 7% | registry | `brisbane_ca` |
+| Santa Clara County, CA | 4,416 | 36% | registry | `santa_clara_county_ca` |
+
+<!-- cities:end -->
+
+## Contributing
+
+Two things the project needs most:
+
+1. **More cities.** If your city publishes a tree inventory with coordinates
+   and species, an adapter is usually a data-only change — no frontend or tiling
+   code.
+2. **Better species knowledge.** Traits, common names, aliases and explanations
+   live in one JSON file and are easy to correct.
+
+Smaller but welcome: name-normalisation cases seen in new inventories, map and
+accessibility fixes, translations, documentation, tests, and anything that makes
+the science firmer — for example deriving peak timing from climate, or
+validating the colour categories against municipal phenology records.
+
+Everything follows [`CONTRIBUTING.md`](CONTRIBUTING.md). The short version:
+
+### Add your city
+
+1. Confirm the publisher allows redistribution. The inventory must be public and
+   its licence must permit publishing a derived map with attribution. Record the
+   licence in [`DATA_LICENSES.md`](DATA_LICENSES.md) — if that is unclear, open an
+   issue first and we will check together.
+2. Add a `CitySpec` with its `SourceSpec`s to
+   [`py/tree_pipeline/cities.py`](py/tree_pipeline/cities.py). Copy the nearest
+   existing city: ArcGIS REST, Socrata and CSV sources are supported, and the
+   fields to map are the species name, coordinates, an id and an address if the
+   inventory has one.
+3. Run it and read the QA report:
+
+   ```bash
+   cd py
+   python -m tree_pipeline list
+   python -m tree_pipeline fetch   --city your_city
+   python -m tree_pipeline process --city your_city
+   cat ../data/output/qa/your_city.json   # kept, deduped, invalid, missing species
+   ```
+
+4. If species names did not resolve, add them to the knowledge base — by hand
+   in `data/tree_info/species_info.json`, or with `python -m tree_pipeline enrich
+   --city your_city --dry-run` first to list what is missing (`OPENAI_API_KEY`
+   needed to fill it automatically).
+5. Rebuild and look at it:
+
+   ```bash
+   python -m tree_pipeline all --city your_city
+   cd .. && ./build_tiles.sh
+   scripts/serve_local.sh 8768
+   tests/ui/check_ui.py --url http://127.0.0.1:8768/
+   ```
+
+6. Open a pull request with the adapter, the `DATA_LICENSES.md` row, and the
+   QA numbers (kept trees, share that turns). We re-run the pipeline on the full
+   dataset and add the city to the live map.
+
+The city table in this README is generated from `web/species_stats.json`; after a
+data change run `python3 scripts/readme_cities.py` (CI checks that it is current).
+
+### Correct the species data
+
+- `data/tree_info/species_info.json` — one entry per canonical key (`"acer
+  rubrum"`), with `deciduous`, `fall_colors`, `beautiful_flowers`,
+  `blooming_season`, `common_names`, `chinese_common_names` and a one-sentence
+  `explanation`. Genus-level entries use `"Genus spp."`.
+- `data/tree_info/species_aliases.json` — inventory spellings and common names →
+  canonical key. This is how "Crepe Myrtle" and "Lagerstroemia indica" become
+  one tree.
+- Add or merge keys with `scripts/merge_duplicate_keys.py --dry-run` (it prints
+  what it would merge) and re-run the pipeline afterwards.
+
+After any knowledge-base change, colours on old exports go stale. Re-derive
+them before rebuilding tiles:
+
+```bash
+python3 scripts/recolor_geojson.py --sync-traits
+cd py && python -m tree_pipeline web-assets
+cd .. && ./build_tiles.sh
 ```
 
-## Project skills
+Why the rules are what they are — including "purple-leaf plum is brown, Chinese
+elm is evergreen" — is recorded in [`docs/PROJECT_NOTES.md`](docs/PROJECT_NOTES.md).
+Please read it before changing a category.
 
-Operational knowledge is captured for future agent sessions:
+## How it works
 
-- `.opencode/skills/tree-map-pipeline/SKILL.md` — data sources, adapters,
-  species resolution, QA, and tiling.
-- `.opencode/skills/tree-map-deploy/SKILL.md` — canonical URLs, nginx, deploy,
-  local Range server, and CDP verification.
+```text
+cities' open data ──► fetch ──► raw JSONL ──► process ──► GeoJSON per city
+                                                                 │
+                    species knowledge base ◄── enrich           │
+                                                                 ▼
+                                                        web-assets ──► species_stats.json
+                                                                 │      sources.json
+                                                                 ▼
+                                                  build_tiles.sh ──► trees.pmtiles
+                                                                 │
+                                                                 ▼
+                                                   web/ (MapLibre, static)
+```
 
-## Pipeline
+| Step | Code | Output |
+|---|---|---|
+| Adapters | `py/tree_pipeline/cities.py`, `sources.py` | `data/raw/<city>/<source>.jsonl` |
+| Species resolution | `py/tree_pipeline/species.py` | canonical key + traits per record |
+| Category and colour | `py/tree_pipeline/export.py` | `data/output/geojson/trees_<city>.geojson` |
+| QA report | same | `data/output/qa/<city>.json` |
+| Web data | `py/tree_pipeline/web_assets.py` | `web/species_stats.json`, `web/sources.json` |
+| Tiles | `build_tiles.sh` (tippecanoe, batched, then tile-join) | `web/trees.pmtiles` |
+| Frontend | `web/index.html` | the map |
 
-Run from `py/`:
+`docs/DATA_SOURCES.md` says which file is authoritative when two look alike —
+read it before quoting any coverage number. Numbers in this project have gone
+wrong by counting the wrong file, not because the data was bad.
+
+The fall-colour articles on botanisense.app are generated from the same data by
+`scripts/export_guides.py`.
+
+## Development
+
+Requirements: Python 3.12, `tippecanoe`, `pmtiles`, and `lighttpd` for local
+preview (PMTiles needs HTTP Range, which `python -m http.server` does not do).
 
 ```bash
 cd py
-
-python -m tree_pipeline list
-python -m tree_pipeline fetch --city washington_dc
-python -m tree_pipeline process --city washington_dc
-python -m tree_pipeline all --city washington_dc
-
-# All configured cities
-python -m tree_pipeline all --all
-
-# Fill missing species with GPT-4o (offline annotation, not location prediction)
-python -m tree_pipeline enrich --all
+python3 -m venv .venv && . .venv/bin/activate
+pip install -e '.[dev]'
 ```
 
-Then build the single tileset from the repository root:
+`OPENAI_API_KEY` is needed only for `enrich`; nothing else calls a network model.
+Raw inventories and generated files are git-ignored: `data/raw/`, `data/output/`,
+`web/trees.pmtiles`.
 
-```bash
-./build_tiles.sh
-```
-
-`build_tiles.sh` auto-discovers every `data/output/geojson/trees_*.geojson`,
-so adding a city does not require editing the shell script.
-
-## Species / fall-color logic
-
-`tree_data.build_geojson` / `tree_pipeline.export` look up each species in
-`data/tree_info/species_info.json` and apply a fixed rule:
-
-```text
-Ginkgo                    -> orange
-evergreen                 -> green
-deciduous + fall_colors   -> red
-deciduous                 -> brown
-```
-
-The knowledge base contains `deciduous`, `fall_colors`, `beautiful_flowers`,
-`blooming_season`, Chinese common names, and a short explanation per species.
-Names from city inventories are normalized first (cultivars, `spp.`, `var.`,
-hybrid `x`, comma-inverted common names, `SCIENTIFIC - COMMON`). Missing
-species are filled by the `enrich` command and cached for future runs.
-
-## Live map
-
-https://treecolors.botanisense.app/
-
-## Development checks
+Checks (CI runs the first two):
 
 ```bash
 PYTHONPATH=py python3 -m pytest -q py/tests
-python3 scripts/qa_summary.py
-python3 scripts/check_tiles.py
-
-scripts/serve_local.sh 8767       # PMTiles needs Range support
-scripts/verify_web.py --launch --url 'http://127.0.0.1:8767/?v=1'
+python3 scripts/readme_cities.py --check
+python3 scripts/check_tiles.py                    # after a tile build
+python3 scripts/qa_summary.py                     # per-city kept/invalid/missing
+python3 tests/ui/check_ui.py                      # headless Chrome, against live or local
 ```
 
-The browser check asserts the map/layer/species panel/source links load and
-saves an optional screenshot.
+Operational detail for agents and maintainers: `docs/PROJECT_NOTES.md`,
+`docs/DATA_SOURCES.md`, `docs/PROMO.md`, and the skills under
+`.opencode/skills/`.
 
-## Deployment
+## Deploying
 
-Copy `.deploy.env.example` to `.deploy.env` (git-ignored) and set
-`DEPLOY_HOST` / `DEPLOY_PATH`. Then:
+Copy `.deploy.env.example` to `.deploy.env` (git-ignored) and set `DEPLOY_HOST`
+and `DEPLOY_PATH`, then `./push.sh`. It rsyncs `web/` (including
+`DATA_LICENSES.md`), bumps the service-worker cache version, and never ships
+`web/preview/`.
 
-```bash
-./push.sh
-```
+## Data, licences and branding
 
-`push.sh` syncs `web/` to the production host and bumps the service-worker
-cache version. Large raw data and generated tiles stay out of git.
+- **Code**: MIT — see [`LICENSE`](LICENSE).
+- **Tree records**: each publisher's licence applies; the map is a derived work
+  and every tree links back to its source record. Per-city sources and terms are
+  in [`DATA_LICENSES.md`](DATA_LICENSES.md). Please check a city's terms before
+  redistributing its data on its own.
+- **Species annotations**: AI-assisted, not botanical authority. Review the
+  applicable model terms before reusing them commercially.
+- **Brand and artwork**: the names "TreeColors" and "BotaniSense", the
+  bird-of-paradise mark, the app icons and the promo imagery are BotaniSense's
+  own artwork and are not covered by the MIT licence. You may fork and run the
+  code, but please do not present a fork as TreeColors or BotaniSense. The botanical plates were generated with an image model; see
+  `docs/PROJECT_NOTES.md`. The oak-leaf silhouette in older icons is adapted
+  from a CC BY 3.0 Wikimedia Commons file (credited in `DATA_LICENSES.md`).
 
-## License and data
-
-Code is MIT-licensed (`LICENSE`). Tree records remain under each publisher's
-terms; see `DATA_LICENSES.md`. Generated tiles are not committed. Species
-annotations are AI-assisted and are not a botanical authority.
+TreeColors is a free web tool by [BotaniSense](https://botanisense.app/) — *a
+sense for plants*. The BotaniSense app for iPhone and Android organises the
+plant photos in your camera roll, identifies plants and keeps a care diary.

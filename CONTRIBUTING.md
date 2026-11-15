@@ -41,6 +41,10 @@ scripts/verify_web.py --launch --url 'http://127.0.0.1:8767/?v=1'
 4. If `missing_species > 0`, run enrichment and process again.
 5. Run `web-assets` if you did not use the `all` command.
 6. Build tiles and spot-check the city at zoom 12+.
+7. Run `python3 scripts/readme_cities.py` so the README city table matches
+   `web/species_stats.json` (CI fails on a stale table).
+
+The full walk-through, with commands, is in `README.md` under "Add your city".
 
 ## Rules
 
