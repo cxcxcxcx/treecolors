@@ -11,7 +11,7 @@ by species group — evergreen / ginkgo / turns in autumn / deciduous but muted.
 Click any tree → species, a botanical plate, Wikipedia photos and the source
 inventory record. No per-city selector, no account.
 
-Current shape (2026-11): **39 cities, 6.6M trees, 1,805 species keys**, 298
+Current shape (2026-11): **39 cities, 6.6M trees, 1,766 species keys**, 298
 botanical plates, 315 leaf thumbnails, `web/trees.pmtiles` ≈ 74 MB.
 
 ## Architecture
@@ -152,5 +152,9 @@ leaves cost roughly $2. Artwork runs go through `scripts/batch_plates.py`
   (`build_icon_flower`), promo (`make_promo`).
 - `docs/` — data ground truth, promo spec, this file.
 - `assets/iconography/versions/` — every shipped icon with its source vector.
-- Skills: `treecolors-artwork` (artwork + data rules), `treecolors-promo`
-  (images + copy).
+- `.opencode/skills/tree-map-pipeline/` — the in-repo operator runbook.
+- Skills kept local to the maintainer (not in this repo): `treecolors-artwork`
+  (artwork + data rules), `treecolors-promo` (images + copy), and
+  `tree-map-deploy` (host topology, nginx, CDN). The deploy runbook is out of
+  the repo on purpose — it names the production host — but `./push.sh` plus
+  `.deploy.env` is enough for anyone else.

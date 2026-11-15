@@ -15,10 +15,11 @@ authority. Read this before computing any number about the map.
 
 ## Rules
 
-- **Never compute coverage from `qa/`.** It exists for 20 of 31 cities; the
-  California and Vancouver imports predate the city config, so counting from
-  QA silently drops about 1.0M trees (that mistake produced an 84.4% figure
-  where the real number was 75.4%).
+- **Never compute coverage from `qa/`.** It exists for the 28 cities in the
+  registry; the 11 legacy imports (Bay Area, Los Angeles, San Diego, Vancouver —
+  1,043,559 trees) predate the city config, so counting from QA silently drops
+  about 16% of the map (that mistake produced an 84.4% figure where the real
+  number was 75.4%).
 - **`qa/derived/` is derived, not authoritative.** `raw_records`, `deduped`,
   `invalid_placeholders` are `null` there because the raw source is gone.
 - **`species_stats.json` is regenerated**, so run `web-assets` after any
