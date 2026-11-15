@@ -30,10 +30,13 @@ def test_cultivar_with_quotes_does_not_break_lookup():
 
 
 def test_comma_inverted_common_name():
+    # The KB keys species by binomial (the merge of common-name keys), so "Oak, Willow"
+    # must resolve through its inverted common name to the same species key.
     resolver = load_resolver()
     hit = resolver.resolve("Oak, Willow")
     assert hit is not None
-    assert hit.key == "willow oak"
+    assert hit.key == "quercus phellos"
+    assert hit.key == resolver.resolve("Willow Oak").key
 
 
 def test_gender_parenthetical():
