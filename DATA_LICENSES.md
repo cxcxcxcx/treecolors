@@ -56,6 +56,12 @@ The app uses MapLibre GL JS, PMTiles, Leaflet, OpenStreetMap tiles, Python
 `requests`, `pandas`, `geopandas`, `openai`, and `tippecanoe`/`pmtiles` CLIs.
 Their own licenses apply; see the dependency lockfiles and upstream projects.
 
+## Fonts
+
+`scripts/make_og_image.py` draws `web/og-image.png` with DejaVu Sans, which is
+distributed under a permissive Bitstream Vera / Arev licence and ships with most
+Linux distributions (`fonts-dejavu-core`). No font file is bundled here.
+
 ## Icon artwork
 
 The app icon's oak leaf silhouette is adapted from

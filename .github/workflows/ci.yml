@@ -13,10 +13,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install test dependencies
-        run: pip install pytest
+        run: pip install pytest pillow
       - name: Byte-compile pipeline
         run: python -m py_compile py/tree_pipeline/*.py
       - name: Unit tests
         run: PYTHONPATH=py python -m pytest -q py/tests
       - name: README city table is current
         run: python scripts/readme_cities.py --check
+      - name: OG image matches the data
+        run: python scripts/make_og_image.py --check

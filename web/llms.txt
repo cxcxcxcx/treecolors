@@ -30,8 +30,15 @@ Tree records come from each municipality's open data portal and stay under that
 publisher's terms; see /DATA_LICENSES.md. Species annotations are AI-assisted and
 are not a botanical authority. Basemap © OpenStreetMap contributors.
 
+## Source code
+
+The map, the city adapters and the species knowledge base are open source (MIT)
+at https://github.com/cxcxcxcx/treecolors. Adding a city is usually a data-only
+change: one `CitySpec` plus a licence row.
+
 ## Pages
 
 - / — the map
 - /DATA_LICENSES.md — per-city sources and licences
 - /sitemap.xml — URL list
+- https://github.com/cxcxcxcx/treecolors — source code (MIT), issues, city adapters

@@ -76,7 +76,9 @@
                     "geo": { "@type": "GeoShape", "box": "30.14 -138.30 53.71 -70.99" }
                 },
                 "variableMeasured": ["tree species", "fall foliage colour", "evergreen status"],
-                "license": "https://treecolors.botanisense.app/DATA_LICENSES.md"
+                "license": "https://treecolors.botanisense.app/DATA_LICENSES.md",
+                "isBasedOn": { "@type": "SoftwareSourceCode", "codeRepository": "https://github.com/cxcxcxcx/treecolors" },
+                "sameAs": "https://github.com/cxcxcxcx/treecolors"
             }
         ]
     }
@@ -1049,6 +1051,20 @@
                 font-size: 12px;
             }
 
+            /* "About · BotaniSense · GitHub" shares a 166px row with the
+               install button at this width; at 13px the last link ran under
+               the button. Shrink the type and let the row wrap if a fourth
+               link is ever added rather than clipping it. */
+            .legend-links {
+                font-size: 12px;
+                flex-wrap: wrap;
+                row-gap: 2px;
+            }
+
+            .legend-link-sep {
+                margin: 0 3px;
+            }
+
             .info-popup {
                 max-width: 300px;
                 font-size: 13px;
@@ -1128,6 +1144,9 @@
                 with striking autumn colour, and brown tones for other deciduous trees.</p>
             <p>Tap any tree to see its species, common names, a botanical plate, Wikipedia photos and a link to the
                 original inventory record.</p>
+            <p>The code that builds the map, the city adapters and the species knowledge base are open source on
+                <a href="https://github.com/cxcxcxcx/treecolors" target="_blank" rel="noopener">GitHub</a>.
+                If your city publishes a tree inventory, that is where an adapter can be added.</p>
             <div id="legend-sources">
             <h4 id="legend-copyright-title">Copyright & Data Sources</h4>
             <p>All tree data is from public tree datasets. Species information is annotated using AI.</p>
@@ -1214,6 +1233,9 @@
                         aria-expanded="false">About</button>
                     <span class="legend-link-sep">·</span>
                     <a href="https://botanisense.app/" target="_blank" rel="noopener">BotaniSense</a>
+                    <span class="legend-link-sep">·</span>
+                    <a href="https://github.com/cxcxcxcx/treecolors" target="_blank" rel="noopener"
+                        title="Source code and city adapters on GitHub">GitHub</a>
                 </div>
                 <div class="legend-actions">
                     <button type="button" class="legend-icon-button hidden" id="legend-install-button"

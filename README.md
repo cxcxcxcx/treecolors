@@ -235,15 +235,20 @@ pip install -e '.[dev]'
 Raw inventories and generated files are git-ignored: `data/raw/`, `data/output/`,
 `web/trees.pmtiles`.
 
-Checks (CI runs the first two):
+Checks (CI runs the first three):
 
 ```bash
 PYTHONPATH=py python3 -m pytest -q py/tests
-python3 scripts/readme_cities.py --check
+python3 scripts/readme_cities.py --check          # city table matches the data
+python3 scripts/make_og_image.py --check          # share card matches the data
 python3 scripts/check_tiles.py                    # after a tile build
 python3 scripts/qa_summary.py                     # per-city kept/invalid/missing
 python3 tests/ui/check_ui.py                      # headless Chrome, against live or local
 ```
+
+`scripts/make_og_image.py` redraws `web/og-image.png` from
+`web/species_stats.json`; run it after a data change so the share card does not
+advertise last month's city count.
 
 Operational detail: `docs/PROJECT_NOTES.md`, `docs/DATA_SOURCES.md`,
 `docs/PROMO.md`, and `.opencode/skills/tree-map-pipeline/`. Host-specific
