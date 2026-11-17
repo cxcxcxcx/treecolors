@@ -149,6 +149,23 @@ One 3×3 sheet is one image, so nine species cost one call. 298 plates + 315
 leaves cost roughly $2. Artwork runs go through `scripts/batch_plates.py`
 (plan / submit / status / download, resumable state in `data/work/`).
 
+## Coverage surveys
+
+Two documents record the places that were investigated and *not* added, each
+with the live service URL, the row count, the species composition and the date
+it was measured. Read them before repeating a search:
+
+- `docs/SOUTH_BAY_PENINSULA_SOURCES.md` — South Bay / Peninsula gaps and the
+  public-records email drafts.
+- `docs/REGIONAL_COVERAGE_SURVEY.md` — North Bay, San Diego County and
+  Southern California, plus the LA latitude-band colour analysis.
+
+They exist because memory is unreliable: Petaluma was written down as "a random
+sample plus parks only" for months, when the ROW and Parks layers hold 7,487
+real trees. The `Random sample trees` layer (359 points) was mistaken for the
+whole thing. Re-probe and record a date; do not carry a verdict forward
+unexamined.
+
 ## Where things live
 
 - `scripts/` — pipeline helpers, artwork (`gen_plates`, `batch_plates`), icons

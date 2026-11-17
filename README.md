@@ -268,7 +268,12 @@ python3 tests/ui/check_ui.py                      # headless Chrome, against liv
 advertise last month's city count.
 
 Operational detail: `docs/PROJECT_NOTES.md`, `docs/DATA_SOURCES.md`,
-`docs/PROMO.md`, and `.opencode/skills/tree-map-pipeline/`. Host-specific
+`docs/PROMO.md`, and `.opencode/skills/tree-map-pipeline/`. Coverage surveys
+for places we looked at and left out — with the service URLs, counts and the
+date they were measured, so a later pass can tell what changed:
+`docs/SOUTH_BAY_PENINSULA_SOURCES.md` and
+`docs/REGIONAL_COVERAGE_SURVEY.md` (North Bay, San Diego County, Southern
+California). Host-specific
 deployment steps (nginx, aliases, CDN cache) are kept outside this repository in
 the maintainer's local `tree-map-deploy` skill; the commands below are enough to
 publish a fork.
