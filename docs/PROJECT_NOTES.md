@@ -11,8 +11,8 @@ by species group — evergreen / ginkgo / turns in autumn / deciduous but muted.
 Click any tree → species, a botanical plate, Wikipedia photos and the source
 inventory record. No per-city selector, no account.
 
-Current shape (2026-11): **40 cities, 6.64M trees, 1,773 species keys**, 298
-botanical plates, 315 leaf thumbnails, `web/trees.pmtiles` ≈ 77 MB.
+Current shape (2026-11): **47 cities, 7.04M trees, 1,912 species keys**, 298
+botanical plates, 315 leaf thumbnails, `web/trees.pmtiles` ≈ 82 MB.
 
 ## Architecture
 
@@ -52,7 +52,7 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
     skewed Santa Clara. It is deciduous, so it is never green. A separate
     "coloured all year" category (purple plum, copper beech, 'Forest Pansy'
     redbud, 'Crimson King' maple) was considered and left for later: it needs a
-    KB field, a legend row and stats changes, for ~50k plums out of 6.64M trees.
+    KB field, a legend row and stats changes, for ~50k plums out of 7.04M trees.
   - *Chinese elm / lacebark elm* (`ulmus parvifolia` and cultivars) is
     **green** (user, 2026-11-15). In cold climates it is deciduous with yellow
     to purplish-red fall colour (NCSU; commit 0c935d1 had set it red), but in
@@ -131,6 +131,9 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
 | Freeze when zooming out | `queryRenderedFeatures` over the whole viewport at z7 | count rendered features only at z≥10, else use city totals |
 | Same species, two colours | KB keyed by common name *and* binomial | `merge_duplicate_keys.py`, then rebuild tiles |
 | Same species, different colour per city | old exports hashed the raw inventory name ("PISTACIA CHINENSIS" ≠ "Pistacia chinensis"), and old cities kept categories from an older KB | `species_color()` hashes the binomial; `scripts/recolor_geojson.py --sync-traits`, `web-assets`, rebuild tiles |
+| `build_tiles.sh` died silently mid-run at 61% | tippecanoe's external sort obeyed `$TMPDIR`; unset, that is `/tmp` — a tmpfs — so multi-GB scratch became RAM and the build was killed | script now exports `TMPDIR=data/output/tmp` and batches by cumulative input size (400 MB), not file count |
+| One species listed twice in the panel (Los Angeles, Cupertino) | legacy exports predate `_smart_title()`, so LA ships `Liquidambar styraciflua` *and* `LIQUIDAMBAR STYRACIFLUA`; the panel keys on the exact string | `scripts/normalize_species_case.py` merges all-caps forms into the mixed-case spelling, then `web-assets` and rebuild tiles |
+| Species panel offered `STUMP` / `OTHER` as clickable species | legacy `py/run_*.py` exports never applied `is_invalid()`; 5,211 non-tree rows were mapped | `scripts/drop_placeholder_rows.py`, then `web-assets` and rebuild tiles |
 | `merge_duplicate_keys.py` missed "chinese pistache" | genus list needed ≥3 alias targets, so Pistacia/Sequoia weren't genera | any alias-target head is a genus, minus `NOT_GENERA`; binomial's traits win on merge |
 | Plate showed a green tree for a species that turns | `fall_colors` read as "spectacular", not "changes" | prompt now always shows the real autumn state |
 | Legend colours drifted from the map | reviewer replaced split swatches with gradients | keep the exact hex pairs, hard 50% stop |
