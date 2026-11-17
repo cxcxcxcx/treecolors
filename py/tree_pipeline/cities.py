@@ -908,6 +908,211 @@ SUNNYVALE_CA = CitySpec(
 )
 
 
+OAKLAND_CA = CitySpec(
+    slug="oakland_ca",
+    name="Oakland, CA",
+    state="CA",
+    bbox=(-122.36, 37.69, -122.11, 37.91),
+    sources=(
+        SourceSpec(
+            slug="trees_along_sidewalks",
+            name="City of Oakland Trees Along Sidewalks",
+            # The older "Oakland Street Trees" exports (sv45-t3gc, 4jcx-enxf,
+            # whu4-i6pg) all carry the same placeholder coordinate for every
+            # row, so they cannot be mapped.  This survey has real geometry.
+            url="https://data.oaklandca.gov/resource/svwc-9r23.json",
+            kind="socrata",
+            # ``tree`` is -1 for a standing tree and 0 for an empty planting
+            # site; ``stump``/``dead`` are -1 for yes.  "Tree well only" rows
+            # are pits with no tree.
+            where=(
+                "species NOT IN ('Unknown','Tree well only') "
+                "AND dead='0' AND stump='0' AND tree='-1'"
+            ),
+            species_fields=("species",),
+            point_field="the_geom",
+            id_field="objectid",
+            fixed_city="Oakland, CA",
+            homepage="https://data.oaklandca.gov/dataset/TreesAlongSidewalks/svwc-9r23",
+            notes=(
+                "2006 sidewalk-tree survey: the city has not published a newer "
+                "point-level inventory.  Locations are approximate for trees "
+                "planted or removed since then."
+            ),
+        ),
+    ),
+    attribution="City of Oakland Open Data (Trees Along Sidewalks survey)",
+)
+
+
+PASADENA_CA = CitySpec(
+    slug="pasadena_ca",
+    name="Pasadena, CA",
+    state="CA",
+    bbox=(-118.19, 34.11, -118.06, 34.21),
+    sources=(
+        SourceSpec(
+            slug="street_row_trees",
+            name="City of Pasadena Street ROW Trees",
+            url=(
+                "https://services2.arcgis.com/zNjnZafDYCAJAbN0/arcgis/rest/services/"
+                "Street_ROW_Trees/FeatureServer/0"
+            ),
+            where="Status_Text = 'Active'",
+            out_fields=("Genus", "Species", "Common_Name", "OBJECTID"),
+            # The inventory splits the binomial: Genus="ULMUS",
+            # Species="PARVIFOLIA".  A blank Species leaves the genus alone,
+            # which the resolver treats as a genus-level name.
+            species_concat=("Genus", "Species"),
+            common_fields=("Common_Name",),
+            fixed_city="Pasadena, CA",
+            homepage="https://www.cityofpasadena.net/",
+        ),
+    ),
+    attribution="City of Pasadena GIS",
+)
+
+
+RIVERSIDE_CA = CitySpec(
+    slug="riverside_ca",
+    name="Riverside, CA",
+    state="CA",
+    bbox=(-117.52, 33.87, -117.27, 34.03),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="City of Riverside Street Trees",
+            url=(
+                "https://services.arcgis.com/Fu2oOWg1Aw7azh41/arcgis/rest/services/"
+                "Street_Trees/FeatureServer/0"
+            ),
+            where="BotanicalName <> 'Vacant site'",
+            out_fields=("BotanicalName", "CommonName", "OBJECTID"),
+            species_fields=("BotanicalName",),
+            common_fields=("CommonName",),
+            fixed_city="Riverside, CA",
+            homepage="https://riversideca.gov/publicworks/",
+            notes=(
+                "One row per planting site.  The TreeCount column aggregates "
+                "several trees at a site and is not used as a tree count."
+            ),
+        ),
+    ),
+    attribution="City of Riverside GIS",
+)
+
+
+REDLANDS_CA = CitySpec(
+    slug="redlands_ca",
+    name="Redlands, CA",
+    state="CA",
+    bbox=(-117.25, 34.00, -117.10, 34.09),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="City of Redlands Street Trees",
+            url=(
+                "https://services.arcgis.com/FLM8UAw9y5MmuVTV/arcgis/rest/services/"
+                "Street_Trees/FeatureServer/0"
+            ),
+            where="BOTANICALN NOT IN ('Vacant site','Stump')",
+            out_fields=("BOTANICALN", "COMMONNAME", "OBJECTID"),
+            species_fields=("BOTANICALN",),
+            common_fields=("COMMONNAME",),
+            fixed_city="Redlands, CA",
+            homepage="https://www.cityofredlands.org/",
+            notes="One row per planting site; the TREE column is per-site numbering.",
+        ),
+    ),
+    attribution="City of Redlands GIS",
+)
+
+
+SACRAMENTO_CA = CitySpec(
+    slug="sacramento_ca",
+    name="Sacramento, CA",
+    state="CA",
+    bbox=(-121.56, 38.42, -121.32, 38.69),
+    sources=(
+        SourceSpec(
+            slug="city_maintained_trees",
+            name="City of Sacramento City Maintained Trees",
+            url=(
+                "https://services5.arcgis.com/54falWtcpty3V47Z/arcgis/rest/services/"
+                "City_Maintained_Trees/FeatureServer/0"
+            ),
+            where=(
+                "BOTANICAL IS NOT NULL AND BOTANICAL <> '' AND "
+                "SPECIES NOT IN ('vacant site','stump','unknown spp','Unknown species')"
+            ),
+            out_fields=("BOTANICAL", "SPECIES", "OBJECTID"),
+            species_fields=("BOTANICAL", "SPECIES"),
+            common_fields=("SPECIES",),
+            fixed_city="Sacramento, CA",
+            homepage="https://data.cityofsacramento.org/",
+        ),
+    ),
+    attribution="City of Sacramento Public Works (City Maintained Trees)",
+)
+
+
+ESCONDIDO_CA = CitySpec(
+    slug="escondido_ca",
+    name="Escondido, CA",
+    state="CA",
+    bbox=(-117.14, 33.05, -116.96, 33.20),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="City of Escondido Tree Inventory",
+            url=(
+                "https://services2.arcgis.com/eJcVbjTyyZIzZ5Ye/arcgis/rest/services/"
+                "TreeInventory/FeatureServer/0"
+            ),
+            where=(
+                "BOTANICAL_NAME NOT IN "
+                "('Vacant site','Stump','Stump - not accessible')"
+            ),
+            out_fields=("BOTANICAL_NAME", "COMMON_NAME", "OBJECTID"),
+            species_fields=("BOTANICAL_NAME", "COMMON_NAME"),
+            common_fields=("COMMON_NAME",),
+            fixed_city="Escondido, CA",
+            homepage="https://www.escondido.org/",
+        ),
+    ),
+    attribution="City of Escondido GIS",
+)
+
+
+ENCINITAS_CA = CitySpec(
+    slug="encinitas_ca",
+    name="Encinitas, CA",
+    state="CA",
+    bbox=(-117.31, 33.01, -117.20, 33.09),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="City of Encinitas Tree Inventory",
+            url=(
+                "https://services2.arcgis.com/yrktbS5Xw87hJQvs/arcgis/rest/services/"
+                "TreeInvEncinitas_Public/FeatureServer/0"
+            ),
+            where=(
+                "LifeCycleStatus = 'Active' AND BotanicalName NOT IN "
+                "('Vacant site','Stump','Unknown','Unsuitable site',"
+                "'Stump - not accessible')"
+            ),
+            out_fields=("BotanicalName", "CommonName", "OBJECTID"),
+            species_fields=("BotanicalName", "CommonName"),
+            common_fields=("CommonName",),
+            fixed_city="Encinitas, CA",
+            homepage="https://www.encinitasca.gov/",
+        ),
+    ),
+    attribution="City of Encinitas GIS",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -938,6 +1143,13 @@ CITIES: tuple[CitySpec, ...] = (
     BRISBANE_CA,
     SANTA_CLARA_CA,
     SUNNYVALE_CA,
+    OAKLAND_CA,
+    PASADENA_CA,
+    RIVERSIDE_CA,
+    REDLANDS_CA,
+    SACRAMENTO_CA,
+    ESCONDIDO_CA,
+    ENCINITAS_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}

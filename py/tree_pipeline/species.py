@@ -39,12 +39,19 @@ _INVALID_PREFIXES = (
     "empty pit",
     "scheduled planting",
     "tree requested",
+    "unplantable",
+    "under process",
+    "not city",
+    "wca worked",
+    "homeowner refused",
     "rescon",
     "_work",
     "n/a",
     "n a",
     "not applicable",
     "none",
+    # Pasadena's inventory carries internal planting codes with no species.
+    "zadd",
 )
 _INVALID_EXACT = {
     "",
@@ -164,15 +171,34 @@ def _candidates(raw: str) -> list[tuple[str, str]]:
 
 
 def _smart_title(value: str) -> str:
+    """Binomial in sentence case, cultivar left as published but title-cased.
+
+    Pasadena publishes ``FRAXINUS VELUTINA 'modesto'``: all caps except the
+    cultivar, so the whole string is neither upper nor lower and a plain
+    ``isupper()`` test misses it.  Split the cultivar off before deciding.
+    """
+
     value = _SPACE_RE.sub(" ", value).strip()
     if not value:
         return value
-    if value.isupper() or value.islower():
-        tokens = value.split()
+
+    split = _CULTIVAR_RE.search(value)
+    head = (value[: split.start()] if split else value).strip()
+    cultivar = value[split.start():] if split else ""
+
+    tokens = head.split()
+    if head.isupper() or head.islower():
         if len(tokens) >= 2 and all(token.isalpha() for token in tokens[:2]):
-            return tokens[0].capitalize() + " " + " ".join(t.lower() for t in tokens[1:])
-        return value.title()
-    return value
+            head = tokens[0].capitalize() + " " + " ".join(t.lower() for t in tokens[1:])
+        else:
+            head = head.title()
+
+    if cultivar:
+        cultivar = _QUOTE_RE.sub(
+            lambda m: f"'{m[0][1:-1].strip().title()}'" if m[0].strip("'") else m[0],
+            cultivar,
+        )
+    return f"{head} {cultivar}".strip()
 
 
 def is_invalid(raw: str) -> bool:

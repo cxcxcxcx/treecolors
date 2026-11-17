@@ -12,7 +12,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from tree_pipeline.species import clean_name, is_invalid, load_resolver  # noqa: E402
+from tree_pipeline.species import (  # noqa: E402
+    _smart_title,
+    clean_name,
+    is_invalid,
+    load_resolver,
+)
 
 
 def test_cultivar_is_reduced_to_species():
@@ -109,3 +114,14 @@ def test_bay_area_aliases_do_not_resolve_to_wrong_habit():
         hit = resolver.resolve(name)
         assert hit is not None, name
         assert bool(hit.info.get("deciduous")) is deciduous, name
+
+
+def test_smart_title_handles_uppercase_names_and_lowercase_cultivars():
+    # Cupertino and Los Angeles ship all-caps names; Pasadena ships all caps
+    # except a lower-cased cultivar.  Both must render like the rest of the map.
+    assert _smart_title("ACACIA MELANOXYLON") == "Acacia melanoxylon"
+    assert _smart_title("FRAXINUS VELUTINA 'modesto'") == "Fraxinus velutina 'Modesto'"
+    assert _smart_title("PYRUS CALLERYANA 'BRADFORD'") == "Pyrus calleryana 'Bradford'"
+    # Already-correct names are left exactly as published.
+    assert _smart_title("Platanus x acerifolia 'Bloodgood'") == "Platanus x acerifolia 'Bloodgood'"
+    assert _smart_title("Ginkgo biloba") == "Ginkgo biloba"

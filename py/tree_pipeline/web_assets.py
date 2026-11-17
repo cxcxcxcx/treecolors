@@ -170,8 +170,8 @@ def build_species_stats() -> dict[str, Any]:
     for path in sorted(GEOJSON_DIR.glob("trees_*.geojson")):
         slug = path.stem.removeprefix("trees_")
         if slug == "oakland":
-            # Oakland is excluded from tiles because its source coordinates
-            # are unreliable; keep the stats in sync with the tiles.
+            # Legacy Oakland export: every row carries the same placeholder
+            # coordinate.  Superseded by oakland_ca, which has real geometry.
             continue
         meta = _city_meta(slug)
         qa = qa_by_slug.get(slug)
