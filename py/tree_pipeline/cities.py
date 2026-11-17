@@ -18,13 +18,14 @@ from dataclasses import dataclass
 class SourceSpec:
     """One public tree inventory source.
 
-    ``kind`` selects the adapter: ArcGIS REST, Socrata, or CSV.
+    ``kind`` selects the adapter: ArcGIS REST, Socrata, CSV, or ``workbook``
+    (a locally supplied .xlsx, see ``_fetch_workbook``).
     """
 
     slug: str
     name: str
     url: str
-    kind: str = "arcgis"  # arcgis | socrata | csv
+    kind: str = "arcgis"  # arcgis | socrata | csv | workbook
     where: str = "1=1"
     out_fields: tuple[str, ...] = ()
     # Ordered candidates for the scientific/species name.
@@ -49,6 +50,11 @@ class SourceSpec:
     point_field: str | None = None
     delimiter: str = ","
     encoding: str = "utf-8-sig"
+    # ``kind="workbook"`` only: sheet name (first sheet if None).
+    sheet: str | None = None
+    # ``kind="workbook"`` only: drop rows whose value in ``column`` is in this
+    # set.  Used for records that are no longer standing trees.
+    drop_values: tuple[tuple[str, tuple[str, ...]], ...] = ()
     fixed_city: str | None = None
     homepage: str = ""
     notes: str = ""
@@ -868,6 +874,40 @@ SANTA_CLARA_CA = CitySpec(
 )
 
 
+SUNNYVALE_CA = CitySpec(
+    slug="sunnyvale_ca",
+    name="Sunnyvale, CA",
+    state="CA",
+    bbox=(-122.10, 37.31, -121.96, 37.44),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="City of Sunnyvale Street Tree Inventory",
+            # City-supplied export (records request, November 2026): 36,866
+            # Sites, far past the county's capped 10,000-row copy, with data
+            # last edited 2026-11-13.  Placed by hand under data/raw/.
+            url="data/raw/sunnyvale_ca/Sunnyvale_street_trees.xlsx",
+            kind="workbook",
+            sheet="sql_statement",
+            # ``MT`` is the last work order on the site.  "STUMP REMOVAL" and
+            # "TREE REMOVAL" records are trees that are gone (notes confirm:
+            # "Tree was removed"), and "VACANT SITE" is an empty planting pit.
+            # Keeping them would put stumps on the map as if they were trees;
+            # Santa Clara drops its ``999`` "Removed" rows for the same reason.
+            drop_values=(("MT", ("STUMP REMOVAL", "TREE REMOVAL", "VACANT SITE")),),
+            species_fields=("SPP_bot",),
+            common_fields=("SPP_com",),
+            lat_field="latitude",
+            lng_field="longitude",
+            id_field="uniqueid",
+            fixed_city="Sunnyvale, CA",
+            homepage="https://sunnyvale.ca.gov/",
+        ),
+    ),
+    attribution="City of Sunnyvale Public Works (supplied by records request, Nov 2026)",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -897,6 +937,7 @@ CITIES: tuple[CitySpec, ...] = (
     SANTA_CLARA_COUNTY_CA,
     BRISBANE_CA,
     SANTA_CLARA_CA,
+    SUNNYVALE_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}

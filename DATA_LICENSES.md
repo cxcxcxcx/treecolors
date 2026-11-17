@@ -40,7 +40,13 @@ shown in the app and check the terms of every source you redistribute.
 | Brisbane, CA | [Tree Inventory](https://services9.arcgis.com/UGpGSV1ugL0pHSgX/arcgis/rest/services/Trees_PlanITGeo/FeatureServer/0) (ArcGIS; PlanITGeo inventory, rows with a blank scientific name excluded) | City of Brisbane GIS terms |
 | Santa Clara, CA | [Street Trees](https://map.santaclaraca.gov/maps/rest/services/Lucity/StreetTrees/FeatureServer/0) and [Parkway Trees](https://map.santaclaraca.gov/maps/rest/services/Lucity/ParkwayTrees/FeatureServer/0) (ArcGIS/Lucity; `StatusCode = 2` "In Inventory" rows that carry a species name — trees marked `999` "Removed" are dropped because they are no longer standing; private and property-transferred trees are kept) | City of Santa Clara GIS terms |
 | Santa Clara County, CA | [County tree inventories](https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/Tree_Inventories_in_Santa_Clara_County_WFL1/FeatureServer/0) (ArcGIS; Saratoga, Campbell, Gilroy, Morgan Hill, San Martin and unincorporated county only — the county service also republishes Palo Alto, San Jose, Sunnyvale, Milpitas and Los Gatos, which come from their own inventories and are filtered out here) | County of Santa Clara GIS terms |
+| Sunnyvale, CA | City of Sunnyvale Street Tree Inventory (spreadsheet supplied after a public records request, November 2026; 36,866 sites, data edited 2026-11-13; stumps, removals and vacant planting pits excluded) | City of Sunnyvale public records; attribution requested |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` sources | see individual portal terms |
+
+`kind="workbook"` sources are files the publisher sent rather than a REST
+service. `data/raw/` is not committed, so a fresh clone needs the file placed
+by hand at the path in its `SourceSpec` before `fetch` will run (the error
+message names the path).
 
 ## Species annotations
 

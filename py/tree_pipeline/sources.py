@@ -349,6 +349,59 @@ def _fetch_csv(city: CitySpec, source: SourceSpec, out_path: Path) -> int:
     return written
 
 
+# --- Workbook --------------------------------------------------------------
+def _fetch_workbook(city: CitySpec, source: SourceSpec, out_path: Path) -> int:
+    """Read a locally supplied .xlsx export (``kind="workbook"``).
+
+    Some publishers hand over a spreadsheet instead of a REST service (Sunnyvale
+    sent one after a records request).  ``url`` is a path relative to the repo
+    root; the first sheet is read unless ``where`` names one.
+    """
+
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:  # pragma: no cover - dependency hint only
+        raise SystemExit(
+            'kind="workbook" needs openpyxl: uv pip install openpyxl'
+        ) from exc
+
+    workbook_path = (PROJECT_ROOT / source.url).resolve()
+    if not workbook_path.exists():
+        raise SystemExit(
+            f"Missing workbook {workbook_path}. Place the publisher's export there "
+            f"(data/raw/ is not committed)."
+        )
+
+    part_path = out_path.with_suffix(out_path.suffix + ".part")
+    if part_path.exists():
+        part_path.unlink()
+
+    workbook = load_workbook(workbook_path, read_only=True, data_only=True)
+    sheet = workbook[source.sheet] if source.sheet else workbook.worksheets[0]
+    rows = sheet.iter_rows(values_only=True)
+    header = [str(value or "").strip() for value in next(rows)]
+    drop = {column: set(values) for column, values in source.drop_values}
+
+    written = 0
+    count = 0
+    dropped = 0
+    with part_path.open("w", encoding="utf-8") as handle:
+        for values in rows:
+            count += 1
+            row = dict(zip(header, values))
+            if any(str(row.get(column) or "").strip() in values for column, values in drop.items()):
+                dropped += 1
+                continue
+            if _write_record(handle, row, source, city):
+                written += 1
+            if count % 50000 == 0:
+                print(f"    rows {count:,}: {written:,} usable")
+    workbook.close()
+    part_path.replace(out_path)
+    print(f"    read {count:,} workbook rows from {sheet.title!r}; dropped {dropped:,} non-standing records")
+    return written
+
+
 # --- Dispatch --------------------------------------------------------------
 def fetch_source(city: CitySpec, source: SourceSpec, *, force: bool = False) -> int:
     raw_dir = RAW_ROOT / city.slug
@@ -368,6 +421,8 @@ def fetch_source(city: CitySpec, source: SourceSpec, *, force: bool = False) -> 
         written = _fetch_socrata(city, source, out_path)
     elif source.kind == "csv":
         written = _fetch_csv(city, source, out_path)
+    elif source.kind == "workbook":
+        written = _fetch_workbook(city, source, out_path)
     else:
         raise SystemExit(f"Unknown source kind {source.kind!r}")
 

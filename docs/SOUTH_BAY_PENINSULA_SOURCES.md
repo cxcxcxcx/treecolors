@@ -1,13 +1,13 @@
 # South Bay & Peninsula Tree Data — Coverage, Gaps and Records Requests
 
-Compiled 13 November 2026, revised 15 November 2026 for treecolors.botanisense.app.
+Compiled 13 November 2026, revised 16 November 2026 for treecolors.botanisense.app.
 
 ## Status
 
-The map now carries **39 municipal inventories and 6,609,288 trees**. Six Bay Area
+The map now carries **40 municipal inventories and 6,642,191 trees**. Seven Bay Area
 layers were added in this round: Santa Clara, Los Gatos, San Mateo, Burlingame,
-Brisbane and the Santa Clara County inventory. Mountain View and Milpitas were
-already live.
+Brisbane, the Santa Clara County inventory and Sunnyvale. Mountain View and
+Milpitas were already live.
 
 All counts below were measured with the ArcGIS `returnCountOnly` query against the
 live service on 12–13 November 2026, not copied from a portal description.
@@ -50,36 +50,23 @@ live service on 12–13 November 2026, not copied from a portal description.
   San Martin and unincorporated county only. The county service also republishes
   Palo Alto, San Jose, Sunnyvale, Milpitas and Los Gatos, which are filtered out so
   nothing is counted twice.
+- **Sunnyvale, CA — 32,903 trees.** The uncapped export arrived: the city sent a
+  spreadsheet (36,866 site records, data edited 2026-11-13) after the records
+  request. It supersedes the county's capped 10,000-row copy — 8,662 of those
+  SiteIDs still appear, and on 97% of them the species agrees, so the old copy was
+  the same inventory truncated, as suspected. Rows whose last work order is
+  `STUMP REMOVAL`, `TREE REMOVAL` or `VACANT SITE` (337 records) are dropped: they
+  are gone trees or empty pits, the same rule Santa Clara applies to its `999`
+  "Removed" rows. 3,615 rows are exact duplicates (same address, DBH, date and
+  coordinate) and are removed by the pipeline's dedupe. Sunnyvale now resolves
+  **every** species name — the parenthesised-scientific-name parsing problem from
+  the county copy does not apply, because the spreadsheet carries the scientific
+  name in its own `SPP_bot` field. The file is not redistributable code and is
+  kept out of git (`data/raw/`); the workbook adapter reads it from
+  `data/raw/sunnyvale_ca/Sunnyvale_street_trees.xlsx`.
 
 ## Available but deliberately not added
 
-- **Sunnyvale — truncated export, and the city has no public inventory of its own.**
-  The county-hosted "Sunnyvale Trees" layer
-  (`Tree_Inventories_in_Santa_Clara_County_WFL1/FeatureServer/1`) returns exactly
-  10,000 rows. The evidence that this is a capped copy rather than the real count:
-
-  - OBJECTID statistics are `min = 1`, `max = 10000`, `count = 10000` — a contiguous
-    block, not a sample or a filtered subset.
-  - Street names cover only A–D: A 1,874 · B 3,205 · C 3,672 · D 1,249. Sunnyvale's
-    street grid continues well past D (Evelyn, Fair Oaks, Mathilda, Murphy, etc.).
-  - Queried in street order, the last record is "DWIGHT AV"; nothing sorts after D.
-  - The layer's `editingInfo.dataLastEditDate` is 2021-08-11, so even the capped copy
-    is a five-year-old snapshot.
-
-  The city's own GIS (`gis.sunnyvale.ca.gov/arcgis/rest/services`, 32 services across
-  12 folders) has **no tree layer at all** — it publishes parcels, zoning, utilities,
-  bikeways, permits and addresses, but no urban forestry assets. The only county-side
-  Sunnyvale records outside this layer are 974 rows inside the county "Tree Plotter"
-  inventory, a small subset already superseded by the 10,000-row copy.
-
-  Separately, the species field packs common and scientific name into one string,
-  e.g. `LIQUIDAMBAR SWEETGUM (Liquidambar styraciflua)`, and the current name cleaner
-  drops the parenthetical, so only 65 of 167 distinct values resolve to a species.
-  Reading the scientific name out of the parentheses first raises that to 153 of 167,
-  so this is a fixable parsing detail, not a reason to skip the data.
-
-  Conclusion: a usable Sunnyvale layer exists but the public copy is capped. The ask
-  is the **uncapped export**, not a new inventory.
 - **Saratoga heritage trees — 44 trees.** The city's main "Trees" service has had
   0 features since 2023; the county layer's 512 Saratoga trees are already included
   through the county group. The heritage layer is a nice supplement but not a

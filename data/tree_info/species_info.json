@@ -26901,5 +26901,62 @@
     "chinese_common_names": [
       "沙柳"
     ]
+  },
+  "quercus wislizeni": {
+    "deciduous": false,
+    "fall_colors": false,
+    "beautiful_flowers": false,
+    "blooming_season": "Spring",
+    "chinese_common_names": [
+      "内陆活橡"
+    ],
+    "common_names": [
+      "Interior Live Oak",
+      "Oak, Interior Live",
+      "Quercus wislizenii"
+    ],
+    "explanation": "Quercus wislizeni is an evergreen oak native to the foothills and valleys of California, with sharply toothed, holly-like leaves."
+  },
+  "chilopsis linearis": {
+    "deciduous": true,
+    "fall_colors": false,
+    "beautiful_flowers": true,
+    "blooming_season": "Spring to Summer",
+    "chinese_common_names": [
+      "沙漠柳"
+    ],
+    "common_names": [
+      "Desert Willow",
+      "Bubba Desert Willow",
+      "Willow, Desert"
+    ],
+    "explanation": "Chilopsis linearis, the desert willow, is a small drought-tolerant tree from the American Southwest with willow-like leaves and orchid-shaped flowers."
+  },
+  "eucalyptus parvula": {
+    "deciduous": false,
+    "fall_colors": false,
+    "beautiful_flowers": true,
+    "blooming_season": "Spring to Summer",
+    "chinese_common_names": [
+      "小叶桉"
+    ],
+    "common_names": [
+      "Small-leaved Gum",
+      "Eucalyptus Small-leaved Gum"
+    ],
+    "explanation": "Eucalyptus parvula, the small-leaved gum, is an evergreen Australian tree with narrow leaves and clusters of small white flowers."
+  },
+  "calodendrum capense": {
+    "deciduous": false,
+    "fall_colors": false,
+    "beautiful_flowers": true,
+    "blooming_season": "Spring to Summer",
+    "chinese_common_names": [
+      "好望角栗"
+    ],
+    "common_names": [
+      "Cape Chestnut"
+    ],
+    "explanation": "Calodendrum capense, the Cape chestnut, is a South African evergreen tree grown for its showy pink flower clusters."
   }
 }
