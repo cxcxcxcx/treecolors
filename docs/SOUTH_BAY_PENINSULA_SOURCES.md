@@ -4,7 +4,7 @@ Compiled 13 November 2026, revised 16 November 2026 for treecolors.botanisense.a
 
 ## Status
 
-The map now carries **40 municipal inventories and 6,642,191 trees**. Seven Bay Area
+The map now carries **47 municipal inventories and 7,035,464 trees**. Seven Bay Area
 layers were added in this round: Santa Clara, Los Gatos, San Mateo, Burlingame,
 Brisbane, the Santa Clara County inventory and Sunnyvale. Mountain View and
 Milpitas were already live.

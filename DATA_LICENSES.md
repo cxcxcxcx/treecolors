@@ -41,7 +41,18 @@ shown in the app and check the terms of every source you redistribute.
 | Santa Clara, CA | [Street Trees](https://map.santaclaraca.gov/maps/rest/services/Lucity/StreetTrees/FeatureServer/0) and [Parkway Trees](https://map.santaclaraca.gov/maps/rest/services/Lucity/ParkwayTrees/FeatureServer/0) (ArcGIS/Lucity; `StatusCode = 2` "In Inventory" rows that carry a species name — trees marked `999` "Removed" are dropped because they are no longer standing; private and property-transferred trees are kept) | City of Santa Clara GIS terms |
 | Santa Clara County, CA | [County tree inventories](https://services.arcgis.com/NkcnS0qk4w2wasOJ/arcgis/rest/services/Tree_Inventories_in_Santa_Clara_County_WFL1/FeatureServer/0) (ArcGIS; Saratoga, Campbell, Gilroy, Morgan Hill, San Martin and unincorporated county only — the county service also republishes Palo Alto, San Jose, Sunnyvale, Milpitas and Los Gatos, which come from their own inventories and are filtered out here) | County of Santa Clara GIS terms |
 | Sunnyvale, CA | City of Sunnyvale Street Tree Inventory (spreadsheet supplied after a public records request, November 2026; 36,866 sites, data edited 2026-11-13; stumps, removals and vacant planting pits excluded) | City of Sunnyvale public records; attribution requested |
+| Oakland, CA | [Trees Along Sidewalks](https://data.oaklandca.gov/dataset/TreesAlongSidewalks/svwc-9r23) (Socrata; 2006 survey — the city's newer tree exports all share one placeholder coordinate and cannot be mapped; stumps, dead trees, empty planting sites and "Tree well only" pits excluded) | City of Oakland Open Data terms |
+| Pasadena, CA | [Street ROW Trees](https://services2.arcgis.com/zNjnZafDYCAJAbN0/arcgis/rest/services/Street_ROW_Trees/FeatureServer/0) (ArcGIS; `Status_Text = 'Active'`; rows with internal `ZADD` planting codes excluded) | City of Pasadena GIS terms |
+| Riverside, CA | [Street Trees](https://services.arcgis.com/Fu2oOWg1Aw7azh41/arcgis/rest/services/Street_Trees/FeatureServer/0) (ArcGIS; one row per planting site, "Vacant site" excluded) | City of Riverside GIS terms |
+| Redlands, CA | [Street Trees](https://services.arcgis.com/FLM8UAw9y5MmuVTV/arcgis/rest/services/Street_Trees/FeatureServer/0) (ArcGIS; one row per planting site, "Vacant site" and "Stump" excluded) | City of Redlands GIS terms |
+| Sacramento, CA | [City Maintained Trees](https://services5.arcgis.com/54falWtcpty3V47Z/arcgis/rest/services/City_Maintained_Trees/FeatureServer/0) (ArcGIS; vacant sites, stumps and unknown-species rows excluded) | City of Sacramento open data terms |
+| Escondido, CA | [Tree Inventory](https://services2.arcgis.com/eJcVbjTyyZIzZ5Ye/arcgis/rest/services/TreeInventory/FeatureServer/0) (ArcGIS; vacant sites and stumps excluded) | City of Escondido GIS terms |
+| Encinitas, CA | [Tree Inventory](https://services2.arcgis.com/yrktbS5Xw87hJQvs/arcgis/rest/services/TreeInvEncinitas_Public/FeatureServer/0) (ArcGIS/PlanITGeo; `LifeCycleStatus = 'Active'`, vacant sites, stumps and unsuitable sites excluded) | City of Encinitas GIS terms |
 | Bay Area / LA / San Diego / Vancouver | legacy `py/run_*.py` sources | see individual portal terms |
+
+The legacy Oakland GeoJSON (`trees_oakland.geojson`, 2013 export) is kept out
+of the tiles and the stats: every row in that export carries the same
+placeholder coordinate. `oakland_ca` supersedes it.
 
 `kind="workbook"` sources are files the publisher sent rather than a REST
 service. `data/raw/` is not committed, so a fresh clone needs the file placed
