@@ -77,10 +77,18 @@ Every candidate that survived was then measured:
 | SoCal | Santa Monica `Santa_Monica_Trees` | 34,992 | 30,485 | 9.1% | **addable pending provenance** |
 | SoCal | Signal Hill `Street_Trees_public` | 3,879 | 2,723 | 21.6% | addable, 2022 vintage |
 
-If everything marked addable were taken, the map would gain roughly **189,000
-trees** — about 2.7% on top of the current 7.04M, concentrated in the three
-regions the map currently covers worst (North Bay, San Diego County, Ventura
-County).
+**Update, 17 November 2026:** the five bold "addable" rows with a ready
+`CitySpec` — Napa, La Mesa, Ventura, Santa Monica and Signal Hill — are now in
+the registry and on the map. Their final kept counts differ slightly from the
+estimates above because the pipeline also dedupes and drops out-of-bbox rows:
+Napa 34,000, La Mesa 9,637, Ventura 29,559, Santa Monica 33,956 and Signal Hill
+2,876, i.e. **110,028 trees** added, and the map stands at 52 cities /
+7,145,492 trees.
+
+Still not added, and why: Petaluma (a partial non-random survey — see the
+correction above), Anaheim (licence restricted to QA/QC and operations), and
+the San Diego layers (RSG versus District 4, plus the additive legacy `sdtt`
+question).
 
 ## North Bay
 

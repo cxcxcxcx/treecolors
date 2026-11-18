@@ -52,6 +52,15 @@ _INVALID_PREFIXES = (
     "none",
     # Pasadena's inventory carries internal planting codes with no species.
     "zadd",
+    # Ventura and La Mesa use these for empty planting sites; Anaheim uses its
+    # own wording for the same thing.
+    "unsuitable",
+    "no replant",
+    "not city planted",
+    # Ventura rows whose geometry outlived the species record, and tree wells
+    # that were paved over (Santa Monica).
+    "tree site",
+    "asphalted",
 )
 _INVALID_EXACT = {
     "",
@@ -66,6 +75,8 @@ _INVALID_EXACT = {
     "unknown shrub",
     "private tree",
     "n a",
+    # La Mesa uses the leaf habit as the species value for one row.
+    "deciduous",
 }
 
 _QUOTE_RE = re.compile(r"[\"'‘’“”`][^\"'‘’“”`]*[\"'‘’“”`]")

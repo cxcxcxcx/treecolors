@@ -1113,6 +1113,151 @@ ENCINITAS_CA = CitySpec(
 )
 
 
+# --- North Bay -------------------------------------------------------------
+NAPA_CA = CitySpec(
+    slug="napa_ca",
+    name="Napa, CA",
+    state="CA",
+    bbox=(-122.36, 38.24, -122.25, 38.36),
+    sources=(
+        SourceSpec(
+            slug="trees",
+            name="Trees Napa",
+            url=(
+                "https://services3.arcgis.com/HVKk0mXWDGCVpolG/arcgis/rest/services/"
+                "Trees_Napa/FeatureServer/0"
+            ),
+            out_fields=("SPECIES_BO", "SPECIES_CO", "FID"),
+            species_fields=("SPECIES_BO", "SPECIES_CO"),
+            common_fields=("SPECIES_CO",),
+            id_field="FID",
+            fixed_city="Napa, CA",
+            homepage="https://www.cityofnapa.org/",
+            notes=(
+                "Davey Resource Group inventory published from a contractor "
+                "ArcGIS account; last data edit 2024-08-06."
+            ),
+        ),
+    ),
+    attribution="City of Napa / Davey Resource Group (ArcGIS Online)",
+)
+
+
+# --- San Diego County ------------------------------------------------------
+LA_MESA_CA = CitySpec(
+    slug="la_mesa_ca",
+    name="La Mesa, CA",
+    state="CA",
+    bbox=(-117.07, 32.70, -116.95, 32.81),
+    sources=(
+        SourceSpec(
+            slug="tree_inventory",
+            name="City of La Mesa Tree Inventory",
+            url=(
+                "https://services3.arcgis.com/iYP51zxNr6TITn6r/arcgis/rest/services/"
+                "Tree_Inventory/FeatureServer/4"
+            ),
+            out_fields=("BotanicalName", "CommonName", "OBJECTID"),
+            species_fields=("BotanicalName", "CommonName"),
+            common_fields=("CommonName",),
+            fixed_city="La Mesa, CA",
+            homepage="https://www.cityoflamesa.us/",
+            notes=(
+                "Official city layer. Six records sit at (0, 0) and are dropped "
+                "by the bbox check; the service's declared extent is broken for "
+                "the same reason."
+            ),
+        ),
+    ),
+    attribution="City of La Mesa GIS",
+)
+
+
+# --- Southern California ---------------------------------------------------
+VENTURA_CA = CitySpec(
+    slug="ventura_ca",
+    name="Ventura, CA",
+    state="CA",
+    bbox=(-119.36, 34.22, -119.13, 34.36),
+    sources=(
+        SourceSpec(
+            slug="trees",
+            name="City of San Buenaventura Trees",
+            url=(
+                "https://services.arcgis.com/dBVj4EXO3IdRPOqb/arcgis/rest/services/"
+                "OpenData_AssetsOther_Trees/FeatureServer/0"
+            ),
+            out_fields=("BOTANICAL", "COMMON", "OBJECTID"),
+            species_fields=("BOTANICAL", "COMMON"),
+            common_fields=("COMMON",),
+            page_size=16000,
+            fixed_city="Ventura, CA",
+            homepage="https://www.cityofventura.ca.gov/",
+            notes=(
+                "Do not filter on FICTITIOUS='X': it is a West Coast Arborists "
+                "internal flag, not a placeholder marker, and half the real trees "
+                "carry it."
+            ),
+        ),
+    ),
+    attribution="City of San Buenaventura (City of Ventura) GIS",
+)
+
+
+SANTA_MONICA_CA = CitySpec(
+    slug="santa_monica_ca",
+    name="Santa Monica, CA",
+    state="CA",
+    bbox=(-118.52, 33.99, -118.43, 34.05),
+    sources=(
+        SourceSpec(
+            slug="trees",
+            name="Santa Monica Trees",
+            url=(
+                "https://services7.arcgis.com/piPfTFmrV9d1DIvN/arcgis/rest/services/"
+                "Santa_Monica_Trees/FeatureServer/0"
+            ),
+            out_fields=("botanicaln", "commonname", "FID"),
+            species_fields=("botanicaln", "commonname"),
+            common_fields=("commonname",),
+            id_field="FID",
+            fixed_city="Santa Monica, CA",
+            homepage="https://www.santamonica.gov/",
+            notes=(
+                "isvalid is a truncated ' Ye' and fictitious is a single space on "
+                "every row, so neither works as a filter."
+            ),
+        ),
+    ),
+    attribution="City of Santa Monica (Esri Local Government deployment)",
+)
+
+
+SIGNAL_HILL_CA = CitySpec(
+    slug="signal_hill_ca",
+    name="Signal Hill, CA",
+    state="CA",
+    bbox=(-118.19, 33.78, -118.14, 33.83),
+    sources=(
+        SourceSpec(
+            slug="street_trees",
+            name="City of Signal Hill Street Trees",
+            url=(
+                "https://services9.arcgis.com/LUBoZWfQwvBnZCmP/arcgis/rest/services/"
+                "Street_Trees_public/FeatureServer/0"
+            ),
+            out_fields=("botanical_name", "common_name", "OBJECTID"),
+            species_fields=("botanical_name", "common_name"),
+            common_fields=("common_name",),
+            fixed_city="Signal Hill, CA",
+            homepage="https://www.cityofsignalhill.org/",
+            notes="2022 inventory — a snapshot, not a live feed.",
+        ),
+    ),
+    attribution="City of Signal Hill GIS",
+)
+
+
 CITIES: tuple[CitySpec, ...] = (
     WASHINGTON_DC,
     ARLINGTON_VA,
@@ -1150,6 +1295,11 @@ CITIES: tuple[CitySpec, ...] = (
     SACRAMENTO_CA,
     ESCONDIDO_CA,
     ENCINITAS_CA,
+    NAPA_CA,
+    LA_MESA_CA,
+    VENTURA_CA,
+    SANTA_MONICA_CA,
+    SIGNAL_HILL_CA,
 )
 
 CITY_BY_SLUG = {city.slug: city for city in CITIES}

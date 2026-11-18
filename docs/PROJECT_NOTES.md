@@ -11,8 +11,8 @@ by species group — evergreen / ginkgo / turns in autumn / deciduous but muted.
 Click any tree → species, a botanical plate, Wikipedia photos and the source
 inventory record. No per-city selector, no account.
 
-Current shape (2026-11): **47 cities, 7.04M trees, 1,912 species keys**, 298
-botanical plates, 315 leaf thumbnails, `web/trees.pmtiles` ≈ 82 MB.
+Current shape (2026-11): **52 cities, 7.15M trees, 1,946 species keys**, 298
+botanical plates, 315 leaf thumbnails, `web/trees.pmtiles` ≈ 84 MB.
 
 ## Architecture
 
@@ -52,7 +52,7 @@ Pipeline: `python3 -m tree_pipeline process --all` → `web-assets` →
     skewed Santa Clara. It is deciduous, so it is never green. A separate
     "coloured all year" category (purple plum, copper beech, 'Forest Pansy'
     redbud, 'Crimson King' maple) was considered and left for later: it needs a
-    KB field, a legend row and stats changes, for ~50k plums out of 7.04M trees.
+    KB field, a legend row and stats changes, for ~50k plums out of 7.15M trees.
   - *Chinese elm / lacebark elm* (`ulmus parvifolia` and cultivars) is
     **green** (user, 2026-11-15). In cold climates it is deciduous with yellow
     to purplish-red fall colour (NCSU; commit 0c935d1 had set it red), but in
