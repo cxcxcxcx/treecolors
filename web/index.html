@@ -2764,7 +2764,7 @@
             window.addEventListener('load', () => {
                 // A query string + updateViaCache:none bypasses stale CDN/browser
                 // copies of sw.js after a deploy.  Bump SW_QUERY when needed.
-                const SW_QUERY = 'tree-map-v20261117-192730';
+                const SW_QUERY = 'tree-map-v20261119-203851';
                 navigator.serviceWorker.register(`./sw.js?v=${SW_QUERY}`, { updateViaCache: 'none' })
                     .then((registration) => {
                         registration.update();
