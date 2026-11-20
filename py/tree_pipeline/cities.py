@@ -908,6 +908,44 @@ SUNNYVALE_CA = CitySpec(
 )
 
 
+ATHERTON_CA = CitySpec(
+    slug="atherton_ca",
+    name="Atherton, CA",
+    state="CA",
+    bbox=(-122.24, 37.43, -122.16, 37.48),
+    sources=(
+        SourceSpec(
+            slug="town_trees",
+            name="Town of Atherton Tree Inventory 2026",
+            # Town-supplied West Coast Arborists export (Public Records Act
+            # request PRA 2026-188, November 2026): 1,444 rows, town-maintained
+            # trees only — Holbrook-Palmer Park, medians and town frontages.
+            # Atherton's residential street trees are private and not in it.
+            # Placed by hand under data/raw/.
+            url="data/raw/atherton_ca/PRA 2026-188 Record.xlsx",
+            kind="workbook",
+            # ``Recommended`` is WCA's next action for the site.  "Plant" rows
+            # are empty sites carrying the species proposed for them (17 of 28
+            # have no DBH at all), and "Removal-Stump" is a stump.  Do not
+            # filter on ``Fictitious``: as in Ventura it is a WCA flag that 97%
+            # of real trees carry.
+            drop_values=(("Recommended", ("Plant", "Removal-Stump")),),
+            species_fields=("BotanicalName", "CommonName"),
+            common_fields=("CommonName",),
+            lat_field="Latitude",
+            lng_field="Longitude",
+            id_field="InventoryID",
+            fixed_city="Atherton, CA",
+            homepage="https://www.ci.atherton.ca.us/",
+            notes=("One Gambel oak in Holbrook-Palmer Park (InventoryID 12203793) "
+                   "is split over three spreadsheet rows by a stray quote and has "
+                   "no usable coordinates, so it is not mapped."),
+        ),
+    ),
+    attribution="Town of Atherton Public Works (supplied by records request, Nov 2026)",
+)
+
+
 OAKLAND_CA = CitySpec(
     slug="oakland_ca",
     name="Oakland, CA",
@@ -1288,6 +1326,7 @@ CITIES: tuple[CitySpec, ...] = (
     BRISBANE_CA,
     SANTA_CLARA_CA,
     SUNNYVALE_CA,
+    ATHERTON_CA,
     OAKLAND_CA,
     PASADENA_CA,
     RIVERSIDE_CA,

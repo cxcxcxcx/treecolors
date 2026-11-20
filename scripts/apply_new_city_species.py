@@ -1,7 +1,12 @@
-"""Add KB entries and aliases for the five inventories added in November 2026.
+"""Add KB entries and aliases for the inventories added in November 2026.
 
-Run once from the project root, after ``git checkout`` of the two data files
-if they have been touched before:
+Napa, La Mesa, Ventura, Santa Monica and Signal Hill, then Atherton.  The run
+is idempotent: entries and aliases that already exist are skipped, so it can be
+re-run after appending a new city's names.
+
+    PYTHONPATH=py python3 scripts/apply_new_city_species.py
+
+To rebuild from scratch, ``git checkout`` the two data files first:
 
     PYTHONPATH=py python3 scripts/apply_new_city_species.py
 
@@ -207,6 +212,13 @@ NEW_ENTRIES = {
         "A large cycad from Madagascar and East Africa, evergreen, planted in "
         "mild California gardens.",
     ),
+    # Atherton (records-request workbook, added after the five above).
+    "torreya californica": entry(
+        False, False, False, "N/A", ["加州榧", "加州榧树"],
+        ["California Nutmeg", "California Torreya"],
+        "A native California conifer related to yews, with stiff, sharp, "
+        "glossy needles and olive-like seeds; evergreen.",
+    ),
 }
 
 # Inventory spelling -> canonical key.  Botanical names that already resolve
@@ -262,6 +274,7 @@ NEW_ALIASES = {
     "Auranticarpa rhombifolium": "auranticarpa rhombifolia",
     "Howea belmoreana": "howea belmoreana",
     "Cycas thouarsii": "cycas thouarsii",
+    "Torreya californica": "torreya californica",
     # ── synonyms: the same tree under its former name ────────────────────
     "Camphora officinarum": "cinnamomum camphora",
     "Melaleuca citrina": "callistemon citrinus",

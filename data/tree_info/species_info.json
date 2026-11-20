@@ -28820,5 +28820,20 @@
    "Queen Sago"
   ],
   "explanation": "A large cycad from Madagascar and East Africa, evergreen, planted in mild California gardens."
+ },
+ "torreya californica": {
+  "deciduous": false,
+  "fall_colors": false,
+  "beautiful_flowers": false,
+  "blooming_season": "N/A",
+  "chinese_common_names": [
+   "加州榧",
+   "加州榧树"
+  ],
+  "common_names": [
+   "California Nutmeg",
+   "California Torreya"
+  ],
+  "explanation": "A native California conifer related to yews, with stiff, sharp, glossy needles and olive-like seeds; evergreen."
  }
 }

@@ -4,10 +4,10 @@ Compiled 13 November 2026, revised 16 November 2026 for treecolors.botanisense.a
 
 ## Status
 
-The map now carries **52 municipal inventories and 7,145,492 trees**. Seven Bay Area
+The map now carries **53 municipal inventories and 7,146,891 trees**. Seven Bay Area
 layers were added in this round: Santa Clara, Los Gatos, San Mateo, Burlingame,
-Brisbane, the Santa Clara County inventory and Sunnyvale. Mountain View and
-Milpitas were already live.
+Brisbane, the Santa Clara County inventory and Sunnyvale, followed by Atherton
+from a records request. Mountain View and Milpitas were already live.
 
 All counts below were measured with the ArcGIS `returnCountOnly` query against the
 live service on 12–13 November 2026, not copied from a portal description.
@@ -64,6 +64,21 @@ live service on 12–13 November 2026, not copied from a portal description.
   name in its own `SPP_bot` field. The file is not redistributable code and is
   kept out of git (`data/raw/`); the workbook adapter reads it from
   `data/raw/sunnyvale_ca/Sunnyvale_street_trees.xlsx`.
+- **Atherton, CA — 1,399 trees** (added 19 November 2026). The town answered the
+  records request (PRA 2026-188) with a West Coast Arborists spreadsheet, "Atherton
+  Tree Inventry 2026": 1,444 rows, file saved 16 November 2026. It covers
+  **town-maintained trees only** — 895 in parks (almost all Holbrook-Palmer Park),
+  270 on medians, the rest on town frontages, El Camino Real and Middlefield Road.
+  Atherton's residential street trees are private property and are not in it, so
+  the town looks sparse on the map by design, not by data loss. Excluded: 28 rows
+  whose `Recommended` action is `Plant` (empty sites carrying the species proposed
+  for them; 17 have no DBH at all), 2 `Removal-Stump` rows, 7 `Other tree`, and one
+  Gambel oak (InventoryID 12203793) that a stray quote splits across three rows,
+  leaving it without coordinates. `Fictitious = X` is on 97% of rows and is not a
+  filter, as in Ventura. 131 species, 27% turn in autumn (coast live oak and coast
+  redwood are a third of the inventory). Every name resolves; the only KB addition
+  was *Torreya californica*. No point lies within 5 m of a Palo Alto tree. The
+  workbook is kept out of git at `data/raw/atherton_ca/PRA 2026-188 Record.xlsx`.
 
 ## Available but deliberately not added
 
@@ -99,9 +114,10 @@ tree inventory that could be added today.
 - **South San Francisco** — 16 datasets on its portal, none of them trees.
 - **Pacifica** — no city GIS host found. The "Quercus pacifica" hits are a shrub
   habitat polygon layer, not street trees.
-- **Atherton, Woodside, Portola Valley, Half Moon Bay, East Palo Alto** — no
-  city-hosted GIS found and no tree inventory found in ArcGIS Online. Woodside
-  results are unrelated datasets from other states and countries.
+- **Woodside, Portola Valley, Half Moon Bay, East Palo Alto** — no city-hosted
+  GIS found and no tree inventory found in ArcGIS Online. Woodside results are
+  unrelated datasets from other states and countries. (Atherton was in this group
+  until its records-request reply; see above.)
 - **Campbell, Gilroy, Morgan Hill** (and San Martin / unincorporated) — no city-level
   tree service, but the county layer's records for these places are already live.
   A direct city inventory would only be worth requesting to get fresher data.

@@ -11,7 +11,7 @@ by species group — evergreen / ginkgo / turns in autumn / deciduous but muted.
 Click any tree → species, a botanical plate, Wikipedia photos and the source
 inventory record. No per-city selector, no account.
 
-Current shape (2026-11): **52 cities, 7.15M trees, 1,946 species keys**, 298
+Current shape (2026-11): **53 cities, 7.15M trees, 1,947 species keys**, 298
 botanical plates, 315 leaf thumbnails, `web/trees.pmtiles` ≈ 84 MB.
 
 ## Architecture
